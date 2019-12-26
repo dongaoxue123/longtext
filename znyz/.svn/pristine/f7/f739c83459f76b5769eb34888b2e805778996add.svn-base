@@ -1,0 +1,46 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 栏位商品猪重量返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FieldHogWeightRowsBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 序号
+	private String xh;
+	// 时间
+	private String date;
+	// 重量
+	private double weight;
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getXh() {
+		return xh;
+	}
+
+	public void setXh(String xh) {
+		this.xh = xh;
+	}
+
+}

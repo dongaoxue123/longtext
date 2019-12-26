@@ -1,0 +1,35 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图首页猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FarmFarmDependenceBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	private String fireKey;
+
+	private FarmFarmDependence item;
+
+	public String getFireKey() {
+		return fireKey;
+	}
+
+	public void setFireKey(String fireKey) {
+		this.fireKey = fireKey;
+	}
+
+	public FarmFarmDependence getItem() {
+		return item;
+	}
+
+	public void setItem(FarmFarmDependence item) {
+		this.item = item;
+	}
+
+}

@@ -1,0 +1,6 @@
+{"code":"0","count":3,"data":
+	[{"xh":1,"fieldId":"育肥一舍", "breeder":"饲养员003","alarm":"行为异常", "createTime":"2019-08-12 16:51:57", "state":"0", "operator":"","updateTime":"","remark":""},
+	{"xh":2,"fieldId":"育肥二舍","breeder":"饲养员002", "alarm":"行为异常", "createTime":"2019-07-11 15:25:15", "state":"1", "operator":"管理员","updateTime":"2019-07-11 15:54:40","remark":"已解决"},
+	{"xh":3,"fieldId":"育肥二舍", "breeder":"饲养员002", "alarm":"行为异常", "createTime":"2019-05-11 14:59:42", "state":"1", "operator":"管理员","updateTime":"2019-05-11 15:25:15","remark":"已解决"}
+	],"errcode":"200","errmsg":"查询成功","msg":"查询成功","openId":""
+}

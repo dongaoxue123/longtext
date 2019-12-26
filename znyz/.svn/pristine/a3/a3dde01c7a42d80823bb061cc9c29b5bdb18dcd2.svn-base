@@ -1,0 +1,155 @@
+<html>
+
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+				<script language="JavaScript" type="text/javascript">    
+	function clearNoNum(obj){
+		//修复第一个字符是小数点 的情况.
+		if(obj.value !=''&& obj.value.substr(0,1) == '.'){
+			obj.value="";
+		}
+		obj.value = obj.value.replace(/^0*(0\.|[1-9])/, '$1');//解决 粘贴不生效
+		obj.value = obj.value.replace(/[^\d.]/g,"");  //清除“数字”和“.”以外的字符
+		obj.value = obj.value.replace(/\.{2,}/g,"."); //只保留第一个. 清除多余的     
+		obj.value = obj.value.replace(".","$#$").replace(/\./g,"").replace("$#$",".");    
+		obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d).*$/,'$1$2.$3');//只能输入一个小数     
+		if(obj.value.indexOf(".")< 0 && obj.value !=""){//以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+			if(obj.value.substr(0,1) == '0' && obj.value.length == 2){
+				obj.value= obj.value.substr(1,obj.value.length);	0
+			}
+		}    
+	}    
+</script>  
+	</head>
+
+	<body>
+		<div class="layui-container">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<div class='layui-row info-row'>
+					<div class="layui-col-xs4" >
+						<p id="feedAmount"><!-- <strong >建议饲喂标准：2.8</strong> --></p>
+					</div>
+					
+					<div class="layui-col-xs4" >
+						<p id="numberTimes"></p>
+						
+						<!-- <strong id="numberTimes">每日2次</strong>	 -->
+					</div>
+					
+					<div class="layui-col-xs4" >
+						<p id="feedType"></p>
+						
+	<!-- 					<strong >妊娠母猪料</strong>	
+	 -->				</div>
+				</div>
+			</div>
+			<div class="layui-form-item" style="padding-right: 20px">
+			
+				<div class='layui-row info-row'>
+					<div class="layui-col-xs4" >
+						<p id="pigTypeName"><!-- 种母猪，已配种28天 --></p>
+					</div>
+				
+				</div>
+			</div>
+			<div class="layui-form-item" style="padding-right: 20px">
+			
+				<div class='layui-row info-row'>
+					
+					<div class="layui-col-xs4" >
+						<p id="remark"><!-- 建议增加蛋白质摄入含量 --></p>
+					</div>
+					
+					
+				</div>
+				
+			</div>
+			
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							<!-- <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button> -->
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			
+		</div>
+
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var pigsArchivesId;
+			var farmId;
+			var statusStartTime;
+			var parity;
+
+			
+			var authToken = localStorage.getItem("authToken");
+			// alert(authToken);
+			var user = localStorage.getItem("user");
+
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				layui.use(['form', 'laydate'], function() {
+					var form = layui.form;
+					var $ = layui.$;
+					var laydate = layui.laydate;
+					
+					pigsArchivesId = GetQueryString("pigsArchivesId")
+					farmId = GetQueryString("farmId")
+					statusStartTime = GetQueryString("statusStartTime")
+					parity = GetQueryString("parity")
+					
+					// alert(pigsArchivesId);
+					// alert(farmId);
+					// alert(statusStartTime);
+					// alert(parity);
+
+					if(!checkToken()) {
+						alert(i18next.t("timeout"));
+						window.top.location.href = '../../login.html';
+					}
+					
+					console.log(commonIP + 'api/pig/feedstandard/getMattingPigFeedStandard?authToken='+authToken+'&farmId='+farmId+'&pigsArchivesId='+pigsArchivesId+'&statusStartTime='+statusStartTime+'&parity='+parity)
+					$.ajax({
+					    url: commonIP + 'api/pig/feedstandard/getMattingPigFeedStandard?authToken='+authToken+'&farmId='+farmId+'&pigsArchivesId='+pigsArchivesId+'&statusStartTime='+statusStartTime+'&parity='+parity,
+						success: function (res) {
+					    	var dataObj = JSON.parse(res);
+					    	console.log(dataObj)
+							
+					    	if(dataObj.code==='0'){
+								var feedAmount="<strong style='font-size:20px'>建议饲喂量："+dataObj.dataSource.list[0].feedAmount+"kg</strong>";
+								var numberTimes = "<strong style='font-size:20px'>每日"+dataObj.dataSource.list[0].numberTimes+"次</strong>";
+								var feedType = "<strong style='font-size:20px'>"+dataObj.dataSource.list[0].feedType+"</strong>";
+								var pigTypeName = "<p style='font-size:20px'>"+dataObj.dataSource.list[0].pigTypeName+",已配种"+dataObj.dataSource.list[0].matingDay+"天</p>";
+								var remark = "<p style='font-size:20px;width:500px'>饲喂建议："+dataObj.dataSource.list[0].remark+"</p>";
+								
+								$("#feedAmount").html(feedAmount);
+								$("#numberTimes").html(numberTimes);
+								$("#feedType").html(feedType);
+								$("#pigTypeName").html(pigTypeName);
+								$("#remark").html(remark);
+					    	}
+							
+					    }
+					});
+
+
+				});
+			}
+		</script>
+	</body>
+
+</html>

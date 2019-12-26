@@ -1,0 +1,306 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">猪只类别</label>
+            <div class="layui-input-inline">
+                <select id="pigTypeId" name="pigTypeId" lay-verify="required|pigTypeId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择类别</option>
+		    	</select>
+            </div>
+        	<label class="layui-form-label">猪只编号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="pigs_number" name="pigs_number" lay-verify="required|pigs_number" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">生产状态</label>
+            <div class="layui-input-inline">
+                <select id="production_status" name="production_status" lay-verify="required|production_status" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择状态</option>
+		    	</select>
+            </div>
+            <label class="layui-form-label">状态日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="status_start_time" name="status_start_time" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">品种</label>
+            <div class="layui-input-inline">
+            	<select id="pig_variety_id" name="pig_variety_id" lay-verify="required|pig_variety_id" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品种</option>
+		    	</select>
+            </div>
+        	<label class="layui-form-label">品系</label>
+            <div class="layui-input-inline">
+                <select id="strain" name="strain" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品系</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">出生日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="born_date" name="born_date" class="layui-input">
+            </div>
+        	<label class="layui-form-label">入场日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="enter_date" name="enter_date" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">猪只胎次</label>
+            <div class="layui-input-inline">
+                <input type="text" id="parity" name="parity" class="layui-input">
+            </div>
+        	<label class="layui-form-label">猪只耳缺号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="ear_num" name="ear_num" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+  			alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+		}
+		groupId = JSON.parse(user).groupId; 
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#status_start_time' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#born_date' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#enter_date' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+        //获取猪只类别下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken +'&type=pigType',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#pigTypeId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindStatusDropList();
+	    	  }
+	    }
+	    }); 
+	    
+	    //获取生产状态下拉列表
+	    function BindStatusDropList(){
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getStatusListSelect?authToken='+authToken,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#production_status").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindVarietyDropList();
+	    	  }
+	    }
+	    }); 
+	    }
+	    //获取品种下拉列表
+	    function BindVarietyDropList(){
+	   	$.ajax({
+	        url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken +'&type=pigVarietyId',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#pig_variety_id").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindStrainDropList();
+	    	  }
+	    }
+	    }); 
+	    }
+	    
+	    //获取品系下拉列表
+	    function BindStrainDropList(){
+	   	$.ajax({
+	        url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken +'&type=strain',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#strain").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	    }
+	    }); 
+	    }
+	    
+        //监听提交
+        if(userId == null)//添加
+		{
+	        form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/info/create?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify(res.field),
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert("添加成功！");
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert("添加失败！");
+						}
+					}
+				}
+             }); 
+           });
+        }
+		else//编辑
+		{
+			form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/info/update?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"pigs_archives_id":userId,
+						"pigs_type":res.field.pigTypeId,
+						"pigs_number":res.field.pigs_number,
+						"production_status_id":res.field.production_status,
+						"status_start_time":res.field.status_start_time,
+						"pig_variety_id":res.field.pig_variety_id,
+						"strain":res.field.strain,
+						"born_date":res.field.born_date,
+						"enter_date":res.field.enter_date,
+						"parity":res.field.parity,
+						"ear_num":res.field.ear_num
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert("修改成功！");
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert("修改失败！");
+						}
+					}
+				}
+             }); 
+           });
+		}
+        function BindUpdateList(){
+		    if(userId != null)//编辑
+		    {
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/info/getListPage?authToken='+authToken+'&page=0&limit=0&pigs_archives_id='+userId,
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {
+						//赋值
+						$("#pigTypeId").val(datas.dataSource.list[0].pigs_type);
+						$("#production_status").val(datas.dataSource.list[0].production_status_id);
+                        $("#pig_variety_id").val(datas.dataSource.list[0].pig_variety_id);
+                        $("#strain").val(datas.dataSource.list[0].strain);
+						form.render('select');
+
+						$("#pigs_number").val(datas.dataSource.list[0].pigs_number);
+						$("#status_start_time").val(datas.dataSource.list[0].status_start_time);
+						$("#born_date").val(datas.dataSource.list[0].born_date);
+						$("#enter_date").val(datas.dataSource.list[0].enter_date);
+						$("#parity").val(datas.dataSource.list[0].parity);
+						$("#ear_num").val(datas.dataSource.list[0].ear_num);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		    }
+        }
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

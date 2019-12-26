@@ -1,0 +1,70 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图首页猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FarmFarmDependence implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	private String _sugar_dd_default_;
+	private double[] coord;
+	private String name;
+	private String[] tooltipValues;
+	private String url;
+	private String value;
+
+	public String get_sugar_dd_default_() {
+		return _sugar_dd_default_;
+	}
+
+	public void set_sugar_dd_default_(String _sugar_dd_default_) {
+		this._sugar_dd_default_ = _sugar_dd_default_;
+	}
+
+	public double[] getCoord() {
+		return coord;
+	}
+
+	public void setCoord(double[] coord) {
+		this.coord = coord;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String[] getTooltipValues() {
+		return tooltipValues;
+	}
+
+	public void setTooltipValues(String[] tooltipValues) {
+		this.tooltipValues = tooltipValues;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="智能养殖">
+		<title>login</title>
+		<link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="statics/css/styles.css">
+		<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	</head>
+
+	<body>
+		
+		<div class="parent">
+			<div class="login_left">
+				<!-- <img  src="statics/img/mobile_index.png" class="ml"> -->
+				<div class="login">
+			   <div class="login_cont">
+				<img src="statics/img/mobile_index.png" style="margin-left: 0px;margin-top: -50px" class="ml">
+
+				<!-- <h1>生猪智能养殖管理系统</h1> -->
+				<!-- <img src="statics/img/font.png" style="margin-bottom: 40px;margin-left: 0px;width: 257px;height: 50px;margin-top: 140px;" class="ml"> -->
+				<h1 style="width:280px;
+				margin-top: 140px;
+				margin-bottom: -15px;
+				height:50px;
+				font-size:32px;
+				font-family:SourceHanSansCN-Bold,SourceHanSansCN;
+				font-weight:bold;
+				color:rgba(3,112,176,1);
+				line-height:50px;
+				letter-spacing:5px;">智慧农业AI大脑</h1>
+				<h1 style="width:280px;
+				height:50px;
+				font-size:14px;
+				font-family:SourceHanSansCN-Light,SourceHanSansCN;
+				font-weight:300;
+				color:#0370B0;
+				opacity: 0.5;
+				line-height:50px;">Artificial Intelligence Brain Of Agriculture</h1>
+				   <form class="layui-form">
+			       <div class="layui-form-item">
+					<div style="color: #333;">用户名</div>
+			       	<input class="input01" type="text" id="username" name="username" lay-verify="required" lay-verType="tips" autocomplete="off" data-i18n="[placeholder]login.username"/>
+			       </div>
+			       <div style="margin-top: 30px;" class="layui-form-item">
+						<div style="color: #333;">密码</div>
+			       	<input class="input02" type="password" id="password" name="password" lay-verify="required" lay-verType="tips" autocomplete="off" data-i18n="[placeholder]login.password"/>
+			       </div style="margin-top: 20px;">
+			       <a href="#">
+			       	<div class="btn" lay-submit="" lay-filter="login" data-i18n="login.btn"></div>
+			       </a>
+			   </div>
+			   </div>
+			    
+			</div>
+			<div class="child">
+			       <img src="statics/img/pig_img.jpg" width="100%" />
+			</div>
+		</div>
+
+		<!-- 底部 -->
+		<div class="footer">
+			<span data-i18n="login.footerCom"></span><span><img src="statics/img/icon_foot.png"></span><span data-i18n="login.footerRecord"></span>
+		</div>
+		<script type="text/javascript" src="statics/plugins/layui/layui.js"></script>
+		<script type="text/javascript" src="js/login.js"></script>
+		
+		<!-- 国际化        -->
+	<script src="statics/plugins/i18n/i18next.min.js"></script>
+	<script src="statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='statics/plugins/i18n/loc-i18next.min.js'></script>
+	</body>
+
+</html>

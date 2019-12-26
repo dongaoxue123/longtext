@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>商品猪体况详情</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	
+	<style type="text/css">
+		.info-title {
+			font-size: 16px;
+			font-weight: 600;
+			margin: 12px 0;
+		}
+		
+		.weight-val {
+			font-size: 36px;
+			font-weight: 800;
+		}
+		#pigInfo > .info-row {
+			height:30px;
+			line-height:30px;
+			
+		}
+		.chart-btn {
+			margin-top: 30px;
+		}
+		.mt30 {
+			margin-top: 30px;
+		}
+	</style>
+
+	<body>
+		<div class='layui-container'>
+			<div class='layui-row'>
+				<div class="layui-col-xs8">
+					<section id='pigInfo'>
+						<div class='info-title'>基本信息</div>
+						<div class='info-row'><span class="layui-col-xs6 chart-btn" style='line-height: 30px;'>批准编号：</span><span class="layui-col-xs6 info-row"></span></div>
+						<div class='info-row'><span class="layui-col-xs6 info-row">品系： </span><span class="layui-col-xs6 info-row">日龄：</span></div>
+					</section>
+
+					<span class='info-title layui-col-xs6 chart-btn'>体重信息</span>
+					<button class="layui-btn layui-btn-sm chart-btn" id="week">周</button>
+					<button class="layui-btn layui-btn-sm chart-btn" id="month">月</button>
+					<button class="layui-btn layui-btn-sm chart-btn" id="cycle">本周期</button>
+					<div id="weekChart" style="width:100%;height:430px;">
+					</div>
+					<div style="display: none;width:100%;height:430px;" id="monthChart">
+					</div>
+					<div style="display: none;width:100%;height:430px;" id="cycleChart">
+					</div>
+				</div>
+				<div class="layui-col-xs4">
+					<div class="info-title">当前均重</div>
+					<div class='weight-val' id='currWeight'></div>
+					<div class='info-title' id='currState'>当前状态</div>
+					<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+				</div>
+			</div>
+
+		</div>
+		
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<!-- echarts-->
+	<script src="../basedata/echarts/echarts.js"></script>
+
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<!--code-->
+		<script>
+			var weekChart;
+			var monthChart;
+			var cycleChart;
+			//本周测重记录(折线图)
+			var weekOption = {
+				title: {
+					show: false,
+					text: '本周测重(KG)',
+					subtext: '',
+					top: 10,
+					textStyle: {
+						fontSize: 12,
+					}
+				},
+				grid: {
+					top: '5%',
+					bottom: '15%',
+					left: '5%'
+				},
+				tooltip: {
+					trigger: 'axis',
+					formatter: function(params) {
+						return params[0].name + 
+							'<br/>' +
+							'体重:' + params[0].data + 'kg ';
+					}
+					
+				},
+				legend: {
+					bottom: 0,
+					data: ['体重']
+				},
+				toolbox: {
+					show: false,
+					feature: {
+						dataZoom: {
+							yAxisIndex: 'none'
+						},
+						dataView: {
+							readOnly: false
+						},
+						magicType: {
+							type: ['line', 'bar']
+						},
+						restore: {},
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+				},
+				yAxis: {
+					type: 'value',
+					axisLabel: {
+						formatter: '{value}'
+					},
+					splitNumber: 5
+				},
+				series: [{
+					name: '体重',
+					type: 'line',
+//					data: [0, 0, 0, 0, 0, 0, 0],
+					markPoint: {
+						symbol: 'pin',
+						symbolSize: [60, 60],
+						data: [{
+							type: 'max',
+							name: '最大值'
+						}]
+					},
+					markLine: {
+						data: [{
+							type: 'average',
+							name: '平均值'
+						}]
+					}
+				}]
+			};
+			//本月测重记录(折线图)
+			var monthOption = {
+				title: {
+					show: false,
+					text: '本月测重(KG)',
+					subtext: '',
+					top: -4,
+					textStyle: {
+						fontSize: 12,
+					}
+				},
+				grid: {
+					top: '5%',
+					bottom: '15%',
+					left: '5%'
+				},
+				tooltip: {
+					trigger: 'axis',
+					formatter: function(params) {
+						return params[0].name + '日 ' +
+							'<br/>' +
+							'体重:' + params[0].data + 'kg ';
+					}
+					
+				},
+				legend: {
+					bottom: 0,
+					data: ['体重']
+				},
+				toolbox: {
+					show: false,
+					feature: {
+						dataZoom: {
+							yAxisIndex: 'none'
+						},
+						dataView: {
+							readOnly: false
+						},
+						magicType: {
+							type: ['line', 'bar']
+						},
+						restore: {},
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+//					data: ['第一周', '第二周', '第三周', '第四周', '第五周']
+				},
+				yAxis: {
+					type: 'value',
+					axisLabel: {
+						formatter: '{value}'
+					},
+//					splitNumber: 5
+				},
+				series: [{
+					name: '体重',
+					type: 'line',
+					symbol: 'none',
+//					data: [0, 0, 0, 0, 0],
+//					symbolSize: 5,
+					markPoint: {
+						symbol: 'pin',
+						symbolSize: [60, 60],
+						data: [{
+							type: 'max',
+							name: '最大值'
+						}]
+					},
+					markLine: {
+						data: [{
+							type: 'average',
+							name: '平均值'
+						}]
+					}
+				}]
+			};
+			//周期测重记录(折线图)
+			var cycleOption = {
+				title: {
+					show: false,
+					text: '本周期测重(KG)',
+					subtext: '',
+					top: -4,
+					textStyle: {
+						fontSize: 12,
+					}
+				},
+				grid: {
+					top: '5%',
+					bottom: '15%',
+					left: '5%'
+				},
+				tooltip: {
+					trigger: 'axis',
+					formatter: function(params) {
+						return '第 ' + params[0].data[0] + '天 ' +
+							'<br/>' +
+							'体重:' + params[0].data[1] + 'kg ';
+					}
+					
+				},
+				brush: {},
+				legend: {
+					data: ['体重'],
+					bottom: 0,
+					left: 'center'
+				},
+				toolbox: {
+					feature: {
+						brush: {
+							type: ['']
+						}
+					}
+				},
+				xAxis: [{
+					type: 'value',
+					min: 0,
+					max: 90,
+					splitNumber: 3,
+					axisLabel: {
+						formatter: '{value} 天'
+					},
+					splitLine: {
+						show: false
+					}
+				}],
+				yAxis: [{
+					type: 'value',
+					scale: true,
+					axisLabel: {
+						formatter: '{value}'
+					},
+					splitLine: {
+						show: true
+					}
+				}],
+				series: [{
+					name: '体重',
+					type: 'line',
+//					data: [
+//						[0, '99'],
+//						[1, '100'],
+//						[2, '102'], '104', '105', '110'
+//					],
+					symbolSize: 5,
+					markArea: {
+						silent: true,
+						itemStyle: {
+							normal: {
+								color: 'transparent',
+								borderWidth: 1,
+								borderType: 'dashed'
+							}
+						}
+					},
+					markPoint: {
+						symbolSize: 60,
+						data: [{
+								type: 'max',
+								name: '最大值'
+							}
+						]
+					},
+					markLine: {
+						data: [{
+								type: 'average',
+								name: '平均值'
+							},
+							{
+								xAxis: 170
+							}
+						]
+					}
+				}]
+
+			}
+
+			var farmId;
+			var groupId;
+			var fieldId;
+			var batchId = getUrlParam("batchid");
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			var deviceStatus = getUrlParam("deviceStatus")
+			deviceStatus = (deviceStatus==='100' ? '测重中' : '已测' + deviceStatus + '次');
+			
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+			fieldId = GetQueryString("id") 
+			
+			if(!checkToken()) {
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+			
+			
+			
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+				
+				//方法级渲染
+				table.render({
+					elem: '#hogBatch',
+					url: commonIP + 'api/pig/pigweightday/getHogPigWeightPage?authToken=' + authToken + '&farmId=' + farmId + '&fieldId=' + fieldId +
+						'&pageNum=1&pageSize=10', //+ '&current_date=' + currentDate
+					cellMinWidth: 80,
+					parseData: function(res) { //res 即为原始返回的数据
+						return {
+							"code": res.code, //解析接口状态
+							"msg": res.msg, //解析提示文本
+							"count": res.count, //解析数据长度
+							"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+						};
+					},
+					cols: [
+						[{
+								type: 'numbers',
+								width: '10%'
+							}, {
+								field: 'weight_data',
+								title: '测重(kg)',
+								width: '35%'
+							}
+
+							, {
+								field: 'create_date',
+								title: '时间',
+								width: '55%'
+							} //一个工具栏  具体请查看layui官网
+						]
+					],
+					even: true //开启隔行背景
+						,
+					page: false //开启分页
+						,
+					limit: 10 //默认十条数据一页
+						,
+					limits: [10, 20, 30, 50] //数据分页条
+						,
+					id: 'testReload'
+				});
+				$("#currState").html("当前状态：" + deviceStatus);
+				GetWeekWeightInfo()
+				//取得实时猪重信息
+				function GetRealTimeWeightInfo2() {
+					var size = 20;
+					var currentDate = getDate();
+					var result = '<div class="msg_corner bg_yellow"><a href="#">实时体况</a></div><span class="bottom-list-refresh" onclick="refreshRealWeight()"></span>';
+					$.ajax({
+						type: "GET",
+						url: commonIP + 'api/pig/pigweightday/getHogPigWeightPage?authToken=' + authToken + '&farmId=' + farmId + '&fieldId=' + fieldId +
+							'&pageNum=1' + '&pageSize=' + size,
+						contentType: 'application/json',
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+							if(data) {
+								if(data.errcode == 200) {
+									var resultWeight = '<ul class="time_msg">';
+									var resultDate = '<ul class="time_msg r_box">';
+									for(var key in data.dataSource.list) {
+										var weight = data.dataSource.list[key].weight_data;
+										var dataId = data.dataSource.list[key].data_id;
+										if(weight == null || weight == '') {
+											weight = 0;
+										}
+										resultWeight = resultWeight + '<li style="color: #00bc97;" onClick="show(\'' + dataId + '\');">';
+										resultDate = resultDate + '<li style="color: #00bc97;" onClick="show(\'' + dataId + '\');">';
+										resultWeight = resultWeight + '<h3>' + weight + 'kg</h3></li>';
+										resultDate = resultDate + data.dataSource.list[key].create_date + '</li>';
+									}
+									resultWeight = resultWeight + '</ul>';
+									resultDate = resultDate + '</ul>';
+									result = result + resultWeight + resultDate;
+								} else {
+									if(data.errcode == "10005") {
+										window.top.location.href = 'wxlogin.html';
+									}
+								}
+							}
+							$('#realWeight').html(result);
+						}
+					});
+				}
+				//取得周猪重信息
+				function GetWeekWeightInfo() {
+					weekChart = echarts.init(document.getElementById('weekChart'));
+					weekChart.setOption(weekOption);
+					var currentDate = getDate();
+
+					$.ajax({
+						type: "GET",
+						url: commonIP + 'api/pig/pigweightday/getDayList',
+						contentType: 'application/json',
+						data: 'authToken=' + authToken + '&batchId=' + batchId + '&farmId=' + farmId + '&fieldId=' + fieldId + '&pointTime=' + currentDate + '&weekOrMonth=Week',
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+							if(data) {
+								if(data.errcode == 200) {
+									data = data.dataSource.list[0]
+									setPigInfo(data)
+									// 重量集合
+									var weightDataArry = data.weightY;
+									var minWeight = 0;
+									var maxWeight = 0;
+									var first = true;
+									for(var i = 0; i < weightDataArry.length; i++) {
+										if(weightDataArry[i] != null && weightDataArry[i] != '') {
+											if(first) {
+												minWeight = weightDataArry[i];
+												maxWeight = weightDataArry[i];
+												first = false;
+											} else {
+																		if(parseFloat(weightDataArry[i]) < parseFloat(minWeight)) {
+													minWeight = weightDataArry[i];
+												}
+												if(parseFloat(weightDataArry[i]) > parseFloat(maxWeight)) {
+													maxWeight = weightDataArry[i];
+												}
+											}
+										}
+									}
+									var adjustValue = parseInt((maxWeight - minWeight) / 5) + 1;
+									minWeight = parseInt(minWeight) - adjustValue * 2;
+									maxWeight = parseInt(maxWeight) + adjustValue * 2;
+									if(minWeight < 0) {
+										minWeight = 0;
+									}
+									if(maxWeight < 0) {
+										maxWeight = 0;
+									}
+									// 当前重量
+									var CurrentWeightFloat = parseFloat(data.averageWeight);
+									$("#currWeight").html("<li><h2 style='color:#EE7700;'>" + CurrentWeightFloat + " KG</h2></li>");
+
+									//按星期补位
+									let newWeightArr = new Array()
+									let j = 0;
+									for(let i = 0; i < 7; i++) {
+										if(i === parseInt(data.cycleDataX[j])) {
+											newWeightArr.push(data.weightY[j])
+											if(j < data.weightY.length - 1) {
+												j++;
+											}
+										} else {
+											newWeightArr.push('')
+										}
+									}
+									// 填入数据
+									weekChart.setOption({
+										yAxis: {
+											min: minWeight,
+											max: maxWeight,
+											splitNumber: 5
+										},
+										series: [{
+											// 根据名字对应到相应的系列
+											name: '体重',
+											showSymbol: false,
+											data: newWeightArr
+
+										}]
+									});
+
+								} else {
+									if(data.errcode == "10005") {
+										alert(data.errmsg);
+										window.top.location.href = 'wxlogin.html';
+									}
+								}
+							}
+						},
+						error: function(err) {
+
+						}
+					})
+				}
+
+				//取得月猪重信息
+				function GetMonthWeightInfo() {
+					monthChart = echarts.init(document.getElementById('monthChart'));
+					monthChart.setOption(monthOption);
+					var currentDate = getDate();
+					$.ajax({
+						type: "GET",
+						url: commonIP + 'api/pig/pigweightday/getDayList',
+						contentType: 'application/json',
+						data: 'authToken=' + authToken + '&batchId=' + batchId + '&farmId=' + farmId + '&fieldId=' + fieldId + '&pointTime=' + currentDate + '&weekOrMonth=Month',
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+//							console.log(data);
+							if(data) {
+								if(data.errcode == 200) {
+									data = data.dataSource.list[0]
+									// 重量集合
+									var weightDataArry = data.weightY;
+									var minWeight = 0;
+									var maxWeight = 0;
+									var first = true;
+									for(var i = 0; i < weightDataArry.length; i++) {
+										if(weightDataArry[i] != null) {
+											if(first) {
+												minWeight = weightDataArry[i];
+												maxWeight = weightDataArry[i];
+												first = false;
+											} else {
+											if(parseFloat(weightDataArry[i]) < parseFloat(minWeight)) {
+													minWeight = weightDataArry[i];
+												}
+												if(parseFloat(weightDataArry[i]) > parseFloat(maxWeight)) {
+													maxWeight = weightDataArry[i];
+												}
+											}
+										}
+									}
+									var adjustValue = parseInt((maxWeight - minWeight) / 5) + 1;
+									minWeight = parseInt(minWeight) - adjustValue * 2;
+									maxWeight = parseInt(maxWeight) + adjustValue * 2;
+									if(minWeight < 0) {
+										minWeight = 0;
+									}
+									if(maxWeight < 0) {
+										maxWeight = 0;
+									}
+									// 当前重量
+									var CurrentWeight = parseInt(data.averageWeight);
+									var CurrentWeightFloat = parseFloat(data.averageWeight);
+
+									//按星期补位
+									let xData = new Array()
+									let newWeightArr = new Array()
+									let j = 0;
+									for(let i = 0; i < 31; i++) {
+										let x = parseInt(i) + 1
+										xData.push(x)
+										if(!data.cycleDataX[j]) {
+											continue;
+										}
+										if(x === parseInt(data.cycleDataX[j].substr(8, 2))) {
+											newWeightArr.push(data.weightY[j])
+											if(j < data.weightY.length - 1) {
+												j++;
+											}
+										} else {
+											newWeightArr.push('')
+										}
+									}
+
+									// 填入数据
+									monthChart.setOption({
+										xAxis: {
+											data: xData
+										},
+										yAxis: {
+											min: minWeight,
+											max: maxWeight,
+											splitNumber: 5
+										},
+
+										series: [{
+											// 根据名字对应到相应的系列
+											name: '体重',
+											data: newWeightArr
+										}]
+									});
+								} else {
+									if(data.errcode == "10005") {
+										alert(data.errmsg);
+										window.top.location.href = 'wxlogin.html';
+									}
+								}
+							}
+						},
+						error: function(err) {
+
+						}
+					})
+				}
+				//取得周期猪重信息
+				function GetCycleWeightInfo() {
+					cycleChart = echarts.init(document.getElementById('cycleChart'));
+					cycleChart.setOption(cycleOption);
+					var currentDate = getDate();
+					$.ajax({
+						type: "GET",
+						url: commonIP + 'api/pig/pigweightday/getDayList',
+						contentType: 'application/json',
+						data: 'authToken=' + authToken + '&batchId=' + batchId + '&farmId=' + farmId + '&fieldId=' + fieldId + '&pointTime=' + currentDate + '&weekOrMonth=Cycle',
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+//							console.log(data);
+							if(data) {
+								if(data.errcode == 200) {
+									data = data.dataSource.list[0]
+									var weightDataArry = data.weightY //cycleInfo;
+									var cycleDataArry = data.weightY;
+									var minWeight = 0;
+									var maxWeight = 0;
+									var first = true;
+									for(var i = 0; i < weightDataArry.length; i++) {
+										if(weightDataArry[i] != null) {
+											if(first) {
+												minWeight = weightDataArry[i];
+												maxWeight = weightDataArry[i];
+												first = false;
+											} else {
+											if(parseFloat(weightDataArry[i]) < parseFloat(minWeight)) {
+													minWeight = weightDataArry[i];
+												}
+												if(parseFloat(weightDataArry[i]) > parseFloat(maxWeight)) {
+													maxWeight = weightDataArry[i];
+												}
+											}
+										}
+									}
+									minWeight = parseInt(minWeight) - 1;
+									maxWeight = parseInt(maxWeight) + 6;
+									if(minWeight < 0) {
+										minWeight = 0;
+									}
+									if(maxWeight < 0) {
+										maxWeight = 0;
+									}
+									let newWeightArr = new Array()
+									for(let i = 0; i < 90; i++) {
+										if(i < weightDataArry.length - 1) {
+											newWeightArr.push([i, weightDataArry[i]])
+										} else {
+											newWeightArr.push([i, ''])
+										}
+
+									}
+									// 填入数据
+									cycleChart.setOption({
+										yAxis: {
+											min: minWeight,
+											max: maxWeight,
+											splitNumber: 5
+										},
+										series: [{
+											// 根据名字对应到相应的系列
+											name: '体重',
+											showSymbol: false,
+											data: newWeightArr
+
+										}]
+									});
+								} else {
+									if(data.errcode == "10005") {
+										alert(data.errmsg);
+										window.top.location.href = 'wxlogin.html';
+									}
+								}
+							}
+						},
+						error: function(err) {
+
+						}
+					})
+				}
+				$('#week').on('click', function() {
+					$('#weekChart').show()
+					$('#monthChart').hide()
+					$('#cycleChart').hide()
+					GetWeekWeightInfo()
+				});
+				$('#month').on('click', function() {
+					$('#weekChart').hide()
+					$('#monthChart').show()
+					$('#cycleChart').hide()
+					GetMonthWeightInfo()
+				});
+				$('#cycle').on('click', function() {
+					$('#weekChart').hide()
+					$('#monthChart').hide()
+					$('#cycleChart').show()
+					GetCycleWeightInfo()
+				});
+
+				//取得猪只信息
+				function setPigInfo(data) {
+					var batchCode = data.batchCode; //批次编号
+					var strainName = data.strainName || ''; //品系名称
+					var pigVarietyName = data.pigVarietyName; //品种名称
+					var houseName = data.houseName; //栋舍名称
+					var code = data.fieldCode; //栏位编号
+					var parity = data.growingDays; //生长天数
+//					var createDate = toTime(data.createDate, 'noTime'); //配种日期
+//					var forecastEndTime = toTime(data.forecastEndTime, 'noTime'); //预计出栏日期
+
+					var result = "";
+					result = result + "<div class='info-title'>基本信息</div>" +
+						"<div><span class='layui-col-xs6'>批次编号：" +
+						batchCode + "</span> <span class='layui-col-xs6'>" +
+						houseName + " " + code + "栏</span></div>"+
+						"<div><span class='layui-col-xs6'>品种：" + strainName + " " + pigVarietyName + "</span><span class='layui-col-xs6'>日龄：" +
+						parity + "天</span></div>";
+					$('#pigInfo').html(result);
+				}
+			});
+		</script>
+	</body>
+
+</html>

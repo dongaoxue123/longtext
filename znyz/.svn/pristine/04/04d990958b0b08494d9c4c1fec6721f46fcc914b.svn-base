@@ -1,0 +1,76 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 栏位设备信息bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FieldDeviceMessageBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 设备code
+	private String code;
+	// 设备位置
+	private String devicePosition;
+	// 猪场Id
+	private String farmId;
+	// 栋舍Id
+	private String houseId;
+	// 栏位Id
+	private String fieldId;
+	// 商品猪批次Id
+	private String hogBatchId;
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getDevicePosition() {
+		return devicePosition;
+	}
+
+	public void setDevicePosition(String devicePosition) {
+		this.devicePosition = devicePosition;
+	}
+
+	public String getFarmId() {
+		return farmId;
+	}
+
+	public void setFarmId(String farmId) {
+		this.farmId = farmId;
+	}
+
+	public String getHouseId() {
+		return houseId;
+	}
+
+	public void setHouseId(String houseId) {
+		this.houseId = houseId;
+	}
+
+	public String getFieldId() {
+		return fieldId;
+	}
+
+	public void setFieldId(String fieldId) {
+		this.fieldId = fieldId;
+	}
+
+	public String getHogBatchId() {
+		return hogBatchId;
+	}
+
+	public void setHogBatchId(String hogBatchId) {
+		this.hogBatchId = hogBatchId;
+	}
+
+}

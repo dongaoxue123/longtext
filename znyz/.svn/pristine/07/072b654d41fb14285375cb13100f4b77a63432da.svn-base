@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>批次管理</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+
+	<body>
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+			<!--
+            	作者：717854567@qq.com
+            	时间：2019-05-16
+            	描述：
+--	<label class="layui-form-label">批次编码:</label>
+				<div class="layui-input-inline">
+					<input type="text" id="batchCode" name="batchCode" class="layui-input">
+				</div>
+				            -->
+				            <label class="layui-form-label"><span data-i18n="common.batchCode"></span>:</label>
+						    <div class="layui-input-inline">
+		    	<input class="layui-input" autocomplete="off" id="batchCodeaa" name="batchCodeaa">   
+		    </div>
+				<label class="layui-form-label"><span data-i18n="common.variety"></span>:</label>
+				<div class="layui-input-inline">
+					<select id="pigVarietyId" name="pigVarietyId" style="height: 38px;border-color: #F0F0F0;">
+						<option value="" data-i18n = "pig.varietyValDefault"></option>
+					</select>
+				</div>
+				<label class="layui-form-label"><span data-i18n="common.strain"></span>:</label>
+				<div class="layui-input-inline">
+					<select id="strain" name="strain" style="height: 38px;border-color: #F0F0F0;">
+						<option value="" data-i18n="pig.strainValDefault"></option>
+					</select>
+				</div>
+				<label class="layui-form-label" data-i18n="common.pregnancyState">:</label>
+				<div class="layui-input-inline">
+					<select id="productionStatusId" name="productionStatusId" style="height: 38px;border-color: #F0F0F0;">
+						<option value="" data-i18n="pig.pregnancyStateValDefault"></option>
+					</select>
+				</div>
+				
+				
+				<label class="layui-form-label"><span data-i18n="hogBatch.batchState"></span>:</label>
+				<div class="layui-input-inline">
+					<select id="batchStatus" name="batchStatus" style="height: 38px;border-color: #F0F0F0;">
+						<option value="" data-i18n="hogBatch.batchStateValDefault"></option>
+						<option value="1" data-i18n="normal"></option>
+						<option value="0" data-i18n="close"></option>
+					</select>
+				</div>
+			</div>
+			<div class="layui-form-item" style="padding-right: 20px">
+				<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+				<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+				<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+			</div>
+		</div>
+		<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+		<script type="text/html" id="barDemo">
+			<!--  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">分布</a>-->
+			<a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>
+		</script>
+		
+		<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			//alert(authToken);
+			var user = localStorage.getItem("user");
+			i18n('../../locales', onLangReady) //国际化
+	function onLangReady(){
+			if(!checkToken()) {
+				alert(i18next.t("timeout"));
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+				//方法级渲染
+				table.render({
+					elem: '#hogBatch',
+					url: commonIP + "api/pig/hogbatch/getHogBatchPage?authToken=" + authToken + "&farmId=" + farmId //数据请求路径
+					,parseData: function(res){ //res 即为原始返回的数据
+						 	
+				    return {
+				    	"code": res.code, //解析接口状态
+	      			"msg": res.msg, //解析提示文本
+	      			"count": res.count, //解析数据长度
+				    //  "data": res.dataSource.list //解析数据列表
+				      "data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+				      
+				    };
+	  			 }		
+				,cellMinWidth: 80,
+					cols: [
+						[{
+								type: 'numbers',
+								width: '2%'
+							}, {
+								field: 'batchCode',
+								title: i18next.t("common.batchCode"),
+								width: '10%'
+							}
+
+							, {
+								field: 'pigVarietyName',
+								title: i18next.t("common.variety"),
+								width: '8%'
+							}, {
+								field: 'strainName',
+								title: i18next.t("common.strain"),
+								width: '8%'
+							}, 
+							{
+								field: 'batchStatus',
+								title: i18next.t("hogBatch.batchState"),
+								width: '6%'
+							}, 
+							{
+								field: 'productionStatusName',
+								title: i18next.t("common.pregnancyState"),
+								width: '8%'
+							}, {
+								field: 'bornDate',
+								title: i18next.t("common.birthDate"),
+								width: '10%'
+							}, {
+								field: 'createtime',
+								title: i18next.t("common.admissionDate"),
+								width: '10%'
+							},
+							{
+								field: 'forecastEndTime',
+								title: i18next.t("hogBatch.forecastEndTime"),
+								width: '10%'
+							}, {
+								field: 'createUserName',
+								title: i18next.t("common.createUser"),
+								width: '8%'
+							}, 
+							{
+								field: 'remark',
+								title: i18next.t("common.remark"),
+								width: '10%'
+							},{
+								fixed: 'right',
+								title: i18next.t("opt"),
+								width: '8%',
+								align: 'center',
+								toolbar: '#barDemo'
+							},
+							 //一个工具栏  具体请查看layui官网
+						]
+					],
+					even: true //开启隔行背景
+						,
+					page: true //开启分页
+						,
+					limit: 10 //默认十条数据一页
+						,
+					limits: [10, 20, 30, 50] //数据分页条
+						,
+					id: 'testReload'
+					,done:function(){
+				    	i18n('../../locales') //国际化
+				    }
+				});
+
+				//获取品种下拉列表
+				$.ajax({
+					url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken + '&type=pigVarietyId',
+					success: function(res) {
+						var dataObj = JSON.parse(res);
+						if(dataObj != null && dataObj.dataSource.list.length > 0) {
+							var groupOption;
+							for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+								groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+							}
+							$("#pigVarietyId").append(groupOption);
+							form.render('select'); //一定要加form.render();
+						}
+					}
+				});
+
+				//获取品系下拉列表
+				$.ajax({
+					url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken + '&type=strain',
+					success: function(res) {
+						var dataObj = JSON.parse(res);
+						if(dataObj != null && dataObj.dataSource.list.length > 0) {
+							var groupOption;
+							for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+								groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+							}
+							$("#strain").append(groupOption);
+							form.render('select'); //一定要加form.render();
+						}
+					}
+				});
+
+				//获取生产状态下拉列表
+				$.ajax({
+					url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken + '&type=hogBatchProductionStatus',
+					success: function(res) {
+						var dataObj = JSON.parse(res);
+						if(dataObj != null && dataObj.dataSource.list.length > 0) {
+							var groupOption;
+							for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+								groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+							}
+							$("#productionStatusId").append(groupOption);
+							form.render('select'); //一定要加form.render();
+						}
+					}
+				});
+
+				//监听工具条
+				table.on('tool(hogBatch)', function(obj) {
+					var data = obj.data;
+					if(obj.event === 'detail') {
+						var index = layer.open({
+							type: 2,
+							content: "printPigInfo.html?id=" + data.batchId,
+							area: ['800px', '650px'],
+							maxmin: true
+						});
+					} else if(obj.event === 'del') {
+						layer.confirm(i18next.t("delConfirm"), function(index) {
+							$.ajax({
+								url: commonIP + "api/pig/info/delete?authToken=" + authToken,
+								type: 'POST',
+								contentType: 'application/json',
+								data: JSON.stringify({
+									"batchId": data.batchId
+								}),
+								success: function(text) {
+									var dataObj = JSON.parse(text);
+									if(dataObj.code == 0) {
+										layer.msg(dataObj.msg, {
+											icon: 6
+										});
+										obj.del();
+										layer.close(index);
+									} else {
+										layer.msg(dataObj.msg, {
+											icon: 5
+										});
+									}
+								}
+							});
+						});
+					} else if(obj.event === 'edit') {
+						var index = layer.open({
+							type: 2,
+							content: "addHogBatch.html?batchId=" + data.batchId,
+							area: ['800px', '600px'],
+							maxmin: true
+						});
+					}
+				});
+
+				$('#add').on('click', function() {
+					var index = layer.open({
+						type: 2,
+						content: 'addHogBatch.html',
+						area: ['800px', '600px'],
+						maxmin: true
+					});
+					//					layer.full(index);
+				});
+
+				var active = {
+					reload: function() {
+						
+						//alert($('#batchCodeaa').val());
+						//执行重载
+						table.reload('testReload', {
+							page: {
+								curr: 1 //重新从第 1 页开始
+							},
+							where: {
+								
+								farmId: $("#farmId").val(),
+								pigVarietyId: $("#pigVarietyId").val(),
+								batchStatus: $("#batchStatus").val(),
+								strain: $("#strain").val(),
+								productionStatusId: $("#productionStatusId").val(),
+								batchQCode:$('#batchCodeaa').val()
+
+							}
+						});
+					},
+				};
+
+				$('#search').on('click', function() {
+					active['reload'].call(this);
+				});
+
+				$('#reset').on('click', function() {
+
+					$('#pigVarietyId').val("");
+					$('#batchCodeaa').val("");
+					$('#strain').val("");
+					$('#productionStatusId').val("");
+					$('#batchStatus').val("");
+					/*$("#farmId option:first").prop("selected", 'selected');  */
+				});
+			});
+		}
+		</script>
+	</body>
+
+</html>

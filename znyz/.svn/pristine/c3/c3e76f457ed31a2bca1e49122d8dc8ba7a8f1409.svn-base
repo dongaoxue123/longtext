@@ -1,0 +1,211 @@
+{
+  "menuList": [
+    	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪场设备监测",
+          "type": 1,
+          "url": "page/basedata/pigFarmEnvironment.html",
+          "menuID":"50"
+        }
+      ],
+      "name": "设备监测",
+      "type": 0,
+      "url": null
+    },
+  	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栋舍信息管理",
+          "type": 1,
+          "url": "page/basedata/house.html",
+          "menuID":"3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栏位信息管理",
+          "type": 1,
+          "url": "page/basedata/field.html",
+          "menuID":"4"
+        }
+      ],
+      "name": "基础数据管理",
+      "type": 0,
+      "url": null
+    },	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "种猪档案管理",
+          "type": 1,
+          "url": "page/basedata/pig.html",
+          "menuID":"5"
+        }
+      ],
+      "name": "种猪管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "批次管理",
+          "type": 1,
+          "url": "page/hogBactch/hogBatch.html",
+          "menuID":"57"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栏位管理",
+          "type": 1,
+          "url": "page/hogBactch/hogBatchField.html",
+          "menuID":"56"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "转栏管理",
+          "type": 1,
+          "url": "page/hogBactch/hogBatchChangeField.html",
+          "menuID":"55"
+        }
+      ],
+      "name": "商品猪管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "种猪体况管理",
+          "type": 1,
+          "url": "page/bodyInformation/pigBodyInformation.html",
+          "menuID":"53"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "商品猪体况管理",
+          "type": 1,
+          "url": "page/hogBactch/pigGrowMonitor.html",
+          "menuID":"54"
+        }
+      ],
+      "name": "体况管理",
+      "type": 0,
+      "url": null
+    },
+   	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪只行为",
+          "type": 1,
+          "url": "page/abnormal/abnormalMonitorPig.html",
+          "menuID":"51"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "人员行为",
+          "type": 1,
+          "url": "page/abnormal/abnormalMonitorPerson.html",
+          "menuID":"52"
+        }
+      ],
+      "name": "异常行为监控",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-tachometer",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "配种信息管理",
+          "type": 1,
+          "url": "page/productData/matingBusiness.html",
+          "menuID":"8"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "妊检信息管理",
+          "type": 1,
+          "url": "page/productData/pregnancyTestBusiness.html",
+          "menuID":"9"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "分娩信息管理",
+          "type": 1,
+          "url": "page/productData/deliveryBusiness.html",
+          "menuID":"10"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "断奶信息管理",
+          "type": 1,
+          "url": "page/productData/weaningBusiness.html",
+          "menuID":"11"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "转舍信息管理",
+          "type": 1,
+          "url": "page/productData/changeHouse.html",
+          "menuID":"12"
+        }
+      ],
+      "name": "生产信息管理",
+      "type": 0,
+      "url": null
+    }
+  ],
+  "code": 0
+}

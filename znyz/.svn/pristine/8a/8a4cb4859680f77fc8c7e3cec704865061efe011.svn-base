@@ -1,0 +1,622 @@
+<html>
+	<head>
+		<title>猪场设备监测</title>
+	</head>
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+
+		li {
+			list-style: none;
+		}
+
+		.clear {
+			clear: both;
+		}
+
+		.box-msg {
+			width: 100%;
+			margin-bottom: 10px;
+			display: block;
+		}
+
+		.box-msg-tit {
+			width: 100%;
+			line-height: 12px;
+			padding: 10px 0;
+		}
+
+		.box-msg-tit span {
+			display: inline-block;
+			width: 3px;
+			height: 12px;
+			background: #5db2ff;
+			margin-right: 4px;
+			border-radius: 40%;
+		}
+
+		.box-msg-tit h6 {
+			display: inline-block;
+			font-size: 12px;
+			font-weight: 600;
+			color: #5db2ff;
+			vertical-align: top;
+		}
+
+		.box-msg-con {
+			width: 100%;
+		}
+
+		.box-msg-list {
+			position: relative;
+			float: left;
+			width: 252px;
+			height: 90px;
+			padding: 20px 0;
+			background: #eff7ff;
+			border-radius: 6px;
+			box-shadow: 5px 5px 10px rgba(50, 50, 50, .09);
+			margin: 10px 26px 10px 0;
+		}
+
+		.box-msg-list .warn {
+			position: absolute;
+			right: 18px;
+			top: 15px;
+			display: none;
+		}
+
+		.box-msg-list h5 {
+			display: inline-block;
+			font-size: 16px;
+			font-weight: 400;
+			color: #1691cf;
+			width: 84px;
+			text-align: center;
+			line-height: 26px;
+		}
+
+		.box-msg-list li h5:first-of-type {
+			color: #d7361a;
+		}
+
+		.box-msg-list li h5:last-of-type {
+			color: #FFA500;
+		}
+
+		.box-msg-list p {
+			font-size: 14px;
+			text-indent: 16px;
+			margin-bottom: 26px;
+		}
+
+		.bg_red .box-msg-tit span {
+			background: #fb6e52;
+		}
+
+		.bg_red .box-msg-tit h6 {
+			color: #fb6e52;
+		}
+
+		.bg_red .box-msg-list {
+			background: #ffefec;
+		}
+
+		.bg_green .box-msg-tit span {
+			background: #a0d468;
+		}
+
+		.bg_green .box-msg-tit h6 {
+			color: #a0d468;
+		}
+
+		.bg_green .box-msg-list {
+			background: #f7ffef;
+		}
+
+		.bg_yellow .box-msg-tit span {
+			background: #ff8400;
+		}
+
+		.bg_yellow .box-msg-tit h6 {
+			color: #ffce55;
+		}
+
+		.bg_yellow .box-msg-list {
+			background: #fffbf0;
+		}
+	</style>
+	<meta name="description" content="设备监测" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
+	<!--Basic Styles-->
+	<!--		<link href="assets/css/bootstrap.min.css" rel="stylesheet" />-->
+	<link id="bootstrap-rtl-link" href="#" rel="stylesheet" />
+	<link href="assets/css/font-awesome.min.css" rel="stylesheet" />
+	<link href="assets/css/weather-icons.min.css" rel="stylesheet" />
+	<link href="assets/css/bootstrap-select/bootstrap-select.css" rel="stylesheet" />
+	<!--Beyond styles-->
+	<link id="beyond-link" href="assets/css/beyond.min.css" rel="stylesheet" />
+	<link href="assets/css/demo.min.css" rel="stylesheet" />
+	<link href="assets/css/typicons.min.css" rel="stylesheet" />
+	<link href="assets/css/animate.min.css" rel="stylesheet" />
+	<link id="skin-link" href="#" rel="stylesheet" type="text/css" />
+	<!--Page Related styles-->
+	<link href="assets/css/dataTables.bootstrap.css" rel="stylesheet" />
+	<!--Skin Script: Place this script in head to load scripts for skins and rtl support-->
+	<script src="assets/js/skins.min.js"></script>
+
+	<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	<body>
+
+		<!-- Page Body -->
+		<div class="page-body">
+
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<div class="widget">
+						<div class="widget-header ">
+							<!-- <span class="widget-caption" data-i18n="pigFarmEnvironment.h1"></span> -->
+						</div>
+						<div class="widget-body">
+							<div class="table-toolbar">
+								<div id="onrow" class="row">
+									<div class="box-msg">
+										<div class="box-msg-tit">
+											<!-- <span></span> -->
+											<h6 id="typeName"></h6>
+										</div>
+										<div class="box-msg-con" >
+											<p id="info"></p>
+											<div class="clear"></div>
+										</div>										
+									</div>
+
+								</div id="onrow">
+					
+								<div id="torow" class="row">
+									<div class="box-msg">
+										<div class="box-msg-tit">
+											<!-- <span></span> -->
+											<h6 id="typeNameyu"></h6>
+										</div>
+										<div class="box-msg-con" >
+											<p id="infoyu"></p>
+											<div class="clear"></div>
+										</div>										
+									</div>
+
+								</div id="torow">
+								<div id="throw" class="row">
+										<div class="box-msg">
+											<div class="box-msg-tit">
+												<!-- <span></span> -->
+												<h6 id="typeNamebe"></h6>
+											</div>
+											<div class="box-msg-con" >
+												<p id="infobe"></p>
+												<div class="clear"></div>
+											</div>										
+										</div>
+	
+									</div id="throw">
+									<div id="frow" class="row">
+											<div class="box-msg">
+												<div class="box-msg-tit">
+													<!-- <span></span> -->
+													<h6 id="typeNamebo"></h6>
+												</div>
+												<div class="box-msg-con" >
+													<p id="infobo"></p>
+													<div class="clear"></div>
+												</div>										
+											</div>
+		
+										</div id="frow">
+										<div id="firow" class="row">
+												<div class="box-msg">
+													<div class="box-msg-tit">
+														<!-- <span></span> -->
+														<h6 id="typeNamego"></h6>
+													</div>
+													<div class="box-msg-con" >
+														<p id="infogo"></p>
+														<div class="clear"></div>
+													</div>										
+												</div>
+			
+											</div id="firow">
+						</div>
+					</div>
+				</div>
+				
+			</div>
+
+		</div>
+		<!-- /Page Body -->
+		<!--Basic Scripts-->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/bootstrap.min.js"></script>
+		<script src="assets/js/slimscroll/jquery.slimscroll.min.js"></script>
+		<script src="assets/js/bootstrap-select/bootstrap-select.js"></script>
+
+		<!--	<link rel="stylesheet" type="text/css" href="http://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css">  -->
+		<!--	<script type="text/javascript" src="http://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script> -->
+
+		<!--Beyond Scripts-->
+		<script src="assets/js/beyond.min.js"></script>
+
+		<!--Page Related Scripts-->
+		<script src="assets/js/datatable/jquery.dataTables.min.js"></script>
+		<script src="assets/js/datatable/ZeroClipboard.js"></script>
+		<script src="assets/js/datatable/dataTables.tableTools.min.js"></script>
+		<script src="assets/js/datatable/dataTables.bootstrap.min.js"></script>
+		<script src="assets/js/datatable/datatables-init.js"></script>
+		<script type="text/javascript" src="../../js/common.js" charset="utf-8"></script>
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+
+		<!--layui-->
+		<script src="../../statics/plugins/layui/layui.js"></script>
+
+		<!--<script type="text/javascript" src="assets/js/qrcode/jquery.min.js"></script>-->
+		<script>
+			var farmId;
+			var authToken = localStorage.getItem("authToken");
+			// alert(authToken);
+			var user = localStorage.getItem("user");
+			var temp;
+			i18n('../../locales', onLangReady) //国际化
+			function openDiv() {
+				$('#Div').modal('show');
+			}
+
+			function showHtml(html, name) {
+				location.href = html;
+			}
+
+			function ShowWindow(url, width, height) {
+				$(".mywindow").remove();
+				var x = $(window).width() / 2 - 200;
+				var y = GetWthHei();
+
+				alert(x)
+				alert(y)
+				var Windowhtml = "<div class='mywindow' style=' position:absolute; left:" + 10 + "px;top:" + 10 +
+					"px; z-index:9999;'><iframe src='" + url + "' name='myiframe' id='myiframe' style='border:0px;width:" + width +
+					"px;height:" + height + "px;' frameborder='0' scrolling='no'></iframe></div>";
+				var dd = $(".mywindow");
+				$("body").append(Windowhtml);
+			}
+
+			function GetWthHei() {
+				var hei = 0;
+				var windhei = $(window).height(); //当前窗口高度  
+				var tophei = document.documentElement.scrollTop; //被滚动条隐藏的高度  
+				hei = tophei + windhei / 2 - 200;
+				return hei;
+			}
+
+			function onLangReady() {
+				if (!checkToken()) {
+					alert(i18next.t("timeout"));
+					window.top.location.href = '../../login.html';
+				}
+				farmId = JSON.parse(user).farmId;
+				// groupId = JSON.parse(user).groupId;
+				// alert(farmId)
+				layui.use(['form', 'table', 'laydate'], function() {
+					var result = "";
+					var result2 = "";
+					var result3 = "";
+					var result4 = "";
+					var result5 = "";
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					//获取猪场检测信息
+					$.ajax({
+						// http://localhost/api/system/device/getPigDeviceListPage?farmId=54&authToken=50b5dd67042d0bb3b3315d449cec6484
+						url: commonIP + 'api/system/device/getPigDeviceListPage?authToken=' + authToken + '&farmId=' + farmId,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							// console.log(dataObj);
+
+							if (dataObj != null && dataObj.dataSource.list.length > 0) {
+								for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+								//	console.log(dataObj.dataSource.list);
+	
+///console.log(dataObj.dataSource.list.length);
+
+									// console.log(dataObj.dataSource.list[i].typeName)
+									//setPigFarmData(dataObj.dataSource.list[i],i);
+
+								
+				//	function setPigFarmData(data,i) {
+						// console.log(data)
+						// var typeName = data.dataSource.list[0].typeName; //栋舍类型名称
+						var typeName = dataObj.dataSource.list[i].typeName; //栋舍类型名称
+						// console.log(typeName)
+						var name = dataObj.dataSource.list[i].name; //名称	
+						var humidity = dataObj.dataSource.list[i].humidity; //湿度
+						var temperature = dataObj.dataSource.list[i].temperature; //温度	
+						var ammonia = dataObj.dataSource.list[i].ammonia; //氨气
+						var noise =dataObj.dataSource.list[i].noise; //噪音
+						var houseid = dataObj.dataSource.list[i].id;//栋舍code
+						// console.log(data.typeName)
+						//栋舍类型名称填写
+						if (typeName == '妊娠舍'){
+							console.log("1:"+typeName)
+						var typeNameHtml = '';
+						typeNameHtml = typeNameHtml + "<strong>" + typeName + "</strong>";
+						$("#typeName").html(typeNameHtml);
+						temp=i;
+						// alert(temp)
+						result = result + 		"<div class='box-msg-list "+i+"'>"+
+													"<p id='typeNameS'>"+typeName+name+"</p>"+
+														"<ul>"+
+															"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+															"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+														"</ul>"+
+														"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+												"</div>";
+												$("#info").html(result);
+
+											
+					
+
+
+
+						//$(document).on('click','div.'+'i',function(){
+							$(document).on('click','div.'+i+'',function(){
+							console.log(88888888888)
+						var typeNameS=$("#typeNameS").text();
+						var humidity=$("#humidity").text();
+						var temperature=$("#temperature").text();
+						var ammonia=$("#ammonia").text();
+						var noise=$("#noise").text();
+	
+						location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					});
+															
+					// console.log(typeName)
+				//	return false
+                       } else   if (typeName == '育肥舍'){
+						console.log("2:"+typeName)
+						var typeNameHtmlyu = '';
+						typeNameHtmlyu = typeNameHtmlyu + "<strong>" + typeName + "</strong>";
+						$("#typeNameyu").html(typeNameHtmlyu);
+						temp=i;
+						// alert(temp)
+						result2 = result2 + 		"<div class='box-msg-list "+i+"'>"+
+													"<p id='typeNameS'>"+typeName+name+"</p>"+
+														"<ul>"+
+															"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+															"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+														"</ul>"+
+														"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+												"</div>";
+					$("#infoyu").html(result2);
+					$(document).on('click','div.'+i+'',function(){
+						var typeNameS=$("#typeNameS").text();
+						var humidity=$("#humidity").text();
+						var temperature=$("#temperature").text();
+						var ammonia=$("#ammonia").text();
+						var noise=$("#noise").text();
+	
+						location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					});
+						} else 
+						if (typeName == '后备舍'){
+						// console.log("2:"+typeName)
+						var typeNameHtmlbe = '';
+						typeNameHtmlbe = typeNameHtmlbe + "<strong>" +typeName+ "</strong>";
+						$("#typeNamebe").html(typeNameHtmlbe);
+						temp=i;
+						// alert(temp)
+						result3 = result3 + 		"<div class='box-msg-list "+i+"'>"+
+													"<p id='typeNameS'>"+typeName+name+"</p>"+
+														"<ul>"+
+															"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+															"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+														"</ul>"+
+														"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+												"</div>";
+					$("#infobe").html(result3);
+					$(document).on('click','div.'+i+'',function(){
+						var typeNameS=$("#typeNameS").text();
+						var humidity=$("#humidity").text();
+						var temperature=$("#temperature").text();
+						var ammonia=$("#ammonia").text();
+						var noise=$("#noise").text();
+	
+						location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					});
+						} else 
+						if (typeName == '保育舍'){
+						console.log("2:"+typeName)
+						var typeNameHtmlbo = '';
+						typeNameHtmlbo = typeNameHtmlbo + "<strong>" + typeName + "</strong>";
+						$("#typeNamebo").html(typeNameHtmlbo);
+						temp=i;
+						// alert(temp)
+						result5 = result5 + 		"<div class='box-msg-list "+i+"'>"+
+													"<p id='typeNameS'>"+typeName+name+"</p>"+
+														"<ul>"+
+															"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+															"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+														"</ul>"+
+														"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+												"</div>";
+					$("#infobo").html(result5);
+					$(document).on('click','div.'+i+'',function(){
+						var typeNameS=$("#typeNameS").text();
+						var humidity=$("#humidity").text();
+						var temperature=$("#temperature").text();
+						var ammonia=$("#ammonia").text();
+						var noise=$("#noise").text();
+	
+						location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					});
+						} 
+					else 	if (typeName == '公猪舍'){
+						console.log("2:"+typeName)
+						var typeNameHtmlgo = '';
+						typeNameHtmlgo = typeNameHtmlgo + "<strong>" + typeName + "</strong>";
+						$("#typeNamego").html(typeNameHtmlgo);
+						temp=i;
+						// alert(temp)
+						result4 = result4 + 		"<div class='box-msg-list "+i+"'>"+
+													"<p id='typeNameS'>"+typeName+name+"</p>"+
+														"<ul>"+
+															"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+															"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+														"</ul>"+
+														"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+												"</div>";
+					$("#infogo").html(result4);
+					$(document).on('click','div.'+i+'',function(){
+						var typeNameS=$("#typeNameS").text();
+						var humidity=$("#humidity").text();
+						var temperature=$("#temperature").text();
+						var ammonia=$("#ammonia").text();
+						var noise=$("#noise").text();
+	
+						location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					});
+						} 
+								}
+
+							}
+						}
+					});
+					
+
+					// var result = "";
+					// function setPigFarmData(data,i) {
+					// 	// console.log(data)
+					// 	// var typeName = data.dataSource.list[0].typeName; //栋舍类型名称
+					// 	var typeName = data.typeName; //栋舍类型名称
+					// 	// console.log(typeName)
+					// 	var name = data.name; //名称	
+					// 	var humidity = data.humidity; //湿度
+					// 	var temperature = data.temperature; //温度	
+					// 	var ammonia = data.ammonia; //氨气
+					// 	var noise = data.noise; //噪音
+					// 	var houseid = data.id;//栋舍code
+					// 	// console.log(data.typeName)
+					// 	//栋舍类型名称填写
+					// 	if (data.typeName == '妊娠舍'){
+					// 		console.log(typeName)
+					// 	var typeNameHtml = '';
+					// 	typeNameHtml = typeNameHtml + "<strong>" + typeName + "</strong>";
+					// 	$("#typeName").html(typeNameHtml);
+					// 	temp=i;
+					// 	// alert(temp)
+					// 	result = result + 		"<div class='box-msg-list "+i+"'>"+
+					// 								"<p id='typeNameS'>"+typeName+name+"</p>"+
+					// 									"<ul>"+
+					// 										"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+					// 										"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+					// 									"</ul>"+
+					// 									"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+					// 							"</div>";
+					// $("#info").html(result);
+					
+					// $(document).on('click','div.'+i+'',function(){
+					// 	var typeNameS=$("#typeNameS").text();
+					// 	var humidity=$("#humidity").text();
+					// 	var temperature=$("#temperature").text();
+					// 	var ammonia=$("#ammonia").text();
+					// 	var noise=$("#noise").text();
+	
+					// 	location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+					// });
+					// // console.log(typeName)
+					// return false
+                    //    } 
+
+					// 	//    alert(typeName)
+					// 	//    typeName = typeName
+					// 	// $("#onerow").html('display: none;');
+					// 	// return
+					   
+					// //    var typeName = data.typeName;
+					// // console.log(data.typeName)
+					//     if (data.typeName === '育肥舍'){
+					// 		console.log(11111)
+					// 	var typeNameHtmlyu = '';
+					// 	typeNameHtmlyu = typeNameHtmlyu + "<strong>" + typeName + "</strong>";
+					// 	$("#typeNameyu").html(typeNameHtmlyu);
+					// 	temp=i;
+					// 	// alert(temp)
+					// 	result = result + 		"<div class='box-msg-list "+i+"'>"+
+					// 								"<p id='typeNameS'>"+typeName+name+"</p>"+
+					// 									"<ul>"+
+					// 										"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+					// 										"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+					// 									"</ul>"+
+					// 									"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+					// 							"</div>";
+					// $("#infoyu").html(result);
+					
+					// $(document).on('click','div.'+i+'',function(){
+					// 	var typeNameS=$("#typeNameS").text();
+					// 	var humidity=$("#humidity").text();
+					// 	var temperature=$("#temperature").text();
+					// 	var ammonia=$("#ammonia").text();
+					// 	var noise=$("#noise").text();
+	
+					// 	location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+						
+					// });
+					// return false
+                    //    } 
+					// 	//    return false
+					   
+					// //    return 
+					//     if (data.typeName === '后备舍'){
+					// 		console.log(typeName)
+					// 	var typeNameHtmlbe = '';
+					// 	typeNameHtmlbe = typeNameHtmlbe + "<strong>" + typeName + "</strong>";
+					// 	$("#typeNamebe").html(typeNameHtmlbe);
+					// 	temp=i;
+					// 	// alert(temp)
+					// 	result = result + 		"<div class='box-msg-list "+i+"'>"+
+					// 								"<p id='typeNameS'>"+typeName+name+"</p>"+
+					// 									"<ul>"+
+					// 										"<li><h5 id='humidity'>"+humidity+"</h5><h5 id='temperature'>"+temperature+"</h5><h5 id='ammonia'>"+ammonia+"</h5></li>"+
+					// 										"<li><h5>湿度</h5><h5>温度</h5><h5>NH3</h5></li>"+
+					// 									"</ul>"+
+					// 									"<p id='noise' hidden>"+noise+"</p><p id='houseid' hidden>"+houseid+"</p>"+
+					// 							"</div>";
+					// $("#infobe").html(result);
+					
+					// $(document).on('click','div.'+i+'',function(){
+					// 	var typeNameS=$("#typeNameS").text();
+					// 	var humidity=$("#humidity").text();
+					// 	var temperature=$("#temperature").text();
+					// 	var ammonia=$("#ammonia").text();
+					// 	var noise=$("#noise").text();
+	
+					// 	location.href = "pigFarmEnvironment1.html?typeNameS="+typeNameS+"&humidity="+humidity+"&temperature="+temperature+"&ammonia="+ammonia+"&noise="+noise+"&houseid="+houseid;
+						
+					// });
+                    //    }
+						
+					// return false   
+					// }
+					
+				});
+			}
+		</script>
+	</body>
+</html>

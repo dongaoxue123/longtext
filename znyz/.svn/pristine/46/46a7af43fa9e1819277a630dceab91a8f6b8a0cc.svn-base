@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>角色管理-设置权限</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../common/css/cyType.css">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body>
+	<div class="yys-fluid yys-wrapper">
+	    <div class="layui-row lay-col-space20">
+	        <div class="layui-cos-xs12 layui-col-sm12 layui-col-md12 layui-col-lg12">
+	            <section class="yys-body animated rotateInDownLeft">
+	                <div class="yys-body-content clearfix changepwd">
+	                    <div class="layui-col-lg12 layui-col-md10 layui-col-sm12 layui-col-xs12" style="width:100%">
+	                        <div class="user-tables">
+	                            <table id="menuTables" lay-filter="menuTables"> </table>
+	                        </div>
+	                    </div>
+	                </div>
+	            </section>
+	        </div>
+	    </div>
+	</div>
+	<form class="layui-form">
+		<div class="page-footer">
+        <div class="btn-list">
+            <div class="btnlist">
+                <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                <button class="layui-btn" lay-submit="" lay-filter="cancle" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+            </div>
+        </div>
+    </div>
+	</form>
+	
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>	
+<script>
+	var authToken=localStorage.getItem("authToken");
+	var user =localStorage.getItem("user");
+	
+	i18n('../../locales', onLangReady) //国际化
+		function onLangReady() {
+	if(!checkToken()){
+			alert(i18next.t("timeout"));
+	 		window.top.location.href = '../../login.html';
+	}
+	var roleId = GetQueryString("id");
+	var groupId = GetQueryString("groupId");
+	layui.use(["jquery", "upload", "form", "table", "layer", "element", "laydate"], function(){
+	var table = layui.table;
+	var form = layui.form;
+	var laydate = layui.laydate;
+	var $ = layui.$;
+	//记录选中的数据:做缓存使用,作为参数传递给后台,然后生成pdf ,压缩
+    var ids =new Array();
+    //当前表格中的全部数据:在表格的checkbox全选的时候没有得到数据, 因此用全局存放变量
+    var table_data=new Array();
+    $.ajax({
+		url: commonIP + "api/system/roleperms/get?authToken="+authToken+'&roleId='+roleId,
+		parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  	},
+		async:false,
+		success: function(data) {
+			var dataObj = JSON.parse(data);
+			if (dataObj) {
+				if (dataObj.errcode == "200") {
+					for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+						ids.push(dataObj.dataSource.list[i].moduleId);
+    				}
+				}
+			}
+		}
+	}); 
+	table.render({
+	    elem: '#menuTables'
+	    ,url: commonIP + "api/system/menu/get?authToken="+authToken
+	    ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			}
+	    ,cellMinWidth: 80
+	    ,cols: [[
+	      {type: 'checkbox',align: "center",fixed: true}
+	      ,{type:'numbers',title: i18next.t("common.no")}
+	      ,{field:'name', width:'20%', title:i18next.t("role.functionName"),align: "center", sort: true}
+	      ,{field:'linkUrl', width:'40%', title:i18next.t("farm.address"),align: "center"}
+	      ,{field:'remark', width:'28%', title:i18next.t("common.remark") ,align: "center", minWidth:120}
+	    ]]
+	    ,page: true
+	    ,limit:10
+	    ,limits:[10,20,30,50]  //数据分页条
+	    ,even: true
+	    ,done: function(res, curr, count){
+        //数据表格加载完成时调用此函数
+        //如果是异步请求数据方式，res即为你接口返回的信息。
+        //如果是直接赋值的方式，res即为：{data: [], count: 99} data为当前页数据、count为数据总长度
+        //设置全部数据到全局变量
+        table_data=res.data;
+        //在缓存中找到id ,然后设置data表格中的选中状态
+        //循环所有数据，找出对应关系，设置checkbox选中状态
+        for(var i=0;i< res.data.length;i++){
+            for (var j = 0; j < ids.length; j++) {
+                //数据id和要勾选的id相同时checkbox选中
+                if(res.data[i].id == ids[j]){
+                    //这里才是真正的有效勾选
+                    res.data[i]["LAY_CHECKED"]='true';
+                    //找到对应数据改变勾选样式，呈现出选中效果
+                    var index= res.data[i]['LAY_TABLE_INDEX'];
+                    $('.layui-table-fixed-l tr[data-index=' + index + '] input[type="checkbox"]').prop('checked', true);
+                    $('.layui-table-fixed-l tr[data-index=' + index + '] input[type="checkbox"]').next().addClass('layui-form-checked');
+                }
+            }
+        }
+        //设置全选checkbox的选中状态，只有改变LAY_CHECKED的值， table.checkStatus才能抓取到选中的状态
+        var checkStatus = table.checkStatus('menuTables');
+        if(checkStatus.isAll){
+            $(' .layui-table-header th[data-field="0"] input[type="checkbox"]').prop('checked', true);
+            $('.layui-table-header th[data-field="0"] input[type="checkbox"]').next().addClass('layui-form-checked');
+        }
+        //得到所有数据
+        console.log(res);
+        //得到当前页码
+        console.log(curr);
+        //得到数据总量
+        console.log(count);
+    	}
+  	});
+	  
+  	table.on('checkbox(menuTables)', function (obj) {
+		  	if(obj.checked==true){
+		  			if(obj.type=='one'){
+                ids.push(obj.data.id);
+          	}else{
+                for(var i=0;i<table_data.length;i++){
+                	var result = $.inArray(table_data[i].id, ids);
+                	if(result==null || result<=0){
+	                  ids.push(table_data[i].id);
+                	}
+                }
+           	}
+		  	}else{
+            if(obj.type=='one'){
+	              for(var i=0;i<ids.length;i++){
+	                  if(ids[i]==obj.data.id){
+	                      ids.remove(i);
+	                  }
+	              }
+            }else{
+          			for(var i=ids.length;i>0;i--){
+             		 		ids.remove(i);
+              	}
+            }
+       }
+	 });
+  	form.on('submit(submit)', function(res){
+   		$.ajax({
+   				traditional: true,
+        	type: 'POST',
+					url: commonIP + "api/system/roleperms/create?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify({
+							"groupId":groupId,
+							"roleId":roleId,
+							"moduleIds":ids
+						}) ,
+					async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+								alert(i18next.t("role.setRoleSucc"));
+                layer.close(layer.index);  
+                window.parent.location.reload();  
+							} else {
+						 		alert(i18next.t("role.setRoleFail"));
+						 		layer.close(layer.index);  
+                window.parent.location.reload(); 
+							}
+						}
+					}
+    	}); 
+    });
+    form.on('submit(cancle)', function(res){
+	   		layer.close(layer.index);  
+        window.parent.location.reload(); 
+    });
+	});
+	}
+	//删除数组自定义函数
+	Array.prototype.remove=function(dx)
+	{
+	    if(isNaN(dx)||dx>this.length){return false;}
+	    for(var i=0,n=0;i<this.length;i++)
+	    {
+	        if(this[i]!=this[dx])
+	        {
+	            this[n++]=this[i]
+	        }
+	    }
+	    this.length-=1
+	}
+</script>
+
+</body>
+</html>

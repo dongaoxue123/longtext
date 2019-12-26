@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>商品猪批次栏位信息</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	<div class="layui-form-item" style="padding-right: 20px">
+
+       <label class="layui-form-label"><span data-i18n="common.houseName"></span>:</label>
+		    <div class="layui-input-inline">
+          <input type="text" autocomplete="off" id="houseName" name="houseName" class="layui-input">
+		    </div>
+		    <label class="layui-form-label"><span data-i18n="common.fieldCode"></span>:</label>
+		    <div class="layui-input-inline">
+          <input type="text" autocomplete="off" id="code" name="code" class="layui-input">
+		    </div>
+    		<label class="layui-form-label"><span data-i18n="common.batchCode"></span>:</label>
+		    <div class="layui-input-inline">
+          <input type="text" autocomplete="off" id="batchCode" name="batchCode" class="layui-input">
+		    </div>
+		
+		    <!--<label class="layui-form-label"><span data-i18n="hogBatch.batchState"></span>:</label>
+				<div class="layui-input-inline">			
+	      <select id="batchStatus" name="batchStatus" style="height: 38px;border-color: #F0F0F0;">
+	        	<option value="" data-i18n="hogBatch.batchStateValDefault"></option>
+	        	<option value="1" data-i18n="normal"></option>
+	        	<option value="0" data-i18n="close"></option>
+	    	</select>
+		    </div>-->
+		</div>
+    <div class="layui-form-item" style="padding-right: 20px">
+    	<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+    	<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+    	<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+    </div>
+    </div>
+<table class="layui-hide" id="hogBatchField" lay-filter="hogBatchField"></table>
+<script type="text/html" id="barDemo">
+<!--  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">分布</a>
+  <a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>-->
+  
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" data-i18n = "btnDel"></a>
+</script>
+	<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var farmId;
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+	i18n('../../locales', onLangReady) //国际化
+	function onLangReady(){
+	if(!checkToken()){
+  		alert(i18next.t("timeout"));
+ 			window.top.location.href = '../../login.html';
+	}
+	farmId = JSON.parse(user).farmId; 
+	groupId = JSON.parse(user).groupId; 
+
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		  //方法级渲染
+		table.render({
+		    elem: '#hogBatchField'
+		    ,url: commonIP + "api/pig/pigbatchfield/getListPage?authToken="+authToken+ "&farmId="+farmId  + "&batchStatus=1" //数据请求路径
+
+		    ,parseData: function(res){
+				console.log(res)//res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			     	"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}
+
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'2%'}
+		      ,{field:'group_name', title:i18next.t("common.groupName"),width:'8%'}
+		      ,{field:'farm_name', title:i18next.t("common.farmName"),width:'8%'}
+		      ,{field:'house_name', title:i18next.t("common.houseName"),width:'8%'}
+		      ,{field:'code', title:i18next.t("common.fieldCode"),width:'8%'}
+		      //,{field:'rf_id', title:'RFID',width:'15%'}
+		      ,{field:'batchCode', title:i18next.t("common.batchCode"),width:'10%'}
+		      ,{field:'goodCapacity', title:i18next.t("common.normalPigNum"),width:'8%'}
+		      ,{field:'badCapacity', title:i18next.t("common.abnormalPigNum"),width:'8%'}
+		    //  ,{field:'batchStatusName', title:i18next.t("栏位状态"),width:'7%'}
+			 		,{field:'remark', title:i18next.t("common.remark"),width:'8%'}
+		      ,{fixed: 'right',title: i18next.t("opt"), width:'6%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,done:function(res, page, count){    //res 接口返回的信息
+		    	console.log()
+			    $("[data-field = 'batchStatus']").children().each(function(){
+			        if($(this).text() == '1'){
+			            $(this).text(i18next.t("normal"));
+			        }else if($(this).text() == '0'){
+			             $(this).text(i18next.t("close"));
+			        }
+			    })
+			    }
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:10   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'	
+		    ,done:function(){
+		    	i18n('../../locales') //国际化
+		    }
+		});
+		
+		//监听工具条
+			table.on('tool(hogBatchField)', function(obj){
+			    var data = obj.data;
+			    console.log(data);
+			    if(obj.event === 'detail'){
+			      		var index = layer.open({
+										    type: 2,
+										    content: "printPigInfo.html?id="+data.id,
+										    area: ['800px', '650px'],
+										    maxmin: true
+										});  
+			    } else if(obj.event === 'del'){
+			        layer.confirm(i18next.t("delConfirm"), function(index){	   
+			      		  $.ajax({  
+					            url: commonIP + "api/pig/pigbatchfield/deletePigBatchField?authToken="+authToken ,
+					            type: 'POST',
+											contentType: 'application/json',
+											data: JSON.stringify({"uid":data.uid}),
+			                success: function(text) {
+			                
+			                	var dataObj = JSON.parse(text);
+			                		if(dataObj.code == 0){
+					                		layer.msg(dataObj.msg, {icon: 6});
+											        obj.del();
+											        layer.close(index);  
+			                		}else{
+			                				layer.msg(dataObj.msg, {icon: 5});
+			                		}
+			                }
+				            });  
+			      		});
+			    } else if(obj.event === 'edit'){
+			      				    var index = layer.open({
+										    type: 2,
+										    content: "addHogBatchField.html?id="+data.uid,
+										    area: ['800px', '600px'],
+										    maxmin: true
+										});  
+			    }
+		  });
+			  
+		  $('#add').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'addHogBatchField.html',
+					    area: ['800px', '600px'],
+					    maxmin: true
+					});
+//					layer.full(index);
+		  });
+
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {	        	
+		        	batchStatus: $("#batchStatus").val(),      	
+	            	houseName: $("#houseName").val(),
+	            	code: $("#code").val(),
+	            	rfId: $("#rfId").val(),
+	            	batchCode: $("#batchCode").val()
+		        }
+		      });
+		    },
+		};
+
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		
+		$('#reset').on('click', function(){
+			$('#houseName').val("");
+			$('#code').val("");
+			$('#rfId').val("");
+			$('#batchCode').val("");
+			$('#batchStatus').val("");
+					
+			/*$("#farmId option:first").prop("selected", 'selected');  */
+		});
+	});
+	}
+</script>
+</body>
+</html>

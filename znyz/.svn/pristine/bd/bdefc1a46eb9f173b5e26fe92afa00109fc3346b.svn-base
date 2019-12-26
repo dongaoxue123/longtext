@@ -1,0 +1,254 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.xlqx.znyz.core.screendatasourcebean.AloneDoubleScreenSourceDataBean;
+import com.xlqx.znyz.core.screendatasourcebean.AloneScreenSourceDataBean;
+import com.xlqx.znyz.core.screendatasourcebean.NumberDataSource;
+import com.xlqx.znyz.pig.bean.HogBatchBean;
+import com.xlqx.znyz.pig.bean.weightCalibrationBean;
+import com.xlqx.znyz.pig.service.FieldService;
+import com.xlqx.znyz.pig.service.HogBatchService;
+import com.xlqx.znyz.pig.service.WeightService;
+import com.xlqx.znyz.screen.service.AloneScreenService;
+
+/**
+ * 首页查询猪只数量图表
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/alone")
+public class AloneScreenController {
+	private final Logger logger = LoggerFactory.getLogger(AloneScreenController.class);
+
+	@Autowired
+	private FieldService fieldService;
+	@Autowired
+	private AloneScreenService aloneScreenService;
+
+	@Autowired
+	private WeightService weightServiceImpl;
+
+	@Autowired
+	private HogBatchService hogBatchService;
+
+	// 目前固定写死 丰宁猪场
+	public final static String farmIdCom = "14";
+	// 目前固定写死 丰宁猪场 育肥二舍
+	public final static String houseIdCom = "0000000000000000b9b17b82adcca8f3";
+
+	// 目前固定写死 丰宁猪场 育肥二舍 10001
+	public final static String fieldIdCom = "00000000000000009cf6ccb59bda48af";
+	// 猪只批次编号
+	public final static String batchId = "00000000000000009d8dce4fa803ab0d";
+
+	// public final static String startTime = "2019-04-27";
+	// public final static String endTime = "2019-04-27";
+
+	/**
+	 * 第二页面查询栋舍栏位数量
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getFieldCount", method = RequestMethod.POST)
+	public AloneScreenSourceDataBean<NumberDataSource> getFieldCount() {
+		logger.info("AloneScreenController==>getFieldCount()");
+		AloneScreenSourceDataBean<NumberDataSource> sdb = new AloneScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("house_id", houseIdCom);
+		int total = fieldService.getFieldCount(parameter);
+		if (total > 0) {
+			sdb.setMessage(0, "查询成功", total);
+		} else {
+			sdb.setMessage(1, "栏位未找到", 0);
+		}
+		return sdb;
+	}
+
+	/**
+	 * 第二页面查询栋舍商品猪数量
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getHogPigCount", method = RequestMethod.POST)
+	public AloneScreenSourceDataBean<NumberDataSource> getHogPigCount() {
+		logger.info("AloneScreenController==>getHogPigCount()");
+		AloneScreenSourceDataBean<NumberDataSource> sdb = new AloneScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("houseId", houseIdCom);
+
+		int total = aloneScreenService.getHogPigCount(parameter);
+		if (total > 0) {
+			sdb.setMessage(0, "查询成功", total);
+		} else {
+			sdb.setMessage(1, "猪只未找到", 0);
+		}
+		return sdb;
+	}
+
+	/**
+	 * 第二页面查询小车所在栏位
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getFieldWeightCode", method = RequestMethod.POST)
+	public AloneScreenSourceDataBean<NumberDataSource> getFieldCode() {
+		logger.info("AloneScreenController==>getHogPigCount()");
+		AloneScreenSourceDataBean<NumberDataSource> sdb = new AloneScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("houseId", houseIdCom);
+
+		int total = aloneScreenService.getHogPigCount(parameter);
+		if (total > 0) {
+			sdb.setMessage(0, "查询成功", total);
+		} else {
+			sdb.setMessage(1, "猪只未找到", 0);
+		}
+		return sdb;
+	}
+
+	/**
+	 * 第二页面查询小车所在栏位的均重
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getFieldWeight", method = RequestMethod.POST)
+	public AloneDoubleScreenSourceDataBean<NumberDataSource> getFieldWeight() {
+		// 这个接口不穿batchID 因为大屏展示数据 不进行商品猪批次的校验
+
+		logger.info("AloneScreenController==>getHogPigCount()");
+		AloneDoubleScreenSourceDataBean<NumberDataSource> sdb = new AloneDoubleScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("houseId", houseIdCom);
+		parameter.put("fieldId", fieldIdCom);
+		parameter.put("farmId", farmIdCom);
+		parameter.put("farm_id", farmIdCom);
+
+		parameter.put("type", "1");// 查询表名类型
+		// paramMap.put("type", "3");// 查询表名类型
+
+		Date day = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		String date = df.format(day);
+		List<weightCalibrationBean> tableNameBean = weightServiceImpl.getHogTable(parameter);
+		if (tableNameBean != null && tableNameBean.size() == 1
+				&& StringUtils.isNotBlank(tableNameBean.get(0).getTable_name())) {
+			String tableName = tableNameBean.get(0).getTable_name();
+			parameter.put("tableName", tableName);
+			parameter.put("startTime", date);
+			parameter.put("endTime", date);
+			double weight = aloneScreenService.getAvgWeight(parameter);
+			if (weight > 0) {
+				BigDecimal bg = new BigDecimal(weight);
+				double f1 = bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+				sdb.setMessage(0, "查询成功", f1);
+			} else {
+				sdb.setMessage(1, "未查到重量数据", 0);
+			}
+		}
+		return sdb;
+	}
+
+	/**
+	 * 第二页面查询小车所在栏位的头数
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getFieldPigNumber", method = RequestMethod.POST)
+	public AloneScreenSourceDataBean<NumberDataSource> getFieldPigNumber() {
+		// 这个接口不穿batchID 因为大屏展示数据 不进行商品猪批次的校验
+
+		logger.info("AloneScreenController==>getFieldPigNumber()");
+		AloneScreenSourceDataBean<NumberDataSource> sdb = new AloneScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("houseId", houseIdCom);
+		parameter.put("fieldId", fieldIdCom);
+
+		int total = aloneScreenService.getHogPigCount(parameter);
+		if (total > 0) {
+			sdb.setMessage(0, "查询成功", total);
+		} else {
+			sdb.setMessage(1, "猪只未找到", 0);
+		}
+		return sdb;
+	}
+
+	/**
+	 * 第二页面查询小车所在栏位的日龄
+	 * 
+	 * @author wangshoujian
+	 */
+	@RequestMapping(value = "/getFieldPigBorn", method = RequestMethod.POST)
+	public AloneScreenSourceDataBean<NumberDataSource> getFieldPigBorn() {
+		// 这个接口不穿batchID 因为大屏展示数据 不进行商品猪批次的校验
+
+		logger.info("AloneScreenController==>getFieldPigNumber()");
+		AloneScreenSourceDataBean<NumberDataSource> sdb = new AloneScreenSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+		parameter.put("houseId", houseIdCom);
+		parameter.put("fieldId", fieldIdCom);
+		parameter.put("batchId", batchId);
+		List<HogBatchBean> res = hogBatchService.getHogBatchPage(parameter, "0", "0");
+		Date date = new Date();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		if (res != null && res.size() > 0) {
+			String BornDate = res.get(0).getBornDate();
+			String day = "";
+			try {
+				day = getDatePoor(date, sdf.parse(BornDate));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			sdb.setMessage(0, "查询成功", Integer.parseInt(day));
+		} else {
+			sdb.setMessage(1, "猪只未找到", 0);
+		}
+
+		return sdb;
+	}
+
+	public int stringToInt(String string) {
+		int j = 0;
+		String str = string.substring(0, string.indexOf(".")) + string.substring(string.indexOf(".") + 1);
+		int intgeo = Integer.parseInt(str);
+		return intgeo;
+	}
+
+	public static String getDatePoor(Date endDate, Date nowDate) {
+
+		long nd = 1000 * 24 * 60 * 60;
+		long nh = 1000 * 60 * 60;
+		long nm = 1000 * 60;
+		// long ns = 1000;
+		// 获得两个时间的毫秒时间差异
+		long diff = endDate.getTime() - nowDate.getTime();
+		// 计算差多少天
+		long day = diff / nd;
+		// 计算差多少小时
+		long hour = diff % nd / nh;
+		// 计算差多少分钟
+		long min = diff % nd % nh / nm;
+		// 计算差多少秒//输出结果
+		// long sec = diff % nd % nh % nm / ns;
+		// return day + "天" + hour + "小时" + min + "分钟";
+		return day + "";
+	}
+
+}

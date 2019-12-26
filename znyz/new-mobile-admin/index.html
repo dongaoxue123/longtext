@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title data-i18n='index.title'></title>
+    <link rel="shortcut icon" type="image/x-icon" href="statics/img/favicon.ico" media="screen"/>
+    <link rel="stylesheet" href="statics/plugins/layui/css/layui.css">
+    <link rel="stylesheet" href="statics/plugins/layer/skin/default/layer.css">
+    <link rel="stylesheet" href="statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="statics/css/index.css">
+    <link rel="stylesheet" href="common/css/cyStyle.css">
+    <link rel="stylesheet" href="statics/plugins/ContextJS/css/context.standalone.green.css">
+
+</head>
+<body class="layui-layout-body">
+
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+    	
+       <div class="layui-logo">
+        	<img src="statics/img/mobile.png" width="160" height="40">
+        </div>-->
+        <!-- 头部区域（可配合layui已有的水平导航）-->
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item layui-this"><a data-i18n='[href]index.functionMenu;index.tab1'></a>
+            </li>
+            <!--<li class="layui-nav-item"><a data-i18n='[href]index.setupMenu;index.tab2'></a></li>-->
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item">
+                <a href="javascript:lockScreen();" data-i18n="index.lock"><i class="fa fa-lock"></i></a>
+            </li>
+            <li class="layui-nav-item">
+                <a href="javascript:;" data-i18n="[append]index.role">
+                    <img src="statics/img/index/head.jpg" class="layui-nav-img"/>
+                </a>
+                <!-- <dl class="layui-nav-child"> -->
+                    <!--<dd><a href="javascript:;" class="cy-page" data-url="http://www.layui.com/" data-i18n="index.userMenu1"></a></dd>
+                    <dd><a href="javascript:;"  class="cy-page" data-url="http://www.baidu.com/" data-i18n="index.userMenu2"></a></dd>-->
+                <!-- </dl> -->
+            </li>
+            <li class="layui-nav-item"><a href="javascript:;window.location.href='./login.html'" data-i18n="index.exit"></a></li>
+        </ul>
+    </div>
+    <div class="toggle-collapse"></div>
+    <div class="layui-side layui-bg-black">
+        <div class="layui-side-scroll">
+            <div class="layui-form component">
+                <div class="search-menu-back">
+                    <input type="text" data-i18n="[placeholder]index.search" id="menuSearch" class="layui-input menu-search">
+                    <span class="menu-search-clear" style="display: none"><i class="layui-icon">&#x1006;</i>  </span>
+                </div>
+            </div>
+            <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+            <ul class="layui-nav layui-nav-tree">
+            </ul>
+        </div>
+    </div>
+
+    <div class="layui-body">
+        <!-- 内容主体区域 -->
+        <div style="padding: 1px;">
+            <div id="navTab" class="layui-tab layui-tab-brief" lay-allowClose="true" lay-filter="tabs">
+                <div class="layui-tab-left"><i class="layui-icon">&#xe65a;</i></div>
+                <ul class="layui-tab-title ">
+                    <li class="layui-this main-tab" data-url="./page/main/main.html" data-i18n="index.myPage"></li>
+
+                </ul>
+                <div class="layui-tab-right"><i class="layui-icon">&#xe65b;</i></div>
+
+            </div>
+
+        </div>
+        <div id="main">
+            <iframe scrolling="yes" frameborder="0" class="cy-show" src="./page/main/main.html"></iframe>
+        </div>
+    </div>
+    <div class="layui-footer" data-i18n="index.welcome">
+        <!-- 底部固定区域 -->
+    </div>
+</div>
+<script type="text/javascript" src="js/common.js"  charset="utf-8"></script>
+<script src="statics/libs/jquery-1.10.2.min.js"></script>
+<script src="statics/plugins/ContextJS/js/context.js"></script>
+<script src="statics/plugins/layui/layui.js"></script>
+<script src="statics/plugins/layer/layer.js"></script>
+<script src="common/js/whole/utils.js"></script>
+<script src="common/js/whole/cyLayer.js"></script>
+<script src="js/navTab.js"></script>
+<!-- 国际化        -->
+	<script src="statics/plugins/i18n/i18next.min.js"></script>
+	<script src="statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='statics/plugins/i18n/loc-i18next.min.js'></script>
+<script src="js/index.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>登录--后台管理</title>
+    <link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all" />
+    <link rel="stylesheet" href="statics/css/login.css" media="all" />
+    <!--禁止嵌套,开发时打开该代码-->
+    <!--<script type="text/javascript">-->
+        <!--if(window !=top){-->
+            <!--top.location.href=location.href;-->
+        <!--}-->
+
+    <!--</script>-->
+</head>
+<body>
+<video class="video-player" preload="auto" autoplay="autoplay" loop="loop" data-height="1080" data-width="1920" height="1080" width="1920">
+    <source src="statics/login/login.mp4" type="video/mp4"></video>
+<div class="video_mask"></div>
+<div class="login">
+    <form class="layui-form">
+    	<div class="layui-form-item" style="padding-right: 20px">
+            <div class="layui-input-inline">
+    	 		<select id="roleID" name="roleID" lay-verify="required|roleID" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择角色</option>
+		    	</select>
+		    </div>
+		 </div>
+        <button type="button" class="layui-btn login_btn" lay-submit="" lay-filter="confirm">确定</button>
+    </form>
+</div>
+<script type="text/javascript" src="statics/plugins/layui/layui.js"></script>
+<script type="text/javascript" src="js/chooseRole.js"></script>
+<script type="text/javascript" src="js/common.js"  charset="utf-8"></script>
+<script>
+var authToken=localStorage.getItem("authToken");
+var user =localStorage.getItem("user");
+var userID = JSON.parse(user).id;
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+  			alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+		}
+		
+	    //获取角色下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/system/userrole/get?authToken='+authToken+'&page=0&limit=0&userId='+userID,
+            success: function (res) {
+        	var dataObj = JSON.parse(res);
+    	    if(dataObj!=null && dataObj.data.length>0){
+                var groupOption;
+                for (var i = 0; i < dataObj.data.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.data[i].roleId+'">'+dataObj.data[i].roleName+'</option>';
+                }
+                $("#roleID").append(groupOption);
+                form.render('select');//一定要加form.render();
+        	  }
+        }
+	    }); 
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

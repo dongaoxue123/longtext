@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>种猪体况管理</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<style>
+		.linkFontColor{
+			color: #0088CC!important;
+		}
+	</style>
+	<body>
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<label class="layui-form-label">栋舍列表:</label>
+				<div class="layui-input-inline">
+					<select id="houseId" name="houseId" style="height: 38px;border-color: #F0F0F0;">
+						<option value="">请选择栋舍</option>
+					</select>
+				</div>
+				<label class="layui-form-label">猪只编码:</label>
+				<div class="layui-input-inline">
+					<input class="layui-input" id="code" name="code">
+				</div>
+				<button class="layui-btn" id="search">查询</button>
+				<button class="layui-btn" id="reset">重置</button>
+			</div>
+		</div>
+		<table class="layui-hide" id="pigInfo" lay-filter="pigInfo"></table>
+		
+		<script type="text/html" id="tableWeightData">
+		 <a href='javascript:void(0)'>{{d.weightData}}</a>
+		</script>
+
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+
+			if(!checkToken()) {
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+				console.log(commonIP + "api/pig/bodyinformation/getListPage?authToken=" + authToken + "&farmId=" + farmId + '&page=0&limit=0')
+				//方法级渲染
+				table.render({
+					elem: '#pigInfo',
+					url: commonIP + "api/pig/bodyinformation/getListPage?authToken=" + authToken + "&farmId=" + farmId //+ '&page=0&limit=0' //数据请求路径 
+						,
+					parseData: function(res) { //res 即为原始返回的数据
+						return {
+							"code": res.code, //解析接口状态
+							"msg": res.msg, //解析提示文本
+							"count": res.count, //解析数据长度
+							"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+						};
+					},
+					cellMinWidth: 80,
+					cols: [
+						[{
+							type: 'numbers',
+							width: '2%'
+						}, {
+							field: 'houseName',
+							title: '栋舍名称',
+							width: '7%'
+						}, {
+							field: 'fieldCode',
+							title: '栏位编码',
+							width: '7%'
+						}, {
+							field: 'pigTypeName',
+							title: '猪只类别',
+							width: '7%'
+						}, {
+							field: 'pigsNumber',
+							title: '猪只编号',
+							width: '7%'
+						}, {
+							field: 'parity',
+							title: '猪只胎次',
+							width: '7%'
+						}, {
+							field: 'productionStatusName',
+							title: '生产状态',
+							width: '7%'
+						}, {
+							field: 'isOestrus',
+							title: '发情判断',
+							width: '7%',
+							templet: "<div><a href='javascript:void(0)' class='linkFontColor'>{{d.isOestrus}}</a></div>",
+							event: 'showOestrus'
+						}, {
+							field: 'backfatData',
+							title: '背膘(kg)',
+							width: '7%',
+							templet: "<div><a href='javascript:void(0)' class='linkFontColor'>{{d.backfatData}}</a></div>",
+							event: 'showChart'
+						}, {
+							field: 'weightData',
+							title: '体重(kg)',
+							width: '7%',
+							templet: "<div><a href='javascript:void(0)' class='linkFontColor'>{{d.weightData}}</a></div>",
+							event: 'showChart'
+						}, {
+							field: 'nutritionalFormula',
+							title: '营养配方',
+							width: '16%'
+						}, {
+							field: 'feedingCapacity',
+							title: '饲喂量(kg)',
+							width: '7%',
+							templet: "<div><a href='javascript:void(0)' class='linkFontColor'>{{d.feedingCapacity}}</a></div>",
+							event: 'showFeedAmount'
+						}]
+					],
+					even: true //开启隔行背景
+						,
+					page: true //开启分页
+						,
+					limit: 10 //默认十条数据一页
+						,
+					limits: [10, 20, 30, 50] //数据分页条
+						,
+					id: 'testReload',
+					
+				});
+				
+				
+				//获取栋舍下拉列表
+				$.ajax({
+					url: commonIP + 'api/system/house/getHouseListPage?authToken=' + authToken + '&type=00021&page=0&limit=0&farmId=' + farmId,
+					success: function(res) {
+						var dataObj = JSON.parse(res);
+						if(dataObj != null && dataObj.dataSource.list.length > 0) {
+							var groupOption;
+							for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+								groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+							}
+							$("#houseId").append(groupOption);
+							form.render('select'); //一定要加form.render();
+						}
+					}
+				});
+				
+				//监听工具条
+				table.on('tool(pigInfo)', function(obj) {
+					var data = obj.data;
+					if(obj.event === 'showChart') {
+						var index = layer.open({
+							type: 2,
+							content: "pigCharts.html?id=" + data.pigsArchivesId,
+							area: ['800px', '650px'],
+							maxmin: false
+						});
+					} else if(obj.event === 'showOestrus') {
+						if(data.isOestrus){
+							var oestrus = layer.open({
+								type: 2,
+								content: "pigOestrus.html?isOestrus=" + (data.isOestrus==='未发情'?0:1),
+								area: ['800px', '650px'],
+								maxmin: false
+							});
+						}
+					} else if(obj.event === 'showFeedAmount') {
+						var index = layer.open({
+							type: 2,
+							content: "feedAmount.html?id=" + data.pigsArchivesId + '&val=' + data.feedingCapacity,
+							area: ['800px', '650px'],
+							maxmin: false
+						});
+					}
+				});
+
+				
+				
+				var active = {
+					reload: function() {
+						//执行重载
+						table.reload('testReload', {
+							page: {
+								curr: 1 //重新从第 1 页开始
+							},
+							where: {
+								houseId: $("#houseId").val(),
+								pigsNumber: $("#code").val(),
+								isOestrus: $("#oestrus").val(),
+								productionStatusId: $("#status").val()
+							}
+						});
+					},
+				};
+
+				$('#search').on('click', function() {
+					active['reload'].call(this);
+				});
+				$('#reset').on('click', function() {
+					$('#houseId').val("");
+					$('#code').val("");
+				});
+			});
+		</script>
+
+	</body>
+
+</html>

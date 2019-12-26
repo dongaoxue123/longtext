@@ -1,0 +1,318 @@
+// JavaScript Document
+if(!window.skyest){ 
+	window.skyest = new Object;
+	}
+skyest.ready=function(oFunction){//页面加载后启动
+	$add.event('load',oFunction,window);
+	}
+skyest.interface=function(newNameSpace){//注册命名空间
+				var newArray = newNameSpace.split('.');//将字符串分成数组
+				var newText = "";//通过eval将要转换成函数的字符串。
+				var newNameSpace = 'skyest.';//便利的每个命名空间 ；
+				for (var i = 0; i < newArray.length; i++)
+				{
+					if (i != 0) newNameSpace += ".";
+					newNameSpace +=newArray[i];
+					if( i == newArray.length-1){
+						//newText+= "if (typeof(" + newNameSpace+ ") == 'undefined'){ " + newNameSpace + " = new Object();}else{alert('nameSpace重复注册')}"
+						newText+= "if (typeof(" + newNameSpace+ ") == 'undefined'){ " + newNameSpace + " = new Object();}else{}"
+						}else{
+							newText+= "if (typeof(" + newNameSpace+ ") == 'undefined') " + newNameSpace + " = new Object();";
+							}
+					}
+				if (newText != "") eval(newText);
+	}
+
+window.$get = new Object;//获取
+	$get.nav=function(type){	
+		if(type='type'){
+		var _T = navigator.userAgent;
+				if (_T.indexOf('Android') > -1 || _T.indexOf('Linux') > -1) {//安卓手机
+					return "android";
+				} else if (_T.indexOf('iPad') > -1) {//苹果手机
+					return "iPad"
+				} else if (_T.indexOf('Windows Phone') > -1) {//winphone手机
+					return "windowPhone"
+				}else if(_T.indexOf('Windows NT')>-1){
+					return "windows"
+				}else if(_T.indexOf('iPhone')>-1){
+					return "iPhone"
+				}else{
+					return "other";
+					}
+		}
+	}
+	$get.storage=function(key){//做存储的
+						var dataJson=localStorage.getItem(key);
+						return dataJson;
+	}
+	$get.urlParam=function(name)//获取get参数的
+		{
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+    var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+    if (r!=null) return unescape(r[2]); return null; //返回参数值
+		}
+	$get.q=function(targetName,parentTarget){//获取一个节点
+			if(typeof targetName!='string'){
+				return targetName
+			}else{
+				parentTarget=parentTarget?parentTarget:document;
+				return parentTarget.querySelector(targetName);
+			}
+	}
+	$get.parentNode=function(oTarget,parentNode){//查找当前元素 的父节点 
+			var indexText=''
+		if(typeof parentNode!='object'&&parentNode.indexOf("#") != -1){indexText='id';parentNode=parentNode.replace("#","");}else
+		if(typeof parentNode!='object'&&parentNode.indexOf(".") != -1){indexText='class';parentNode=parentNode.replace(".","")}else if(typeof parentNode!='object'){
+			
+			indexText='type';
+		}else{
+				indexText='node'
+		}
+		while(oTarget=oTarget.parentNode){		
+			if(oTarget==document.body){return false;}else{	
+				switch (indexText){ 
+					case "id": 
+					if(oTarget.id==parentNode){
+						return oTarget;
+						alert(oTarget.nodeName)
+						} 
+					break; 
+					case  "class":
+					if($get.classname(oTarget,parentNode)){
+						return oTarget;
+						//alert(oTarget.nodeName)
+						}
+					break; 	
+					case "type":
+					if(oTarget.nodeName==parentNode){
+						return oTarget;
+						//alert(oTarget.nodeName)
+						}
+					break;
+					case "node":
+					if(oTarget==parentNode){
+						return oTarget;
+						//alert(oTarget.nodeName)
+						}
+					break;
+					default : 
+					break;
+					} 
+				}
+			}
+		}
+	$get.sorting = {
+    //利用sort方法进行排序
+		systemSort: function(arr,boolen){
+			if(boolen){
+				return arr.sort(function(a,b){
+					return b-a	
+					})	
+				}else{
+					return arr.sort(function(a,b){
+					return a-b
+					})
+				}
+
+		}
+	}
+	$get.ajax=function(ajaxurl,callback,ajaxtype,post){//后续增加更多变量
+			var ajaxdo = callback ? function(){
+					var data = xhr.responseText;
+					switch(ajaxtype){
+					 case 'json':
+						 data = JSON.parse(xhr.responseText);
+						
+						 break;
+					 case 'xml':
+						 break;
+					 default :
+						  break;	
+					 } 
+					
+					callback(data);
+				}:function(){
+					var data = xhr.responseText;
+					alert(data);
+					}
+			var xhr=new XMLHttpRequest();
+			xhr.onload=ajaxdo;
+			xhr.onprogress=function(event){
+				console.log(event.loaded+"of"+event.total)
+				}
+			xhr.onerror=function(){
+				alert("数据访问出现异常错误: status code is " + xhr.status+"网址为"+ajaxurl);
+				}	
+			//xhr.onprogress=newOnprogress;
+			if(!post){
+				xhr.open("GET",ajaxurl,true);
+			}else{
+				xhr.open("POST",ajaxurl,true);
+			}
+			xhr.setRequestHeader("Content-Type","application/json");
+			if(!post){
+				xhr.send();	
+			}else{
+				xhr.send(post);
+			}
+
+
+		}
+
+	$get.qs=function(targetName,parentTarget){//获取一组同类型节点
+			if(typeof targetName!='string'){
+				return targetName
+			}else{
+				parentTarget=parentTarget?parentTarget:document;	
+				return parentTarget.querySelectorAll(targetName);
+				}
+		}
+	$get.classname=function(oTarget,oClassName){//获取指定节点的classname; 参数2验证指定节点是否存在这个classname;
+			if(typeof oClassName == "number"){
+				return oTarget.classList.item(oClassName); 	
+			}else{
+				return oTarget.classList.contains(oClassName); 
+			}
+		}
+	$get.offset={
+		top:function(oTarget){//获取当前元素到浏览器可视范围顶部的距离
+				var newTop=oTarget.offsetTop;
+				while(oTarget=oTarget.offsetParent){
+					newTop+=oTarget.offsetTop;
+					}	
+				return newTop;
+			},
+		left:function(oTarget){//获取当前元素到浏览器可视范围左侧的距离
+				var newLeft=oTarget.offsetLeft;
+				while(oTarget=oTarget.offsetParent){
+					newLeft+=oTarget.offsetLeft;
+					}
+				return newLeft;
+			},
+		right:function(oTarget){//获取当前元素到浏览器可视范围右侧的距离
+			var newRight=document.documentElement.clientWidth-oTarget.offsetWidth-$get.offset.left(oTarget);
+			return newRight;
+			},
+		bottom:function(oTarget){//获取当前元素到浏览器可视范围底侧的距离
+			var newbottom=document.documentElement.clientHeight-oTarget.offsetHeight-$get.offset.top(oTarget);
+			return newbottom;
+			}
+		}
+
+window.$add = new Object;//添加
+	$add.storage=function (key,value){//数据存到在本地
+									if(window.localStorage.getItem(key)){
+										localStorage.removeItem(key);
+										localStorage.setItem(key,value);
+										}else{
+										localStorage.setItem(key,value);	
+									}	
+	}
+	$add.classname=function(oTarget,oClassName){//为指定节点添加一个class;
+			if (!oTarget.classList.contains(oClassName)){
+				oTarget.classList.add(oClassName)
+				}
+		}
+	$add.q=function(oTagName,oParent,oAttr,sText){
+			var oTagName=oTagName;
+			var oParent=oParent;
+			if(typeof oTagName == 'string'){
+					var newElement=document.createElement(oTagName);
+				}else{
+					var newElement=oTagName;
+				}
+			if(oAttr){
+				$add.attr(newElement,oAttr);
+				}
+			if(sText){//
+				newElement.innerHTML+=sText;
+				}
+			if(oParent){
+				oParent.appendChild(newElement);
+				}
+	
+			return newElement;
+		}
+	$add.attr=function(oTarget,oAttr,oValue){//添加属性
+		if(oValue){
+			oTarget.setAttribute(oAttr,oValue);
+			}else{
+				var newlist=oAttr.split(';');
+				for(i=0;i<newlist.length;i++){
+					var Key=newlist[i].split('=')[0];
+					var Value=newlist[i].split('=')[1];
+					if(Key =='class'){
+						$add.classname(oTarget,Value);
+						}else{
+					oTarget.setAttribute(Key,Value);
+						}
+					}
+			}
+		}
+	$add.event=function (type,func,oTarget){ //为节点添加事件。type :事件类型，没有on, func：事件执行的函数 ，node:可以没有，没有的话，默认s(这里的节点事件)				
+			oTarget.addEventListener(type, func, false);
+		}
+window.$remove = new Object;//移除
+	$remove.def=function(e){//阻止默认事件
+			e.preventDefault();
+		}
+	$remove.prop=function(e){//阻止事件冒泡
+			e.stopPropagation();
+		}
+	$remove.q=function(targetName){//移除一个节点		
+			if($get.q(targetName)){
+				try{
+					$get.q(targetName).innerHTML=''
+					}catch (e) {}
+				$get.q(targetName).parentNode.removeChild($get.q(targetName));
+			}
+		}
+	$remove.storage=function(key){
+		 		if(key){
+		 			localStorage.removeItem(key)
+		 		}else{
+		 			while(localStorage.key(0)){
+		 				localStorage.removeItem(localStorage.key(0));
+		 			}
+		 		}     
+	}
+	$remove.qs=function(targetName){//移除一组同类型的节点
+			if($get.qs(targetName).length>0){
+				while($get.qs(targetName)[0]){
+					try{
+						$get.qs(targetName)[0].innerHTML='';
+					}catch (e) {}
+					$get.qs(targetName)[0].parentNode.removeChild($get.qs(targetName)[0]);
+					}
+				}
+		}
+	$remove.classname=function(oTarget,oClassName){//删除指定节点的class;
+			if ($get.classname(oTarget,oClassName)) { 
+				oTarget.classList.remove(oClassName);
+			} 
+
+		}
+	$remove.event=function(type,func,oTarget){ //为节点删除事件。type :事件类型，没有on, func：事件执行的函数 ，node:可以没有，没有的话，默认s(这里的节点事件)
+			oTarget.removeEventListener(type,func,false);
+
+					
+		}
+window.$replace = new Object;//替换
+	$replace.q=function(targetName,oTarget){//将一个节点替换成另一个节点
+			if($get.q(targetName)&&oTarget){
+					$get.q(targetName).parentNode.replaceChild($get.q(targetName),oTarget);
+				}
+		}
+	$replace.classname=function(oTarget,oClassName,rClassName){//替换class.
+			$remove.classname(oTarget,oClassName);
+			$add.classname(oTarget,rClassName)
+		}
+	$replace.text2json=function(str){
+		return JSON.parse(str);
+		}
+	$replace.json2text=function(str){
+		return JSON.stringify(str)
+		}
+
+	

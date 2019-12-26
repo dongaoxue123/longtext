@@ -1,0 +1,118 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">名称</label>
+            <div class="layui-input-inline">
+                <input type="text" id="name" name="name" lay-verify="required|name" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">说明</label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+                <input type="text" id="linkUrl" name="linkUrl" lay-verify="required|linkUrl" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>重填</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var authToken=localStorage.getItem("authToken");
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+			alert(i18next.t("timeout"));
+			window.top.location.href = '../../login.html';
+		}
+		
+        var menuID = GetQueryString("menuID")
+        
+        form.on('submit(submit)', function(res){
+	   		$.ajax({  
+	            type: 'POST',
+				url: commonIP + "api/system/menu/create?authToken="+authToken,
+				contentType: 'application/json',
+				async: false,
+				data: JSON.stringify({
+						"menuID":menuID,
+						"name":res.field.name,
+						"linkUrl":res.field.linkUrl,
+						"remark":res.field.remark
+					}),
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("addSucc")); 
+						} else {
+						 alert(i18next.t("addFailed"));
+						}
+					}
+				}
+	         }); 
+        });
+       
+    if(menuID != null)//编辑
+		{
+    	$.ajax({
+			type: "GET",
+			url: commonIP + 'api/system/menu/get?authToken='+authToken+'&page=0&limit=0&menuID='+menuID,
+			contentType: 'application/json',
+			success: function(data) {
+				var datas = JSON.parse(data);
+				if (datas.errcode == 200) {
+					$("#name").val(datas.data[0].name);
+					$("#remark").val(datas.data[0].remark);
+					$("#linkUrl").val(datas.data[0].linkUrl);
+				} else {
+					if(data.errcode=="10005"){
+							window.top.location.href = '../../login.html';
+					}
+				}
+			}
+		});
+		}
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");  
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

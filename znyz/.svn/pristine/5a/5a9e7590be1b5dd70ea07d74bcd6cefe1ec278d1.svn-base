@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>商品猪体况管理</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<style>
+		.linkFontColor{
+			color: #0088CC!important;
+		}
+	</style>
+	<body>
+		
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<form class="layui-form">
+				<label class="layui-form-label"><span data-i18n="common.houseList"></span>:</label>
+				<div class="layui-input-inline">
+					<select id="houseId" lay-filter="houseId" name="houseId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+						<option value="" data-i18n="field.houseOptionDefault"></option>
+					</select>
+				</div>
+				</form>
+				<label class="layui-form-label"><span data-i18n="common.fieldCode"></span>:</label>
+				<div class="layui-input-inline">
+				<input type="text" id="fieldCode" autocomplete="off" name="fieldCode" class="layui-input"  oninput = "value=value.replace(/[^\d]/g,'')" maxlength="5">
+				</div>
+			 <label class="layui-form-label"><span data-i18n="common.batchCode"></span>:</label>
+			 <div class="layui-input-inline">
+		    	<input class="layui-input" autocomplete="off" id="batchCode" name="batchCode">   
+		    </div>
+				<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+				<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+				<div class="layui-form-item" style="padding-right: 20px;height:0px;">
+					<label id='field-total' class='layui-form-label' style="width:200px;"></label>
+					<!-- <label class='layui-form-label' style="width:200px;">
+						<span data-i18n="common.weighingTime"></span>：9:00;12:00;16:00
+					</label> -->
+				</div>
+			</div>
+			<table class="layui-hide" id="hogBatch" lay-filter="hogBatch" ></table>
+			
+		</div>
+		
+		
+		<script type="text/html" id="barDemo">
+			<a class="layui-btn layui-btn-xs" lay-event="batchHistory" >历史批次</a>
+			
+<!-- 			<a class="layui-btn layui-btn-xs" lay-event="detail" data-i18n="feedDetail.measurementRecord"></a>
+ --><!-- 			<a class="layui-btn layui-btn-xs" lay-event="feedDetail" data-i18n="feedDetail.feedFormula"></a>
+ -->		</script>
+		
+		<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			i18n('../../locales', readynext) //国际化
+			function readynext(){
+				if(!checkToken()) {
+					alert(i18next.t("timeout"));
+					window.top.location.href = '../../login.html';
+				}
+				initLayui()
+			}
+			
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+			
+			function initLayui(){
+			layui.use(['form', 'table', 'laydate'], function() {
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					getFieldList()
+
+					//获取栋舍下拉列表
+							$.ajax({
+							    url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&page=0&limit=0&farmId='+ farmId,
+							    success: function (res) {
+							    	
+								var dataObj = JSON.parse(res);
+								console.log(dataObj);
+							    if(dataObj!=null && dataObj.dataSource.list.length>0){
+							        var groupOption;
+							        for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+							        	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+							        }
+							        $("#houseId").append(groupOption);
+							        form.render('select');//一定要加form.render();
+								  }
+							}
+							}); 
+
+					
+			function changeHouse() {
+				getFieldList()
+			}
+
+			function getFieldList() {
+				getFieldListInfo();
+
+			}
+			// 取得栏位信息
+			function getFieldListInfo() {
+				getList()
+			}
+			
+			function getList() {
+					//方法级渲染 
+
+					table.render({
+						elem: '#hogBatch',
+						url: commonIP + "api/pig/hogbatch/getHogWeightDevicePage?authToken=" + authToken +  "&farmId=" + farmId,
+						parseData: function(res) {
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"totalNumber": res.errcode === '200' ? res.dataSource.list[0].totalNumber: 0,
+								"data": res.errcode === '200' ? res.dataSource.list[0].hogBatchWeightDeviceBean : [] //解析数据列表
+							}
+						},
+						request:{
+							pageName: 'pageNum',
+							limitName: 'pageSize',
+						},
+						cellMinWidth: 80,
+						cols: [
+							[{
+									type: 'numbers',
+									width: '2%'
+								}, {
+									field: 'houseName',
+									title: i18next.t("common.houseName"), //'栋舍名称',
+									width: '8%'
+								},{
+									field: 'code',
+									title: i18next.t("common.fieldCode"), //'栏位编号',
+									width: '8%'
+								}
+
+								, {
+									field: 'batchCode',
+									title: i18next.t("common.batchCode"), //'批次编号',
+									width: '10%'
+								}, 
+								{
+									field: 'pigVarietyName',
+									title: i18next.t("common.variety"), //'品种',
+									width: '7%'
+								}, 
+								{
+									field: 'strainName',
+									title: i18next.t("common.strain"), //'品系',
+									width: '7%'
+								},
+								{
+									field: 'pigAge',
+									title: i18next.t("common.dayAge"), //'日龄(天)',
+									width: '7%'
+								}, {
+									field: 'totalNumber',
+									title: i18next.t("common.count"), //'头数',
+									width: '7%'
+								}, {
+									field: 'weightData',
+									title: i18next.t("common.currentAverageWeight"), //'当前均重(kg)',
+									templet: "<div><a href='javascript:void(0)'  class='linkFontColor'>{{d.weightData}}</a></div>",
+									width: '8%',
+									event: 'showWeightData'
+								}, 
+								// {
+								// 	field: 'deviceStatus',
+								// 	title: i18next.t("common.state"), //'状态',
+								// 	width: '10%',
+								// 	color: 'red',
+								// 	templet: function(row){
+								// 		return row.deviceStatus==='100' ? i18next.t("pigGrowMonitor.measuring") : i18next.t("pigGrowMonitor.measured") + ' '+ row.deviceStatus +' '+ i18next.t("common.times")
+								// 	},
+								// 	DynamicForeColor:'red'
+								// }, 
+								{
+									field: 'weightData',
+									title: i18next.t("pigGrowMonitor.newestData"), //'最新数据',
+									templet: "<div><a href='javascript:void(0)'  class='linkFontColor'>{{d.weightData}}</a></div>",
+									width: '8%',
+									event: 'showWeightData'
+								}
+								,{
+									field: 'nutritionalFormula',
+									title: i18next.t("pigBodyInformation.nutritionalFormula"), //'营养配方',
+									width: '8%',
+									templet: "<div><a href='javascript:void(0)'  class='linkFontColor'>" + i18next.t("detail") + "</a></div>",
+									event: 'showFeedDetail'
+								}
+								, {
+									fixed: 'right',
+									title: i18next.t("opt"), //'操作',
+									width: '10%',
+									align: 'center',
+									toolbar: '#barDemo'
+								} //一个工具栏  具体请查看layui官网
+							]
+						],
+						page: true //开启分页
+							,
+						limit: 10 //默认十条数据一页
+							,
+						limits: [10, 20, 30, 50] //数据分页条
+							,
+						id: 'testReload',
+						done: function(res, curr, count){
+							console.log(res)
+							i18n('../../locales',function(){
+								let totalTxt = ''
+								totalTxt = '<span>' + i18next.t("pigGrowMonitor.total") + ' ' + res.count + ' ' + i18next.t("pigGrowMonitor.field") + ',' + res.totalNumber + ' ' +  i18next.t("pigGrowMonitor.pig") + '</span>';
+								$('#field-total').html(totalTxt);
+							}) //国际化
+							currPage = curr;
+							var that = this.elem.next()
+							$.each(res.data, function (index, obj) {
+					           if(obj.deviceStatus === '100'){
+					                that.find(".layui-table-box tbody tr[data-index='" + index + "']").css("background-color", "#D3D3D3");
+					                that.find(".layui-table-box tbody tr[data-index='" + index + "'] td[data-field='deviceStatus']").css("color", "red");
+					           }
+  							})
+							
+							
+						}
+					});
+				}
+				
+				//监听工具条-详情
+				table.on('tool(hogBatch)', function(obj) {
+					var data = obj.data;
+					if(obj.event === 'showWeightData') {
+						var index = layer.open({
+							type: 2,
+							content: "pigGrowDetail.html?id=" + data.fieldId + '&batchid=' + data.batchId + '&deviceStatus=' + data.deviceStatus + '&batchId=' + data.batchId,
+							area: ['1000px', '680px'],
+							maxmin: true
+						});
+					}
+					if(obj.event === 'showFeedDetail') {
+						let paramWeight = data.weightData || '50.0'
+						var index = layer.open({
+							type: 2,
+							content: "pigsFeedDetail.html?id=" + data.batchId + '&weight=' + paramWeight + '&fieldId=' + data.fieldId ,
+							area: ['1200px', '680px'],
+							maxmin: true
+						});
+					}
+					
+					if(obj.event === 'batchHistory') {
+						var index = layer.open({
+							type: 2,
+							content: "pigGrowDetailHistory.html?id=" + data.fieldId + '&batchid=' + data.batchId + '&pigVarietyName=' + data.pigVarietyName + '&strainName=' + data.strainName + '&code=' + data.code+ '&houseName=' + data.houseName,
+							area: ['1000px', '680px'],
+							maxmin: true
+						});
+					}
+				});
+				
+				var active = {
+					reload: function() {
+						//执行重载
+						table.reload('testReload', {
+							page: {
+								curr: 1 //重新从第 1 页开始
+							},
+							where: {
+								houseId: $("#houseId").val(),
+								fieldCode: $("#fieldCode").val(),
+								batchCode: $("#batchCode").val()
+							}
+						});
+					},
+				};
+				$('#search').on('click', function() {
+					active['reload'].call(this);
+				});
+				$('#reset').on('click', function() {
+					$('#houseId').val("");
+					$('#fieldCode').val("");
+					$('#batchCode').val("")
+				
+					//清空后重新刷新下拉菜单
+					form.render("select");
+				});
+			
+		})
+			}
+		</script>
+	</body>
+
+</html>

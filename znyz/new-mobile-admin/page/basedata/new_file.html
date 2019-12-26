@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>  
+    <head>  
+        <title>Demo</title>  
+    </head>  
+    <body>  
+        <form id="form1" action="#">  
+            <a href="http://www.baidu.com/" name="clj" id="baidu">百度</a></br>  
+            <a href="http://www.google.cn/" name="clj" id="google">谷歌</a></br>  
+            <a href="http://www.gougou.com/" name="clj" id="gougou">狗狗</a></br>  
+        </form>  
+          
+        <script>  
+            <!--getElementsByName-->
+            debugger;  
+            var hrefs = document.getElementsByName("clj");  
+            for (var i=0; i < hrefs.length; i++) {  
+                var aHref = hrefs[i];  
+                if (aHref.href.search("http://www.baidu.com") > -1) {  
+                    alert(aHref.href);  
+                    break;  
+                }  
+            }  
+              
+        </script>  
+    </body>  
+</html>

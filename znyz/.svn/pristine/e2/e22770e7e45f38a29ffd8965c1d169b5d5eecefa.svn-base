@@ -1,0 +1,323 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">生产状态</label>
+            <div class="layui-input-inline">
+                <select id="productionStatusId" name="productionStatusId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">生产状态</option>
+		    	</select>
+            </div>
+            <label class="layui-form-label">出生日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="bornDate" name="bornDate" lay-verify="required|bornDate" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">品种</label>
+            <div class="layui-input-inline">
+            	<select id="pigVarietyId" name="pigVarietyId" lay-verify="required|pigVarietyId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品种</option>
+		    	</select>
+            </div>
+        	<label class="layui-form-label">品系</label>
+            <div class="layui-input-inline">
+                <select id="strain" name="strain" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品系</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">备注</label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+	var userId ="";
+	
+	var batchCode="";	
+
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+  			alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+		}
+		groupId = JSON.parse(user).groupId;
+		farmId = JSON.parse(user).farmId; 
+		userId = JSON.parse(user).userId; 
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#bornDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+
+		var batchId = GetQueryString("batchId");//userId为空表示新增，否则是修改
+
+        //生产状态
+	   	$.ajax({
+	   		url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken + '&type=hogBatchProductionStatus',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#productionStatusId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindVarietyDropList();
+	    	  }
+	    }
+	    }); 
+	    
+	    //获取品种下拉列表
+	    function BindVarietyDropList(){
+	   	$.ajax({
+	        url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken +'&type=pigVarietyId',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#pigVarietyId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindStrainDropList();
+	    	  }
+	    }
+	    }); 
+	    }
+	    
+	    //获取品系下拉列表
+	    function BindStrainDropList(){
+	   	$.ajax({
+	        url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken +'&type=strain',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#strain").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	    }
+	    }); 
+	    }
+        var forecastEndTime = "";
+        var bornDate = "";
+        //监听提交
+        if(batchId == null)//添加
+		{
+	        form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+	        bornDate = $('#bornDate').val();	
+	        forecastEndTime = addByTransDate(bornDate,108)
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/hogbatch/create?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"groupId":groupId,
+						"farmId":farmId,		
+						"bornDate":bornDate,
+						"batchCode":batchCode,
+						"forecastEndTime":forecastEndTime,
+						"productionStatusId":res.field.productionStatusId,
+						"pigVarietyId":res.field.pigVarietyId,
+						"strain":res.field.strain,
+						"bornDate":res.field.bornDate,
+						"remark":res.field.remark,
+						"createUser":JSON.parse(user).userId	
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert("添加成功！");
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert("添加失败！");
+						}
+					}
+				}
+             }); 
+           });
+        }
+		else//编辑
+		{
+			form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+	        bornDate = $('#bornDate').val();	
+	        forecastEndTime = addByTransDate(bornDate,108)
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/hogbatch/update?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"userid":userId,
+						"groupid":groupId,
+						"farmid":farmId,
+						"batchId":batchId,
+						"productionStatusId":res.field.productionStatusId,
+						"pigVarietyId":res.field.pigVarietyId,
+						"strain":res.field.strain,
+						"bornDate":res.field.bornDate,
+						"remark":res.field.remark
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert("修改成功！");
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert("修改失败！");
+						}
+					}
+				}
+             }); 
+           });
+		}
+        function BindUpdateList(){
+		    if(batchId != null)//编辑
+		    {
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/hogbatch/getHogBatchPage?authToken='+authToken+'&batchId='+batchId,
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {
+						//赋值
+						$("#batchCode").val(datas.dataSource.list[0].batchCode);
+						$("#productionStatusId").val(datas.dataSource.list[0].productionStatusId);
+                        $("#pigVarietyId").val(datas.dataSource.list[0].pigVarietyId);
+                        $("#strain").val(datas.dataSource.list[0].strain);
+						form.render('select');
+
+						$("#bornDate").val(datas.dataSource.list[0].bornDate);
+						$("#remark").val(datas.dataSource.list[0].remark);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		        var today=new Date();
+		        var year = today.getFullYear();
+				//获取今年的本场创建批次的个数
+		        var hognumber = "";
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/hogbatch/getHogBatchPage?authToken='+authToken + '&farmId=' + farmId +'&year=' +year,
+					contentType: 'application/json',
+					success: function(data) {
+				    var data = JSON.parse(data);	
+					if (data.errcode == 200) {
+						hognumber = data.dataSource.total+1;
+						hognumber = pad(hognumber, 4);
+					    batchCode = groupId +farmId +year + hognumber;
+						//$("#add_hogbatch_code").val(batchCode);	
+			         }
+					if (data.errcode == 10016) {				
+						hognumber = 0001;
+				        batchCode = groupId +farmId +year + hognumber;
+						//$("#hogbatch_code").val(batchCode);	
+			            }
+					}
+					});  
+		    }
+        }
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+	function addByTransDate(dateParameter, num) {
+			var translateDate = "", dateString = "", monthString = "", dayString = "";
+			translateDate = dateParameter.replace("-", "/").replace("-", "/"); ;
+			var newDate = new Date(translateDate);
+			newDate = newDate.valueOf();
+			newDate = newDate + num * 24 * 60 * 60 * 1000; //备注 如果是往前计算日期则为减号 否则为加号
+			newDate = new Date(newDate);
+			//如果月份长度少于2，则前加 0 补位  
+			if ((newDate.getMonth() + 1).toString().length == 1) {
+			monthString = 0 + "" + (newDate.getMonth() + 1).toString();
+			} else {
+			monthString = (newDate.getMonth() + 1).toString();
+			}
+			//如果天数长度少于2，则前加 0 补位  
+			if (newDate.getDate().toString().length == 1) {
+			dayString = 0 + "" + newDate.getDate().toString();
+			} else {
+			dayString = newDate.getDate().toString();
+			}
+			dateString = newDate.getFullYear() + "-" + monthString + "-" + dayString;
+			return dateString;
+	
+	}
+	
+	function pad(num, n) {  
+	    var len = num.toString().length;  
+	    while(len < n) {  
+	        num = "0" + num;  
+	        len++;  
+	    }  
+	    return num;  
+	}
+</script>
+</body>
+</html>

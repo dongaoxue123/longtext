@@ -1,0 +1,258 @@
+@charset "utf-8";
+
+/* CSS Document */
+/*===============css基本===================*/
+* {
+	margin: 0px auto;
+	padding: 0px;
+}
+
+body {
+	margin: 0px auto;
+	padding: 0px;
+	font-size: 14px;
+	line-height: 150%;
+}
+
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+form,
+fieldset,
+input,
+textarea,
+p,
+blockquote,
+th,
+td {
+	margin: 0;
+	padding: 0;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0px;
+}
+
+abbr,
+acronym,
+fieldset,
+img {
+	border: 0px;
+}
+
+address,
+caption,
+cite,
+code,
+dfn,
+em,
+strong,
+th,
+var {
+	font-style: normal;
+	font-weight: normal;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-size: 100%;
+	font-weight: bold;
+}
+
+ol,
+ul {
+	list-style: none;
+}
+
+li {
+	list-style: none;
+}
+
+caption,
+th {
+	text-align: left;
+}
+
+q:before,
+q:after {
+	content: '';
+}
+
+.clear {
+	clear: both;
+	height: 0;
+	font-size: 1px;
+	line-height: 0px;
+}
+
+input {
+	vertical-align: middle;
+}
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
+.clearfix {
+	display: inline-block;
+	clear: both;
+}
+
+*html .clearfix {
+	height: 1%;
+}
+
+.clearfix {
+	display: block;
+}
+
+
+.parent {
+	width: 100%;
+	height: 900px;
+	overflow: hidden;
+}
+
+.child {
+	width: 70%;
+	height: auto;
+	overflow: hidden;
+	
+	
+}
+
+.parent {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.ml {
+	margin-left: 60px;
+	margin-top: 60px;
+}
+
+.child img {
+	vertical-align: middle;
+}
+
+.login_cont h1 {
+	font-size: 36px;
+	line-height: 60px;
+	color: #20a3f5;
+	margin-bottom: 30px;
+}
+
+.login_left {
+	background: url(../img/bg2.png) no-repeat center;
+	background-size: 100% 100%;
+	width: 30%;
+	height: 900px;
+}
+
+.login {
+	
+	border-radius: 5px;
+}
+
+.login p {
+	line-height: 40px;
+	color: #666;
+	font-size: 18px;
+}
+
+.login a {
+	text-decoration: none;
+	outline: 0 none;
+}
+
+.btn {
+	background: #20a3f5;
+	width: 380px;
+	height: 50px;
+	border-radius: 10px;
+	color: #fff;
+	text-align: center;
+	line-height: 50px;
+	font-size: 20px;
+	margin: 0px auto;
+	margin-top: 40px;
+}
+
+
+.login_cont {
+	width: 380px;
+	margin: 80px auto;
+}
+
+.login_cont input {
+	background: #fff;
+	width: 370px;
+	height: 50px;
+	border: 1px solid #ddd;
+	font-size: 16px;
+	color: #a7aeb8;
+	line-height: 50px;
+	padding-left: 10px;
+	outline: none;
+	border-radius: 5px;
+	margin-top: 10px;
+}
+
+.login_cont select {
+	background: #fff;
+	width: 370px;
+	height: 50px;
+	border: 1px solid #ddd;
+	font-size: 16px;
+	color: #a7aeb8;
+	line-height: 50px;
+	padding-left: 10px;
+	outline: none;
+	border-radius: 5px;
+	margin-top: 10px;
+	appearance:none;
+}
+
+.login_cont input placeholder {
+	color: #ccc;
+}
+
+.footer {
+	width: 100%;
+	text-align: center;
+	padding: 40px 0px;
+}
+
+.footer img {
+	vertical-align: middle;
+}
+
+.footer p {
+	color: #313131;
+	padding-top: 20px;
+}
+
+.layui-edge{
+	display: none;
+}

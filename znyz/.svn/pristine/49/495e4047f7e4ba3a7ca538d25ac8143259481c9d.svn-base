@@ -1,0 +1,195 @@
+	var idArr = new Array();//暂存图片id集合
+	var map = new Map();//图片容器， key：图片id；value：图片地址
+
+
+	var authToken;//token
+	var user;//登录用户
+$(document).ready(function() {
+				// 取得authToken
+				authToken = localStorage.getItem('authToken');
+				//alert(authToken)
+				if (authToken == null) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				user = localStorage.getItem('user');
+			});
+function createUploader() {
+
+   var uploader = new qq.FineUploader({  
+             
+            element: document.getElementById('uploader'),  
+            autoUpload: true,  //是否自动上传，true就会自动上传
+            multiple : true, //multiple选项：默认为true，用户可以一次选择多个文件并上传。
+            request: {  //后台接受文件上传的URL路径。设置其中的endpoint属性。
+                endpoint: commonIP+'api/znyz/pig/uploadFile?type=2'
+            },
+            /**
+            session: {  
+                endpoint: '<%=request.getContextPath()%>/XXXX/XXXX',  
+                params: {'id': ${bulletin.id}}  
+            },
+            */
+           
+            text : {
+                uploadButton : "选择上传文件"
+                },
+             
+            validation: 
+                      {
+                           allowedExtensions: ['jpeg', 'jpg', 'gif', 'png'],
+                           itemLimit:1,
+                           sizeLimit: 5242880 //上传文件大小的上限  5M   5*1024*1024
+                     },
+            editFilename: {  
+                   enabled: false  
+            }, 
+            
+            //回调函数
+            callbacks: {  
+		            onAllComplete:  function(successIDs, failIDs)  {  
+		                    
+		            },
+		                //文件开始提交.调用参数格式如下:onSubmit:  function(id,  fileName)  {}
+		            onSubmit:  function(id,  fileName)  {
+		            	//服务端传参数
+		                 uploader.setParams({
+          					 type: '2' 
+      					 });
+		            },
+		            //文件开始上传.调用参数格式如下:onUpload: function(id, fileName) {}.
+		            onUpload: function(id, fileName) {
+		                 
+		            },
+		            //loaded：表示已经上传到服务器端数据的大小[byte].
+		            //total: 需要上传文件的大小.
+		            //文件正在上传.调用参数格式如下:onProgress:  function(id,  fileName,  loaded,  total)  {}.
+		            //
+		            onProgress:  function(id,  fileName,  loaded,  total)  {
+		                 
+		            },
+		            //文件上传成功. 调用参数格式如下:onComplete:  function(id,  fileName,  responseJSON)  {
+		            //fileName：上传文件的文件名.
+		            	
+		            //responseJSON：用来在上传操作完成后返回的Json格式的数据.通过Jquery反序列化出来对象.其中包含一个IsSuccess属性用来判断此次上传是否成功.
+		            onComplete:  function(id,  fileName,  responseJSON)  {
+		                 if(typeof(responseJSON.resourceUrl)=="undefined"){
+		                 	alert("系统错误！请联系管理员")
+		                 }else{
+		                 	idArr[id]=id;
+							map.put(id,responseJSON.resourceUrl);
+							//alert(map.get(id))
+		                 }
+		            },
+		            //id表示第几个开始上传的文件，Fine Uploder定义是默认从0开始计数.
+		           //fileName：上传文件的文件名.
+		           
+		            onCancel:  function(id,  fileName)  {
+		               //  alert("cancel:"+id)
+		                 map.remove(id);
+		                // alert(map.get(id))
+		            }
+            },
+            retry: {
+                enableAuto: false
+            },
+             
+            debug:true
+    });  
+} 
+window.onload = createUploader;  
+
+/**
+ * 模拟map方法
+ */
+function Map() {
+  this.obj = {};
+  this.count = 0;
+}
+Map.prototype.put = function (key, value) {
+  var oldValue = this.obj[key];
+  if (oldValue == undefined) {
+    this.count++;
+  }
+  this.obj[key] = value;
+}
+Map.prototype.get = function (key) {
+  return this.obj[key];
+}
+Map.prototype.remove = function (key) {
+  var oldValue = this.obj[key];
+  if (oldValue != undefined) {
+    this.count--;
+    delete this.obj[key];
+  }
+}
+Map.prototype.size = function () {
+  return this.count;
+}
+
+
+
+
+/**
+ * 保存
+ */
+function  BtnClickSave(){
+  //图片路径集合 用"|"分隔
+  var prctureStr = "";
+  for(j=0;j<idArr.length;j++){
+  		var url = map.get(idArr[j]);
+  		if(typeof(url)=="undefined"){
+  			continue;
+  		}
+  		prctureStr = prctureStr+url;
+  		if(j+1<idArr.length){
+  			prctureStr = prctureStr+",";
+  		}
+ 
+	}
+  // alert(prctureStr);
+  //登录用户id
+  var userId= JSON.parse(user).id;
+  var textMessage = $("#record").val();
+  var pigId =getUrlParam('pid');
+ // alert(pigId)
+  if(textMessage==null||textMessage==''){
+  	alert("请填写体况备注信息!");
+  	return;
+  }
+  
+$.ajax({
+		type: "POST",
+		url: commonIP + "api/pig/historyRemarks/create?authToken="+authToken,
+		data: JSON.stringify({
+		"createUser":userId,
+		"updateUser":userId,
+		"pictureStr":prctureStr,
+		"textMessage":textMessage,
+		"pigId":pigId
+		}) ,
+		contentType: 'application/json',
+				success: function(data) {
+						var data = JSON.parse(data);
+						if (data.errcode == 200) {
+							alert('保存成功');
+							//clear();
+							
+							window.location.href = 'historyRemark.html';
+							
+						} else {
+							alert(data.errmsg);
+							if(data.errcode=="10005"){
+								window.top.location.href = 'wxlogin.html';
+								//window.location.href = 'login.html';
+							}
+						}
+					}
+				});
+ 
+}
+
+function  goBack(){
+	window.location.href = 'historyRemark.html';
+}

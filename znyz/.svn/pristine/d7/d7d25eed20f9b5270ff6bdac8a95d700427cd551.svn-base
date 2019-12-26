@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>饲喂量图表</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+	</head>
+	<script src="../basedata/assets/js/jquery.min.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../basedata/echarts/echarts.js"></script>
+	<style>
+		.chart_con {
+			margin: 30px 0 0 30px;
+			width: 750px;
+			height: 560px;
+		}
+	</style>
+
+	<body>
+		<div class="chart_con" id="feedChart">
+		</div>
+
+		<script>
+			//本月测重记录(折线图)
+			var feedOption = {
+				title: {
+					text: '本周饲喂量(KG)',
+					subtext: '',
+					top: -4,
+					textStyle: {
+						fontSize: 12,
+					}
+				},
+
+				grid: {
+					top: '15%',
+					bottom: '15%'
+				},
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					top: -4,
+					data: ['饲喂量']
+				},
+				toolbox: {
+					show: false,
+					feature: {
+						dataZoom: {
+							yAxisIndex: 'none'
+						},
+						dataView: {
+							readOnly: false
+						},
+						magicType: {
+							type: ['line', 'bar']
+						},
+						restore: {},
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+				},
+				yAxis: {
+					type: 'value',
+					min: 2,
+					max: 3.2,
+					axisLabel: {
+						formatter: '{value}'
+					},
+					splitNumber: 5
+				},
+				series: [{
+					name: '饲喂量',
+					type: 'line',
+					data: [],
+					symbolSize: 5,
+					markPoint: {
+						symbol: 'pin',
+						symbolSize: [60, 60],
+						data: [{
+							type: 'max',
+							name: '最大值'
+						}]
+					},
+					markLine: {
+						data: [{
+							type: 'average',
+							name: '平均值'
+						}]
+					}
+				}]
+			};
+
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			var id = GetQueryString("id");
+			var feedVal = GetQueryString("val");
+			if(!checkToken()) {
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+
+			GetFeedAmount()
+			//取得月猪重信息
+			function GetFeedAmount() {
+				feedChart = echarts.init(document.getElementById('feedChart'));
+				feedChart.setOption(feedOption);
+
+//				if(val === '3') {
+//					yData = [3, 3, 3, 3, , , ]
+//				} else {
+//					yData = [2.1, 2.8, 2.8, 2.8, , , ]
+//				}
+				
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/bodyinformation/getPigFeedValue',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&feedingCapacity=' + feedVal,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						
+						if(data.errcode == 200) {
+							var yData = data.dataSource.list[0].y
+							// 填入数据
+							feedChart.setOption({
+								series: {
+									// 根据名字对应到相应的系列
+									name: '饲喂量',
+									type: 'line',
+			
+									data: yData
+			
+								}
+							});
+						}
+					},
+					error: function(err) {
+
+					}
+				})
+				
+			}
+		</script>
+	</body>
+
+</html>

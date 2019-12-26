@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>饲喂计算</title>
+    <script src="js/flexible.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+    
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+    <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+</head>
+<body>
+	
+	<div class="main">
+		<div class="search">
+			<span class="iconfont icon-saoyisao" id='qrcode'></span>
+			<span class="iconfont icon-find" onclick="getPigInfo()"></span>
+			<input type="text" name="search" id="pigsNumber" value="" placeholder="猪只耳号输入"/>
+		</div>
+	</div>
+	
+	<div class="weight_list bg_lightblue flex"  id="baseInfo">
+		<div class="msg_corner bg_blue">
+			<a>基本信息</a>
+		</div>
+		
+	</div>
+	
+	<div class="weight_list bg_lightgray">
+		<div class="msg_corner bg_red">
+			<a>限饲计算</a>
+		</div>
+		<div id="proInfo" style="position: absolute;right: 32px;top: 10px;">
+			<a onclick="location='calculation.html'"  class="red" style="font-size:15px;">计算公式</a>
+		</div>
+		<div class="flex ">
+			<ul class="basic_msg weight_msg">
+				<li>当前重量</li>
+				<li>当前饲喂量</li>
+				<li>当前背膘</li>
+				<li>分娩时背膘</li>
+			</ul>
+			<ul class="basic_msg weight_msg">
+				<li id='currWeight'></li>
+				<li class="red" id='currFeedTotal'></li>
+				<li class="red" id='currBackFat'></li>
+				<li class="red" id='pregnancyBackFat'></li>
+			</ul>
+			<ul class="basic_msg weight_msg">
+				<li>&nbsp;</li>
+				<li><button class="border bd_blue" onclick="subFeedAmount()">-</button>&nbsp;<button class="border bd_blue" onclick="addFeedAmount()">+</button></li>
+				<li></li>
+				<li></li>
+			</ul>
+		</div>
+		
+		<!--<table border="0" cellspacing="0" cellpadding="0" class="main_table">
+			<tr><td>状态</td><td>初配</td><td>增重kg</td><td>经产</td><td>增重kg</td></tr>
+			<tr><td>配种1-35天</td><td>20</td><td class="red">+3.5</td><td>20</td><td class="red">+2.2</td></tr>
+		</table>-->
+	</div>
+	
+	
+
+	
+
+</body>
+<script>
+	var authToken = '';
+	var pigsNumber=''
+	var farmId = '';
+	var matingDays;
+	var currFeedTotal;
+	var currWeight;
+	var currBackFat;
+	$(document).ready(function() {
+		// 取得authToken
+		authToken = localStorage.getItem('authToken');
+		var user = localStorage.getItem('user');
+		farmId = JSON.parse(user).farmId;
+		if (authToken.length = 0) {
+			alert("请重新登录");
+			window.top.location.href = 'wxlogin.html';
+			return false;
+		}
+		initQrcode();//微信扫码
+		getPigInfo();
+	});
+	//取得猪只基本信息
+	function getPigInfo() {
+		pigsNumber =$("#pigsNumber").val();//猪只编号或猪只ID
+		$("#pigsNumber").val('');
+		$.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/info/getListPage',
+			contentType: 'application/json',
+			data: 'authToken=' + authToken + '&QpigsNumber=' + pigsNumber+'&farm_id='+farmId + '&page=1&limit=1',
+			dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			success: function(data) {
+				console.log(data)
+				if (data) {
+					if (data.errcode == 200) {
+						pigsNumber = data.dataSource.list[0].pigs_number;//猪只编号
+						var pigVarietyName = data.dataSource.list[0].pigVarietyName;//品种名称
+						var houseName = data.dataSource.list[0].houseName;//栋舍名称
+						var code = data.dataSource.list[0].code;//栏位编号
+						var parity = data.dataSource.list[0].parity;//胎次
+						matingDays = data.dataSource.list[0].matingDays;//配种天数
+						var pregnancyDate = data.dataSource.list[0].pregnancyDate;//预计妊娠日期
+						
+						var result = "";
+						result = result + '<ul class="basic_msg">'+
+											   '<li>'+pigsNumber+'</li>'+
+											   '<li>'+pigVarietyName+'</li>'+
+											   '<li>已配种'+matingDays+'天</li>'+
+										   '</ul>'+
+										   '<ul class="basic_msg">'+
+										   	   '<li>'+houseName+' '+code+'栏</li>'+
+										   	   '<li>'+parity+'胎</li>'+
+										   	   '<li>预计妊娠日期 '+pregnancyDate+'</li>'+
+										   '</ul>';
+						$('#baseInfo').html(result);
+						$("#pigsNumber").val(pigsNumber);
+						getFeedCalcInfo();
+					} else {
+						if (data.errcode == "10005") {
+							window.top.location.href = 'wxlogin.html';
+						}else if(data.errcode == "10016"){
+							alert('未找到猪只信息');
+						}
+					}
+				}
+			},
+			error: function(err) {
+	
+			}
+		})
+	}
+	//限饲计算和猪只重量、背膘等信息
+	function getFeedCalcInfo(){
+		$.ajax({
+			type:"get",
+			url:commonIP + '/api/pig/feedcalculation/getFeedCalcList?authToken='+authToken+'&pigsNumber='+pigsNumber+'&farmId='+farmId,
+			contentType: 'application/json',
+			dataType: 'json',
+			success:function(data){
+				if (data) {
+					if (data.errcode == 200) {
+						currFeedTotal  = data.dataSource.list[0].feedAmount;
+						currWeight = data.dataSource.list[0].weight_data;
+						currBackFat = data.dataSource.list[0].backfat_data;
+						var backFat = currBackFat.toFixed(2);//保留两位小数
+						currFeedTotal = 3.5;
+						$("#currWeight").html(currWeight+' KG');
+						$("#currFeedTotal").html(currFeedTotal+' KG/日');
+						$("#currBackFat").html(backFat+' mm');
+						getAdjustBackfat();
+					}
+				}
+			}
+		});
+	}
+	function subFeedAmount(){
+		if(currFeedTotal-0.5>0){
+			$("#currFeedTotal").html(currFeedTotal-0.5+' KG/日');
+			currFeedTotal = currFeedTotal-0.5;
+			getAdjustBackfat();
+		}
+	}
+	function addFeedAmount(){
+		$("#currFeedTotal").html(currFeedTotal+0.5+' KG/日');
+		currFeedTotal = currFeedTotal+0.5;
+		getAdjustBackfat();
+	}
+	function getAdjustBackfat(){
+		/**
+		 * 妊娠母猪所需的能量包括自身代谢能、胎儿及附属物增重能、背膘调整能。各能量需要的计算公式如下：
+	 	 * 		日自身代谢能：ME=110×(增重/2+母猪调整前体重)0.75
+		 * 		日胎儿及附属物增重能：BWE=胎儿增重×5Mcal/Kg÷调整天数
+		 *      日背膘调整能：PWE=(TP2-SP2)×5Kg/mm×5Mcal/Kg÷调整天数
+		 * 		母猪日饲喂量：W=(ME+PWE+BWE)/E
+	     * 其中，TP2代表调整后背膘值，SP2代表调整前背膘值，E代表饲喂饲料能量值。
+		 * */
+		var pregnancyBackFat = currBackFat+(114 - matingDays)*currFeedTotal*0.02;
+		pregnancyBackFat = pregnancyBackFat.toFixed(2);
+		$("#pregnancyBackFat").html(pregnancyBackFat+' mm');
+//		var adjustDays = 114 - matingDays;//调整天数
+//		$.ajax({
+//			type:"get",
+//			url:commonIP + '/api/pig/feedcalculation/getAdjustBackfat',
+//			data: 'authToken=' + authToken + '&currWeight=' +currWeight+'&currFeedTotal='+currFeedTotal+'&currBackFat='+currBackFat+'&adjustDays='+adjustDays,
+//			contentType: 'application/json',
+//			dataType: 'json',
+//			success:function(data){
+//				if (data) {
+//					if (data.errcode == 200) {
+//						var adjustBackfat = data.errmsg;
+//						
+//					}
+//				}
+//			}
+//		});
+	
+	}
+	function initQrcode() { // 根据实际填写接口的配置地点     // 这里的接口地址是基于node-weixin配置的。    
+		// 当前的网页请求地址
+		var weixinUrl = location.href.split('#')[0];
+		$.ajax({
+			type: "POST",
+			url: commonIP + "api/system/wxserver/getjsConfig?authToken="+authToken,
+			data: JSON.stringify({
+				"url":weixinUrl
+			}) ,
+			contentType: 'application/json',
+			success: function(data) {
+				console.log(data)
+				var data = JSON.parse(data);
+				if (data.errcode == 200) {
+					wx.config({
+//						debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+					    appId: data.dataSource.list[0].appId, // 必填，公众号的唯一标识
+					    timestamp: data.dataSource.list[0].timestamp, // 必填，生成签名的时间戳
+					    nonceStr: data.dataSource.list[0].nonceStr, // 必填，生成签名的随机串
+					    signature: data.dataSource.list[0].signature,// 必填，签名，见附录1
+					    jsApiList: ['checkJsApi','scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+					});
+				}
+			}
+		});
+		wx.ready(function() { 
+			$('#qrcode').click(function () {
+				wx.scanQRCode({       // 默认为0，扫描效果由微信处理，1则直接返回扫描结果，       
+					needResult: 1,        // 可以指定扫二维码还是一维码，默认二者都有       
+					scanType: ["qrCode", "barCode"],        
+					success: function (res) {         // 当needResult 为 1 时，扫码返回的结果
+						var pigsArchivesId = res.resultStr; 
+						if(pigsArchivesId!=null && pigsArchivesId !=''){
+							$("#pigsNumber").val(pigsArchivesId);
+							getPigInfo();
+						}
+					}     
+				}); 
+			}); 
+		});       
+	}
+</script>
+</html>

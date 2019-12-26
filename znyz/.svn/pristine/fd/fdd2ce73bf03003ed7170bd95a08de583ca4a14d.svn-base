@@ -1,0 +1,360 @@
+<html>
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div class="layui-field-box">
+			<form class="layui-form">
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="common.groupName"></label>
+					<div class="layui-input-inline">
+						<select id="groupId" name="groupId" lay-verify="required|groupId" lay-filter="groupId" style="height: 38px;border-color: #F0F0F0;"
+						 lay-search>
+							<option value="" data-i18n="farm.groupValDefault"></option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="common.farmName"></label>
+					<div class="layui-input-inline">
+						<select id="farmId" name="farmId" lay-verify="required|farmId" style="height: 38px;border-color: #F0F0F0;"
+						 lay-search>
+							<option value="" data-i18n="device.farmValDefault"></option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="联系人姓名"></label>
+					<div class="layui-input-block">
+						<input type="text" id="name" name="name" lay-verify="required|name" data-i18n="[placeholder]user.userNamePlaceholder"
+						 class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="user.loginName"></label>
+					<div class="layui-input-block">
+						<input type="text" id="loginName layui-required" name="loginName" lay-verify="required|loginName" data-i18n="[placeholder]user.loginNamePlaceholder"
+						 class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px" id="passDiv">
+					<label class="layui-form-label layui-required" data-i18n="user.password"></label>
+					<div class="layui-input-block">
+						<input type="password" id="password" name="password" lay-verify="required|password" data-i18n="[placeholder]user.passwordPlaceholder"
+						 class="layui-input" maxlength="20">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="user.phone"></label>
+					<div class="layui-input-block">
+						<input type="text" id="phone" name="phone" lay-verify="required|phone" data-i18n="[placeholder]user.phonePlaceholder" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label" data-i18n="user.email"></label>
+					<div class="layui-input-block">
+						<input type="text" id="mail" name="mail" data-i18n="[placeholder]user.emailPlaceholder" class="layui-input">
+					</div>
+				</div>
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							
+							<button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var authToken = localStorage.getItem("authToken");
+			//alert(authToken);
+			var user = localStorage.getItem("user");
+			var groupId;
+			$("#loginName").val('');
+			$("#password").val('');
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				layui.use(['form', 'laydate'], function() {
+					var form = layui.form;
+					var $ = layui.$;
+					var laydate = layui.laydate;
+					if (!checkToken()) {
+						alert(i18next.t("timeout"));
+						window.top.location.href = '../../login.html';
+					}
+
+					//创建时间 日期控件
+					laydate.render({
+						elem: '#bornDate' //指定元素
+							,
+						theme: 'molv',
+						calendar: true //重要节日
+					});
+					//创建时间 日期控件
+					laydate.render({
+						elem: '#enterDate' //指定元素
+							,
+						theme: 'molv',
+						calendar: true //重要节日
+					});
+
+					var userId = GetQueryString("id"); //userId为空表示新增，否则是修改
+					if (userId != null && userId != '') {
+
+						$("#password").attr("disabled", true);
+						$.ajax({
+							type: "GET",
+							url: commonIP + 'api/system/user/get?authToken=' + authToken + '&page=0&limit=0&id=' + userId,
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							contentType: 'application/json',
+							async: false,
+							success: function(data) {
+								var datas = JSON.parse(data);
+								console.log(datas);
+								if (datas.errcode == 200) {
+									//赋值
+									groupId = datas.dataSource.list[0].groupId;
+								} else {
+									//alert(data.errmsg);
+									if (data.errcode == "10005") {
+										window.top.location.href = '../../login.html';
+									}
+								}
+							}
+						});
+					}
+					//获取集团下拉列表
+					$.ajax({
+						url: commonIP + 'api/system/group/getListPage?authToken=' + authToken + '&page=0&limit=0',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						async: false,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if (dataObj != null && dataObj.dataSource.list.length > 0) {
+								var groupOption;
+								for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+									if (groupId == dataObj.dataSource.list[i].id) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '" selected="">' +
+											dataObj.dataSource.list[i].name + '</option>';
+									} else {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource
+											.list[i].name + '</option>';
+									}
+								}
+								$("#groupId").append(groupOption);
+								form.render('select'); //一定要加form.render();
+								var change = "0";
+								BindFarmDropList(change);
+							}
+						}
+					});
+
+					form.on('select(groupId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						/**改变集团后先清空猪场下拉值*/
+						document.getElementById("farmId").options.length = 0;
+						var change = "1";
+						$('#farmId').val("");
+						form.render("select");
+						BindFarmDropList(change);
+
+					});
+
+					//获取猪场下拉列表
+					function BindFarmDropList(change) {
+						var groupId = $("#groupId").val();
+						$.ajax({
+							url: commonIP + 'api/system/farm/getListPage?authToken=' + authToken + '&page=0&limit=0&groupId=' + groupId,
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if (dataObj != null && dataObj.dataSource.list.length > 0) {
+									var farmOption;
+									for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+										farmOption = farmOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[
+											i].name + '</option>';
+									}
+									$("#farmId").append(farmOption);
+									form.render('select'); //一定要加form.render();
+									if (change == "0") {
+										BindUpdateList();
+									}
+								}
+							}
+						});
+					}
+
+					//监听提交
+					if (userId == null) //添加
+					{
+						form.on('submit(submit)', function(res) {
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/system/user/create?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify(res.field),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									console.log(dataObj);
+									//					console.log(dataObj.errcode);
+									if (dataObj) {
+										if (dataObj.errcode == "200") {
+											alert(i18next.t("addSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(dataObj.errmsg);
+										}
+									}
+								},
+								error: function() {
+									alert(i18next.t("returnFailed"));
+								}
+							});
+							return false;
+						});
+					} else //编辑
+					{
+						form.on('submit(submit)', function(res) {
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/system/user/update?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify({
+									"id": userId,
+									"groupId": res.field.groupId,
+									"farmId": res.field.farmId,
+									"name": res.field.name,
+									"mail": res.field.mail,
+									"phone": res.field.phone
+								}),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									//					console.log(dataObj);
+									//					console.log(dataObj.errcode);
+									if (dataObj) {
+										if (dataObj.errcode == "200") {
+											alert(i18next.t("updateSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(dataObj.errmsg);
+										}
+									}
+								}
+							});
+							return false;
+						});
+					}
+
+					function BindUpdateList() {
+						if (userId != null) //编辑
+						{
+							$("#passDiv").hide();
+							$("#password").attr("disabled", true);
+							$("#loginName").attr("disabled", true);
+							$.ajax({
+								type: "GET",
+								url: commonIP + 'api/system/user/get?authToken=' + authToken + '&page=0&limit=0&id=' + userId,
+								parseData: function(res) { //res 即为原始返回的数据
+									return {
+										"code": res.code, //解析接口状态
+										"msg": res.msg, //解析提示文本
+										"count": res.count, //解析数据长度
+										"data": res.dataSource.list //解析数据列表
+									};
+								},
+								contentType: 'application/json',
+								async: false,
+								success: function(data) {
+									var datas = JSON.parse(data);
+									console.log(datas);
+									if (datas.errcode == 200) {
+										//赋值
+										$("#groupId").val(datas.dataSource.list[0].groupId);
+										//alert(datas.data[0].groupId);
+										//parent.layui.form.render();
+										$("#farmId").val(datas.dataSource.list[0].farmId);
+										//alert(datas.data[0].farmId);
+										form.render('select');
+
+										$("#name").val(datas.dataSource.list[0].name); //填充内容
+										$("#loginName").val(datas.dataSource.list[0].loginName);
+										//						$("#password").val(datas.data[0].password);
+										$("#phone").val(datas.dataSource.list[0].phone);
+										$("#mail").val(datas.dataSource.list[0].mail);
+									} else {
+										//alert(data.errmsg);
+										if (data.errcode == "10005") {
+											window.top.location.href = '../../login.html';
+										}
+									}
+								}
+							});
+						} else {
+							$("#loginName").val('');
+							$("#password").val('');
+							//新增
+						}
+					}
+				});
+
+			}
+
+			function GetQueryString(name) {
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+				var r = window.location.search.substr(1).match(reg);
+				if (r != null) return unescape(r[2]);
+				return null;
+			}
+
+			/**
+			 * 编辑功能赋值
+			 */
+			function BindData(userId) {
+
+			}
+		</script>
+	</body>
+</html>

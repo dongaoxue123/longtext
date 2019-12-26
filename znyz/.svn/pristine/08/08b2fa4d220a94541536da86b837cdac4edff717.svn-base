@@ -1,0 +1,403 @@
+skyest.interface('ajax')	
+var diag=false;
+skyest.ajax=function(ajaxurl,callback,post){//后续增加更多变量
+			//添加DIV阻止操作
+			if($get.q('.bar')){
+				loadtype('0','数据连接中')
+			}
+			var xhr=new XMLHttpRequest();
+			xhr.int=10;
+			xhr.onload=function(){
+					
+					var data = xhr.responseText;
+					data = JSON.parse(xhr.responseText);
+					if(!data.head){//验证器
+						alert('返回格式错误')
+						return false;
+					}else if(data.head.errcode!=200&&data.head.errcode!=400&&data.head.errcode!=501&&data.head.errcode!=10010&&data.head.errcode!=10016){
+						console.log(data.head.errmsg)
+						if (data.head.errcode==10005) {
+							if(diag){
+							}else{
+								diag=true;
+								sessionStorage.setItem('type',false)
+								alert(data.head.errmsg)
+								window.location.href = "login.html";
+							}
+						}
+						return false;
+					}
+					if(data.main==null){
+						callback(data);
+					}else{
+						callback(data);
+					}
+				}
+			xhr.onprogress=function(event){
+				console.log(event.loaded+"of"+event.total)
+				}
+			xhr.onerror=function(){
+				alert("数据访问出现异常错误: status code is " + xhr.status+"网址为"+ajaxurl);
+				}
+			
+			if(!post){
+				xhr.open("GET",ajaxurl,true);
+			}else{
+				xhr.open("POST",ajaxurl,true);
+			}
+			xhr.setRequestHeader("Content-Type","application/json");
+			if(!post){
+				xhr.send();	
+			}else{
+				xhr.send(post);
+			
+			}
+		}
+skyest.jsonData=function(data){
+	var data=data?data:new Object();
+	var newData=new Object();
+	newData.head=new Object();
+	newData.main=new Object();
+	newData.head.authToken=$get.storage("authToken")?$get.storage("authToken"):'';//令牌
+	newData.head.jobId=data.systemCode?data.systemCode:"";// 流水号
+	newData.head.callType=data.callType?data.callType:"";// 接口类型
+	newData.head.jobId=data.jobId?data.jobId:"";// 流水号
+	newData.head.fromTime=skyest.time.nowTime();//本地时间
+	newData.head.toTime="";//服务器时间
+	newData.head.sourceId=data.sourceId?data.sourceId:"";// 业务模块的ID
+	newData.head.userName=$get.storage("userName")?$get.storage("userName"):'';//用户名
+	newData.head.userId=$get.storage("userId")?$get.storage("userId"):'';//用户id
+	newData.head.sync='';// 同步异步
+	newData.head.errcode='';//0 标识正确
+	newData.head.errmsg='';//标识正确
+	newData.main.common=new Object;
+	newData.main.common.query=new Object;
+	newData.main.dataList=new Object;
+	newData.main.dataList.dataSource=new Object;
+	newData.main.dataList.dataSource.list=new Array;
+	newData.main.dataList.dataSource.list[0]=new Object();
+	return newData;
+	
+}
+skyest.loadPlus=function(plusName,callback){//加载指定插件
+	var url="data/"+plusName+"/"+"index"+"."
+	this.load("javascript",url+"js",function(){
+		//console.log("这里",url)
+		this.load("css",url+"css",function(){
+			//console.log(this)
+			this.load("html",url+"html",callback)
+		}.bind(this,url,callback))
+	}.bind(this,url,callback))
+}
+skyest.unload=function(type,url,callback){
+	switch (type){
+		case "css":
+			var allLink=$get.qs('link');
+		     for(var i=0;i<allLink.length;i++){
+		     	console.log(allLink[i].href,url,allLink[i].href.indexOf(url))
+		     	if(allLink[i].href.indexOf(url)>0){
+		     		var head = document.getElementsByTagName('head')[0];
+		     		head.removeChild(allLink[i]);
+		     		return false;
+		     	}
+		     }
+			break;
+		default:
+			break;
+	}
+}
+skyest.load=function(type,url,callback){//异步加载文件
+	switch (type){
+		case "html":
+			$get.ajax(url,callback);
+			break;
+		case "javascript":
+			var allLink=$get.qs('script');
+		     for(var i=0;i<allLink.length;i++){
+		     	if(allLink[i].src&&allLink[i].src.indexOf(url)>0){
+		     		callback();
+		     		return false;
+		     	}
+		     }
+			var script = document.createElement("script");
+			script.type = "text/javascript";
+			  if(typeof(callback) != "undefined"){
+			      script.onload = function () {
+			        callback();
+			      };
+			  }
+			  script.onerror=function(){
+			  	
+			  }
+			  script.src = url;
+			  var head = document.getElementsByTagName('head')[0];
+			  head.appendChild(script);
+			break;
+		case "css":
+		     var allLink=$get.qs('link');
+		     for(var i=0;i<allLink.length;i++){
+		     	//console.log(allLink[i].href,url,allLink[i].href.indexOf(url))
+		     	if(allLink[i].href.indexOf(url)>0){
+		     		callback();
+		     		return false;
+		     	}
+		     }
+			 var head = document.getElementsByTagName('head')[0];
+			    var link = document.createElement('link');
+			    link.href = url;
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    head.appendChild(link);
+			    if(typeof(callback) != "undefined"){
+			       link.onload=function(){
+			    	callback();
+			    	}
+			  	}
+			    link.onerror=function(){
+			    	
+			    }
+			 
+		default:
+			break;
+	}
+	
+}
+//加载分页
+skyest.interface('page');
+skyest.page={
+	init:function(data,fun){
+		var aside=document.createElement('aside');
+		var pageSize=parseInt(data.pageSize)
+		var pageNum=parseInt(data.pageNum)
+		var total=parseInt(data.total);
+		if(!pageNum){return false;}
+		//首页
+		var span=document.createElement('span');
+		span.innerHTML='第一页';
+		span.addEventListener('click',function(){fun(1,pageSize)}.bind(this,pageSize),false)
+		aside.appendChild(span);
+		var pageCount=parseInt(total/pageSize)+(total%pageSize>0?1:0);//总页数
+		console.log(fun)
+		//当前页的前三页
+		for(var i=1;i<4;i++){
+			if(pageNum-i>0){
+				var span=document.createElement('span');
+				span.innerHTML=pageNum-i;
+				span.dataset.value=pageNum-i;
+				span.dataset.pageSize=pageSize;
+				span.addEventListener('click',function(e){
+					fun(e.target.dataset.value,e.target.dataset.pageSize)	
+				}.bind(this),false)
+				aside.appendChild(span);
+			}
+		}
+		//当前页
+		var span=document.createElement('span')
+		span.innerHTML=pageNum;
+		
+		span.classList.add('active');
+		aside.appendChild(span);
+		
+		//中间过渡页
+		var span=document.createElement('span')
+		span.innerHTML="...";
+		span.dataset.value=pageNum;
+		span.dataset.pageSize=pageSize;
+		span.classList.add('normal');
+		aside.appendChild(span);
+		
+		//当前页的后三页
+		for(var i=1;i<4;i++){
+			if(pageNum+i<=pageCount){
+				var span=document.createElement('span');
+				span.innerHTML=pageNum+i;
+				span.dataset.value=pageNum+i;
+				span.dataset.pageSize=pageSize;
+				span.addEventListener('click',function(e){
+					fun(e.target.dataset.value,e.target.dataset.pageSize)
+					},false)
+				aside.appendChild(span);
+			}	
+		}
+		
+		//尾页
+		var span=document.createElement('span');
+		span.innerHTML='最后一页';
+		span.addEventListener('click',function(){fun(pageCount,pageSize)}.bind(this,pageCount,pageSize),false)
+		aside.appendChild(span);
+		return aside;
+	}
+	
+}
+//加载表格
+skyest.interface('table');
+skyest.table={
+	init:function(config,data){//表格标题配置参数  读取过来的json表格数据
+		var newTable=document.createElement('table');
+		var newTr=document.createElement('tr');
+		var common=config.common?config.common:false;
+		var config=config.content;
+		for(var key in config){
+			var newTh=document.createElement('th');
+			newTh.innerHTML=config[key];
+			newTr.appendChild(newTh);
+		}
+		if(common){
+			var newTh=document.createElement('th');
+				newTh.innerHTML="操作";
+				newTh.dataset.common=JSON.stringify(common);
+				newTr.appendChild(newTh);
+		}
+		newTable.appendChild(newTr);
+		
+		for(var i=0;i<data.length;i++){
+			var newTr=document.createElement('tr');
+			newTr.dataset.id=data[i].id
+			for(var key in config){
+				var newTd=document.createElement('td')
+				newTd.innerHTML=data[i][key];
+				newTr.appendChild(newTd);
+			}
+			console.log("1",common)
+			if(common){
+				var newTd=document.createElement('td')
+				if(common.modify){
+					var	newSpan=document.createElement('span')
+					newSpan.innerHTML="修改"
+					newSpan.addEventListener('click',this.plus.modify,false)
+					newTd.appendChild(newSpan)
+				}
+				if(common.del){
+					var	newSpan=document.createElement('span')
+					newSpan.innerHTML="删除"
+					newSpan.addEventListener('click',this.plus.del,false)
+					newTd.appendChild(newSpan)
+					newTr.appendChild(newTd);
+				}
+				if(common.view){
+					var	newSpan=document.createElement('span')
+					newSpan.innerHTML=common.view.name?common.view.name:"查看"
+					newSpan.addEventListener('click',this.plus.del,false)
+					newTd.appendChild(newSpan)
+					newTr.appendChild(newTd);
+				}
+			}	
+			newTable.appendChild(newTr)
+			console.log(this)
+		}
+		return newTable;
+	},
+	plus:{
+		modify:function(e){
+			var target=$get.parentNode(e.target,'TR');
+			alert(target.dataset.id)
+		},
+		del:function(e){
+			var target=$get.parentNode(e.target,'TR');
+			alert(target.dataset.id)
+		},
+	}
+}
+//插件
+skyest.interface('plus');
+skyest.plus=function(){
+	
+	
+}
+skyest.interface('diag');
+skyest.diag.cover=function(closed){
+			if(closed){
+				$get.q('#hiddenCover').style.display='none';
+				return false;
+			}
+			if($get.q('#hiddenCover')){
+					$get.q('#hiddenCover').style.display='block';
+					}else{
+						var _div=document.createElement('div');
+						_div.id='hiddenCover';
+						_div.style.position='fixed';
+						_div.style.zIndex='98';
+						_div.style.background='#000';
+						_div.style.height='100%'
+						_div.style.width='100%'
+						_div.style.top="0";
+						_div.style.left="0";
+						_div.style.opacity='0.2';
+						document.body.appendChild(_div);
+					}
+}
+skyest.diag.plus=function(target,title){
+			skyest.diag.cover();
+			$get.q('.common_openDiag').style.display='block'
+   				var target=target.cloneNode(true);
+   				$get.q('.common_openDiag .common_openDiag_container').innerHTML="";
+   				$get.q('.common_openDiag .Common_openDiag_sidebar').innerHTML=title?title:"";
+   				
+   				$get.q('.common_openDiag .common_openDiag_container').appendChild(target);
+   				return target;
+}
+skyest.diag.closed=function(){
+			skyest.diag.cover(true)
+			$get.q('.common_openDiag .common_openDiag_container').innerHTML="";
+			$get.q('.common_openDiag').style.display='none'
+}
+//时间戳
+skyest.interface('time')
+
+skyest.time.nowTime=function(nowdate){
+				var myDate = new Date();
+				var year=myDate.getFullYear();    //获取完整的年份(4位,1970-????)
+				var mouth=(((myDate.getMonth()+1)>9)?(myDate.getMonth()+1):("0"+(myDate.getMonth()+1)))       //获取当前月份(0-11,0代表1月)
+				var date=myDate.getDate()>9?myDate.getDate():'0'+myDate.getDate();        //获取当前日(1-31)
+				var hours=myDate.getHours()>9?myDate.getHours():'0'+(myDate.getHours());       //获取当前小时数(0-23)
+				var minutes=myDate.getMinutes()>9?myDate.getMinutes():'0'+(myDate.getMinutes());     //获取当前分钟数(0-59)
+				var seconds=myDate.getSeconds()>9?myDate.getSeconds():'0'+(myDate.getSeconds());     //获取当前秒数(0-59)
+				var appendZero=function(s){return ("00"+ s).substr((s+"").length);}
+				switch(nowdate){
+					case 'year' :
+						return myDate.getFullYear();
+						break;
+					case 'mouth':
+						return mouth;
+						break;
+					case 'date':
+					    return date;
+						break;
+					case 'hours':
+						return hours;
+						break;
+					case 'minutes':
+						return minutes;
+						break;
+					case 'seconds':
+						return seconds;
+					case 'noSeconds':
+						return myDate.getFullYear()+'-'+mouth+'-'+date+'T'+hours+':'+minutes;
+						break;
+					case 'noTime':
+						return myDate.getFullYear() + '-' + mouth + '-' + date;
+						break;
+					default:
+						return myDate.getFullYear() + "-" + appendZero(myDate.getMonth() + 1) + "-" + appendZero(myDate.getDate()) + " " + appendZero(myDate.getHours()) + ":" + appendZero(myDate.getMinutes()) + ":" + appendZero(myDate.getSeconds());		
+					}
+		}
+Date.prototype.format = function(fmt) { 
+     var o = { 
+        "M+" : this.getMonth()+1,                 //月份 
+        "d+" : this.getDate(),                    //日 
+        "h+" : this.getHours(),                   //小时 
+        "m+" : this.getMinutes(),                 //分 
+        "s+" : this.getSeconds(),                 //秒 
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度 
+        "S"  : this.getMilliseconds()             //毫秒 
+    }; 
+    if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length)); 
+    }
+     for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+         }
+     }
+    return fmt; 
+}       

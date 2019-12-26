@@ -1,0 +1,188 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../common/qrcode/qrcode.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+    	<!--startprint-->
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">猪只类别</label>
+            <div class="layui-input-inline">
+            	<input type="text" id="pigTypeId" name="pigTypeId" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label">猪只编号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="pigs_number" name="pigs_number" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">生产状态</label>
+            <div class="layui-input-inline">
+            	<input type="text" id="production_status" name="production_status" class="layui-input" disabled>
+            </div>
+            <label class="layui-form-label">状态日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="status_start_time" name="status_start_time" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">品种</label>
+            <div class="layui-input-inline">
+            	<input type="text" id="pig_variety_id" name="pig_variety_id" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label">品系</label>
+            <div class="layui-input-inline">
+            	<input type="text" id="strain" name="strain" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">出生日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="born_date" name="born_date" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label">入场日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="enter_date" name="enter_date" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">猪只胎次</label>
+            <div class="layui-input-inline">
+                <input type="text" id="parity" name="parity" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label">猪只耳缺号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="ear_num" name="ear_num" class="layui-input" disabled>
+            </div>
+        </div>
+        <div id="qrcode" style="width:250px; height:250px;position:absolute;top: 280px;left: 120px;"></div>
+        <!--endprint-->
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>打印</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+	  		alert("登录超时，请重新登录！");
+	 			window.top.location.href = '../../login.html';
+		}
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#status_start_time' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#born_date' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#enter_date' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+
+		$('#qrcode').html("");
+		  var str = userId;
+		  var qrcode = new QRCode(document.getElementById("qrcode"), {	
+			width : 250,
+			height : 250
+		});
+
+		function makeCode () {		 
+		   qrcode.makeCode(userId);
+		}
+
+		makeCode();
+		
+		$("#pigs_id").
+			on("blur", function () {
+				makeCode();
+			}).
+			on("keydown", function (e) {
+				if (e.keyCode == 13) {
+					makeCode();
+				}
+			});
+			
+    	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/info/getListPage?authToken='+authToken+'&page=0&limit=0&pigs_archives_id='+userId,
+		contentType: 'application/json',
+		success: function(data) {
+			var datas = JSON.parse(data);
+			console.log(datas);
+			if (datas.errcode == 200) {
+				//赋值
+				$("#pigTypeId").val(datas.dataSource.list[0].pigs_type);
+				$("#production_status").val(datas.dataSource.list[0].production_status_id);
+                $("#pig_variety_id").val(datas.dataSource.list[0].pig_variety_id);
+                $("#strain").val(datas.dataSource.list[0].strain);
+				$("#pigs_number").val(datas.dataSource.list[0].pigs_number);
+				$("#status_start_time").val(datas.dataSource.list[0].status_start_time.substr(0,10));
+				$("#born_date").val(datas.dataSource.list[0].born_date.substr(0,10));
+				$("#enter_date").val(datas.dataSource.list[0].enter_date.substr(0,10));
+				$("#parity").val(datas.dataSource.list[0].parity);
+				$("#ear_num").val(datas.dataSource.list[0].ear_num);
+			} else {
+				alert(data.errmsg);
+				if(data.errcode=="10005"){
+						window.top.location.href = '../../login.html';
+				}
+			}
+		}
+		});
+		form.on('submit(submit)', function(res){
+    	  if(confirm('确定打印吗？')) {
+/*			    bdhtml=window.document.body.innerHTML;   
+			    sprnstr="<!--startprint-->";   
+			    eprnstr="<!--endprint-->";   
+			    prnhtml=bdhtml.substr(bdhtml.indexOf(sprnstr)+17);   
+			    prnhtml=prnhtml.substring(0,prnhtml.indexOf(eprnstr));   
+			    window.document.body.innerHTML=prnhtml; */ 
+			    window.print();   
+	     　   　    }
+        });   
+	});
+	 
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+var header = 	'<div class="container clear">'+
+//		        	'<div class="logo">'+
+//		        		'<a href="" class="logo_img"></a>'+
+//		        	'</div>'+
+		            
+		            '<ul class="menu clear" id="menu">'+
+		                '<li><i class="icon"></i><a href="index.html">首页</a><i class="icon arrow"></i></li>'+
+								
+		                '<li><i class="icon"></i><a href="pigRaising.html">智慧养猪</a><i class="icon arrow"></i></li>'+
+		                '<li><i class="icon"></i><a href="systemCharacteristics.html">系统特性</a><i class="icon arrow"></i></li>'+
+		                '<li><i class="icon"></i><a href="help.html">帮助中心</a><i class="icon arrow"></i></li>'+
+		                '<li><i class="icon"></i><a href="about.html">关于我们</a><i class="icon arrow"></i></li>'+
+		            '</ul>'+
+		
+//		            '<div class="link clear logout_type" style="display: none;">'+
+//		            		'<a href="user.html">用户中心</a>'+
+//		                    '<a href="javascript:void(0)" onclick="quit()">退出</a>'+
+//		            '</div>'+
+//		            '<div class="link clear login_type" style="display: none;">'+
+//		                    '<a href="login.html">登录</a>'+
+//		            '</div>'+
+//		            '<div class="switch" id="switch" onclick="toggle()"><i></i></div>'+
+		        '</div>';
+document.querySelector('.header').innerHTML = header

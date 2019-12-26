@@ -1,0 +1,122 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<style>
+		.divCount{
+	width: 100%;
+}
+.divCount > div:first-of-type{
+	padding-left: 3%;
+	font-size: 0.5rem;
+	height: 1.5rem;
+	line-height: 1.5rem;
+	border-bottom: 1px solid #ddd;
+}
+
+.iconBox{
+	width: 33.33%;
+	float: left;
+	text-align: center;
+	padding: 1rem 0;
+}
+.iconBox span{
+	font-size: 1.2rem;
+	line-height: 1em;
+	color: #0fa8e1;
+}
+.iconBox h4{
+	font-size: 0.375rem;
+	line-height: 3em;
+	color: #666;
+}
+</style>
+</head>
+<body  style="height:100%;">
+	<main>
+		<div class="line"></div>
+		<div class="divCount">
+			<div>统计数据</div>
+			<div id = "countFunction">
+				<!--<div class="iconBox" onclick="location='BodyScoreStatistics.html'"><span class="iconfont icon-pig"></span><h4>体况评分统计</h4></div>
+				<div class="iconBox" onclick="location='ReserveSowStatistics.html'"><span class="iconfont icon-weibiaoti1"></span><h4>后备母猪统计</h4></div>
+				<div class="iconBox" onclick="location='GradingStandard.html'"><span class="iconfont icon-shezhi"></span><h4>膘情与评分</h4></div>-->
+				<!--<div class="iconBox" onclick="location='count2.html'"><span class="iconfont icon-shuju1"></span><h4>猪舍对比</h4></div>
+				<div class="iconBox" onclick="location='count3.html'"><span class="iconfont icon-icon"></span><h4>猪场对比</h4></div>-->
+				<!--<div class="iconBox" onclick=""><span class="iconfont icon-icon1"></span><h4>猪舍体重分布图</h4></div>-->
+				<!--<div class="iconBox" onclick=""><span class="iconfont icon-shuju1"></span><h4>猪舍对比</h4></div>
+				<div class="iconBox" onclick=""><span class="iconfont icon-icon"></span><h4>猪场对比</h4></div>-->
+				<!--<div class="clear"></div>-->
+			</div>
+		</div>
+		
+		<div class="line"></div>
+		
+		<!--<div class="divCount">
+			<div>管理建议</div>
+		</div>-->
+		
+		
+		<div class="footer">
+			<ul>
+				<li id="backfatFooter" onclick="location='fieldList.html'"><span class="iconfont icon-weibiaoti1"></span><h5>测膘</h5></li>
+				<li id="countFooter" onclick="location='count.html'" class="active"><span class="iconfont icon-pig"></span><h5>统计</h5></li>
+				<li id="setFooter" onclick="location='set.html'"><span class="iconfont icon-shezhi"></span><h5>配置</h5></li>
+			</ul>
+		</div>
+	</main>
+	<script>
+		var authToken = localStorage.getItem('authToken');// 取得authToken
+		var roleId = localStorage.getItem("roleId");
+		$(document).ready(function() {
+			initFunction();
+		});
+		function initFunction(){
+			$.ajax({
+				type:"get",
+				url: commonIP + "api/system/roleperms/get?authToken="+authToken+'&roleId='+roleId,
+				contentType: 'application/json',
+				dataType:'json',
+				async:true,
+				success:function(data){
+					console.log(data)
+					if (data) {
+						var str = '';
+						if (data.errcode == 200) {
+							var arr = new Array();
+							for (var key in data.dataSource.list) {
+								var linkUrl = data.dataSource.list[key].linkUrl;
+								if(linkUrl == 'BodyScoreStatistics.html'){
+									str = str+'<div class="iconBox" onclick="location=\'BodyScoreStatistics.html\'"><span class="iconfont icon-pig"></span><h4>体况评分统计</h4></div>';
+								}else if(linkUrl == 'ReserveSowStatistics.html'){
+									str = str+'<div class="iconBox" onclick="location=\'ReserveSowStatistics.html\'"><span class="iconfont icon-weibiaoti1"></span><h4>后备母猪统计</h4></div>';
+								}else if(linkUrl == 'GradingStandard.html'){
+									str = str+'<div class="iconBox" onclick="location=\'GradingStandard.html\'"><span class="iconfont icon-shezhi"></span><h4>膘情与评分</h4></div>';
+								}
+							}
+							$("#countFunction").append(str);
+						} else {
+							if (data.errcode == "10005") {
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				
+				}
+			});
+		}
+	</script>
+</body>
+</html>

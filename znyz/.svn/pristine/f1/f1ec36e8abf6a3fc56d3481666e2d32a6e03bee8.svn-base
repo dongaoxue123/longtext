@@ -1,0 +1,287 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测重校准</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<link rel="stylesheet" type="text/css" href="style/weui.min.css"/>
+	<style>
+		#addDiv
+		{
+			height: 40%;/*!important*/
+		}
+		#addBody
+		{
+			height: 55%;
+		}
+	</style>
+</head>
+<body  style="height:100%;">
+		<main>
+			<div class="main">
+				<!--<h3>栋舍：<select onchange= "houseChanged()" class="form-control" name="house_id" id="house_id" style="width:auto;font-size: 15px;text-indent: 0;padding: 0 5%;margin: 0;"></select>
+				           栏位：<select onchange= "getWeightInfo()" class="form-control" name="field_id" id="field_id" style="width:auto;font-size: 15px;text-indent: 0;padding: 0 5%;margin: 0;"></select>
+				</h3>-->
+				<div class="box_com">
+					<span>栋舍：</span>
+					<select name="data" id="house_id" onchange= "houseChanged()">
+					</select>
+				</div>
+				<div class="box_com">
+					<span> 栏位：</span>
+					<select name="data" id="field_id" onchange= "getWeightInfo()">
+					</select>
+				</div>
+			</div>	
+			
+			<div class="main">
+				<div class="box_com">
+					<span>猪只体重：</span>
+					<span id="dqczjl" style="font-size: 20px;"></span>
+				</div>
+				<div class="box_com">
+					<span>校准记录：</span>
+					<input type="text" name="" id="weight_data" value="" class="input01" style="height: 50px;width: 130px;font-size:20px;border-left-width:0px;border-top-width:0px;border-right-width:0px;"/>
+					kg
+					<input type="hidden" name="" id="data_id" value="" class="input01"/>
+				</div>
+			</div>
+			<div class="btn">
+				<input type="submit" name="save" id="save" value="修改" onclick="editInfo()"/>
+				<input type="submit" name="cancel" id="qx" value="取消" onclick="backIndex()"/>
+			</div>
+		</main>
+		
+		
+</body>
+<script>
+	function goBack()
+	{
+		window.history.back();
+	}
+	
+	var authToken = localStorage.getItem('authToken');
+	var houseAndFieldList;
+	$(document).ready(function(){
+		$("#addInfo").hide();
+		var user = localStorage.getItem('user');
+		var group_id = JSON.parse(user).groupId;
+		var farm_id = JSON.parse(user).farmId;
+		getTable(farm_id);
+	});
+	
+	// 取得信息
+	function getTable(farm_id) {
+        $.ajax({
+        	type:"GET",
+        	url:commonIP +'api/pig/weight/getTable',
+        	contentType:'application/json',
+        	data:'authToken='+authToken+'&farm_id='+farm_id,
+        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+        	success:function(data){
+        		console.log(data);
+        		if (data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				}else {
+					var table_name = data.dataSource.list[0].table_name;
+					$("#table_name").val(table_name);	
+					getHouseField(table_name,farm_id);
+				} 
+        	}
+        });	
+	}
+	function getHouseField(table_name,farm_id){
+		$.ajax({
+        	type:"GET",
+        	url:commonIP +'api/pig/weight/getHouseField',
+        	contentType:'application/json',
+        	data:'authToken='+authToken+'&farm_id='+farm_id,
+        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+        	success:function(data){
+        		var tmp = new Array();
+        		console.log(data);
+        		if (data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				}else {
+					var arr = [];
+					var list = data.dataSource.list;
+					houseAndFieldList = list;
+					for(var i = 0; i < list.length; i++){
+						if(i == 0) arr.push(list[i]);
+						b = false;
+						if(arr.length > 0 && i > 0){
+						    for(var j = 0; j < arr.length; j++){
+						        if(arr[j].name == list[i].name){
+						            b = true;
+						        //break;
+						        }
+						    }
+						    if(!b){ arr.push(list[i]);}
+						}
+					}
+					var html = '';
+					var houseId ='';
+					for(var key = 0; key <arr.length; key++){
+						html = html + '<option value="'+ arr[key].house_id +'">'+ arr[key].name +'</option>';
+						if(key == 0){
+							houseId = arr[key].house_id;
+						}
+					}
+					$("#house_id").html(html);
+					var arr2 = [];
+					var flag = 1;
+					for(var i = 0; i < list.length; i++){
+						if(houseId == list[i].house_id){
+							if(flag == 1) {
+								arr2.push(list[i]);
+								flag ++;
+							}
+							b = false;
+							if(arr2.length > 0 && i > 0){
+							    for(var j = 0; j < arr2.length; j++){
+							        if(arr2[j].field_id == list[i].field_id){
+							            b = true;
+							        //break;
+							        }
+							    }
+							    if(!b){ arr2.push(list[i]);}
+							}
+						}
+					}
+					var html2 = '';
+					for(var key = 0; key <arr2.length; key++) {
+						 html2 = html2 + '<option value="'+ arr2[key].field_id +'">'+ arr2[key].code +'</option>';
+					}
+					$("#field_id").html(html2);
+					houseChanged();
+				} 
+        	}
+        });	
+	}
+	/**
+	 * 栋舍下拉改变
+	 */
+	function houseChanged() {
+		/**改变栋舍后先清空栏位下拉值*/
+		document.getElementById("field_id").options.length = 0;
+		var houseId = $("#house_id").val();
+		var arr2 = [];
+		var flag = 1;
+		for(var i = 0; i < houseAndFieldList.length; i++){
+			if(houseId == houseAndFieldList[i].house_id){
+				if(flag == 1) {
+					arr2.push(houseAndFieldList[i]);
+					flag ++;
+				}
+				b = false;
+				if(arr2.length > 0 && i > 0){
+				    for(var j = 0; j < arr2.length; j++){
+				        if(arr2[j].field_id == houseAndFieldList[i].field_id){
+				            b = true;
+				        //break;
+				        }
+				    }
+				    if(!b){ arr2.push(houseAndFieldList[i]);}
+				}
+			}
+		}
+		var html2 = '';
+		for(var key = 0; key <arr2.length; key++) {
+			 html2 = html2 + '<option value="'+ arr2[key].field_id +'">'+ arr2[key].code +'</option>';
+		}
+		$("#field_id").html(html2);
+		getWeightInfo();
+	}
+	function getWeightInfo(){
+		var user = localStorage.getItem('user');
+		var group_id = JSON.parse(user).groupId;
+		var farm_id = JSON.parse(user).farmId;
+		var house_id = $('#house_id option:selected').val();
+		var fie_id = $('#field_id').val();
+		$.ajax({
+        	type:"GET",
+        	url:commonIP +'api/pig/weight/getTable',
+        	contentType:'application/json',
+        	data:'authToken='+authToken+'&farm_id='+farm_id,
+        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+        	success:function(data){
+        		console.log(data);
+        		if (data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				}else {
+					var table_name = data.dataSource.list[0].table_name;
+					getInfo(table_name,house_id,fie_id);
+				} 
+        	}
+        });
+	}
+	// 取得信息
+	function getInfo(table_name,house_id,fie_id) {
+		$("#weight_data").val(null);
+        $.ajax({
+        	type:"GET",
+        	url:commonIP +'api/pig/weight/weightCalibration',
+        	contentType:'application/json',
+        	data:'authToken='+authToken+'&table_name='+table_name+'&field_id='+fie_id+'&house_id='+house_id,
+        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+        	success:function(data){
+        		console.log(data);
+    			$("#dqczjl").empty();
+    			$("#data_id").empty();
+    			
+        		$("#dqczjl").append(data.dataSource.list[0].weight_data+"kg");
+        		$("#data_id").val(data.dataSource.list[0].data_id);	
+        		if (data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				} 
+        	}
+        });	
+	}
+	
+	// 取得信息
+	function editInfo(pigsArchivesId,houseName) {
+		var weight_data = $("#weight_data").val();
+		var houseId = $("#house_id").val();
+		var data_id = $("#data_id").val();
+			if(weight_data == "" || weight_data == undefined || weight_data == null){
+				alert('校准重量为空请重新填写！');
+				return;
+			}
+			$.ajax({
+	        	type:"POST",
+	        	url:commonIP +"api/pig/weight/updateczData?authToken="+authToken,
+	        	data: JSON.stringify({
+							"weight_data":weight_data,
+							"data_id":data_id,
+							"houseId":houseId
+						}) ,
+	        	contentType:'application/json',
+	        	success: function(data) {
+					var data = JSON.parse(data);
+					if (data.errcode == 200) {
+						alert('保存成功');
+						getWeightInfo();
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+							window.top.location.href = 'wxlogin.html';
+						}
+					}
+				}
+	       });	
+	}
+	function backIndex(){
+		window.location.href = 'index.html';
+	}
+</script>
+</html>

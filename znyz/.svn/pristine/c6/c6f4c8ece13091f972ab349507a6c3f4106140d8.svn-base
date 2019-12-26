@@ -1,0 +1,66 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图首页猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FarmFarmRowsBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 序号
+	private String xh;
+	// 猪场名称
+	private String farm;
+	// 地区
+	private String city;
+	// 猪只头数
+	//private int pignum;
+	// 链接地址
+	private String url;
+
+	public String getXh() {
+		return xh;
+	}
+
+	public void setXh(String xh) {
+		this.xh = xh;
+	}
+
+	public String getFarm() {
+		return farm;
+	}
+
+	public void setFarm(String farm) {
+		this.farm = farm;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+//	public int getPignum() {
+//		return pignum;
+//	}
+//
+//	public void setPignum(int pignum) {
+//		this.pignum = pignum;
+//	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+}

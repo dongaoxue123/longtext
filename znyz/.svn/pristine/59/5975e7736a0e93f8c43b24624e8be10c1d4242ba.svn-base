@@ -1,0 +1,208 @@
+var authToken = localStorage.getItem("authToken");
+var id = '';
+$(function() {
+	InitData();
+});
+
+function InitData() {
+	if(authToken.length = 0){
+		alert('请重新登录');
+		window.top.location.href = 'wxlogin.html';
+		return false;
+	}
+	setInit();
+	$("#houseListFooter").addClass("active");
+	id = getUrlParam("id");
+	var groupId = getUrlParam("groupId");
+	//设置生产状态下拉值
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/info/getStatusListSelect?authToken='+authToken+'&groupId='+groupId,
+		contentType: 'application/json',
+		success: function(data) {
+			var data = JSON.parse(data);
+			if (data.errcode == 200) {
+				for (var i=0;i<data.dataSource.total;i++) {  
+					if(data.dataSource.list[i] != null && data.dataSource.list[i].id != null){
+						$('#add_feeding_status_id').append('<option value='+data.dataSource.list[i].id+'>'+data.dataSource.list[i].name+'</option>')
+					}
+                } 
+			}
+		}
+	});
+	//设置饲料类型下拉
+	var optionType ='materielType';//系统选项类型为materielType代表饲料类型。
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/system/option/getOptionListSelect?authToken='+authToken+'&type='+optionType,
+		contentType: 'application/json',
+		success: function(data) {
+			var data = JSON.parse(data);
+			if (data.errcode == 200) {
+				for (var i=0;i< data.dataSource.total;i++){	
+					if(data.dataSource.list[i]!= null && data.dataSource.list[i].id != null){
+						$('#add_feeding_materiel_id1').append('<option value='+data.dataSource.list[i].id+'>'+data.dataSource.list[i].name+'</option>')
+						$('#add_feeding_materiel_id2').append('<option value='+data.dataSource.list[i].id+'>'+data.dataSource.list[i].name+'</option>')
+						$('#add_feeding_materiel_id3').append('<option value='+data.dataSource.list[i].id+'>'+data.dataSource.list[i].name+'</option>')
+					}
+                } 
+			}
+		}
+	});
+	if(id != null){//已存在记录进行修改时先查询
+		//修改时设置标题为"修改"
+		$("#feedingTitle").text("修改");
+		//修改时隐藏掉"饲喂记录"标签
+		document.getElementById('record').style.display='none';
+		$.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/feeding/getListPage?authToken='+authToken+'&id='+id,
+			contentType: 'application/json',
+			success: function(data) {
+				var data = JSON.parse(data);
+				if (data.errcode == 200) {
+					var create_time = data.dataSource.list[0].create_time;
+					var feeding_date =create_time.substring(0,10);
+					var feeding_time =create_time.substring(11,16);
+					//赋值
+					$('#add_feeding_house_id').val(data.dataSource.list[0].house_id);
+					$('#add_feeding_house_name').val(data.dataSource.list[0].house_name);
+					$('#add_feeding_date').val(feeding_date);
+					$('#add_feeding_time').val(feeding_time);
+					$('#add_feeding_status_id').val(data.dataSource.list[0].production_status_id);
+					$('#add_feeding_materiel_id1').val(data.dataSource.list[0].materiel_id1);
+					$('#add_feeding_materiel_id2').val(data.dataSource.list[0].materiel_id2);
+					$('#add_feeding_materiel_id3').val(data.dataSource.list[0].materiel_id3);
+					$('#add_feeding_scale1').val(data.dataSource.list[0].feeding_scale1);
+					$('#add_feeding_scale2').val(data.dataSource.list[0].feeding_scale2);
+					$('#add_feeding_scale3').val(data.dataSource.list[0].feeding_scale3);
+				} else {
+					alert(data.errmsg);
+					if(data.errcode=="10005"){
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		});
+	}else{//添加
+		//添加时设置标题为"新增"
+		$("#feedingTitle").text("新增");
+		var houseId = getUrlParam("houseId");
+		var houseName = getUrlParam("houseName");
+		var farmId = getUrlParam("farmId");
+		var currDate = new Date();
+		var date = currDate.Format("yyyy-MM-dd");
+		var time = currDate.Format("hh:mm");
+		$("#add_feeding_date").val(date);
+		$("#add_feeding_time").val(time);
+		$("#add_feeding_house_name").val(houseName);
+		$("#add_feeding_house_id").val(houseId);
+	}
+}
+function save(){
+	var group_id = getUrlParam("groupId");
+	var farm_id = getUrlParam("farmId");
+	var feeding_date=$('#add_feeding_date').val();
+	var feeding_time=$('#add_feeding_time').val();
+	var house_id=$('#add_feeding_house_id').val();
+	var production_status_id=$('#add_feeding_status_id').val();
+	var materiel_id1=$('#add_feeding_materiel_id1').val();
+	var materiel_id2=$('#add_feeding_materiel_id2').val();
+	var materiel_id3=$('#add_feeding_materiel_id3').val();
+	var feeding_scale1=$('#add_feeding_scale1').val();
+	var feeding_scale2=$('#add_feeding_scale2').val();
+	var feeding_scale3=$('#add_feeding_scale3').val();
+	if(feeding_scale1.replace(/\s/g,"")==''){
+		feeding_scale1 =0;
+	}
+	if(feeding_scale2.replace(/\s/g,"")==''){
+		feeding_scale2 =0;
+	}
+	if(feeding_scale3.replace(/\s/g,"")==''){
+		feeding_scale3 =0;
+	}
+	if(house_id.replace(/\s/g,"")==''){
+		alert('栋舍不能为空!');
+		return;
+	}
+	if(feeding_date.replace(/\s/g,"")==''){
+		alert('饲喂日期不能为空!');
+		return;
+	}
+	if(feeding_time.replace(/\s/g,"")==''){
+		alert('饲喂时间不能为空!');
+		return;
+	}
+	if(production_status_id.replace(/\s/g,"")==''){
+		alert('生产状态不能为空!');
+		return;
+	}
+	if(feeding_scale1+feeding_scale2+feeding_scale3==0){
+		alert('饲喂总量不能为0!');
+		return;
+	}
+	var time = feeding_date+' '+feeding_time;
+	$.ajax({
+			type: "POST",
+			url: commonIP + "api/pig/feeding/create?authToken="+authToken,
+			data: JSON.stringify({
+				"id":id,
+				"group_id":group_id,
+				"farm_id":farm_id,
+				"house_id":house_id,
+				"feeding_time":time,
+				"production_status_id":production_status_id,
+				"materiel_id1":materiel_id1,
+				"materiel_id2":materiel_id2,
+				"materiel_id3":materiel_id3,
+				"feeding_scale1":feeding_scale1,
+				"feeding_scale2":feeding_scale2,
+				"feeding_scale3":feeding_scale3
+			}) ,
+			contentType: 'application/json',
+			success: function(data) {
+				var data = JSON.parse(data);
+				if (data.errcode == 200) {
+					alert('保存成功');
+					clear();
+					if(id!=null){//修改保存后跳转回饲喂记录界面
+						var houseId=$('#add_feeding_house_id').val();
+						var houseName=$('#add_feeding_house_name').val();
+						// 跳转页面并传输参数
+						window.location.href = 'FeedingRecord.html?houseId='+houseId+'&houseName='+houseName;
+					}
+				} else {
+					alert(data.errmsg);
+					if(data.errcode=="10005"){
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		});
+}
+function clear(){
+	$('#add_feeding_materiel_id1').val(null);
+	$('#add_feeding_materiel_id2').val(null);
+	$('#add_feeding_materiel_id3').val(null);
+	$('#add_feeding_scale1').val(null);
+	$('#add_feeding_scale2').val(null);
+	$('#add_feeding_scale3').val(null);
+}
+Date.prototype.Format = function(fmt) { //author: meizz 
+	var o = {
+		"M+": this.getMonth() + 1, //月份 
+		"d+": this.getDate(), //日 
+		"h+": this.getHours(), //小时 
+		"m+": this.getMinutes(), //分 
+		"s+": this.getSeconds(), //秒 
+		"q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+		"S": this.getMilliseconds() //毫秒 
+	};
+	if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+	for (var k in o){
+		if (new RegExp("(" + k + ")").test(fmt)){ 
+			fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+		}
+	}
+	return fmt;
+}

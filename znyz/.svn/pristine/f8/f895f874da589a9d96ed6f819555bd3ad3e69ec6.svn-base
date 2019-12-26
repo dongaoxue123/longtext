@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="智能养殖">
+		<title>login</title>
+		<link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="statics/css/styles.css">
+		<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	</head>
+
+	<body>
+		
+		<div class="parent">
+			<div class="login_left">
+				<img  src="statics/img/mobile_index.png" class="ml">
+				<div class="login">
+			   <div class="login_cont">
+			       <h1>生猪智能养殖管理系统</h1>
+				   <form class="layui-form">
+			       <div class="layui-form-item">
+			       	<input class="input01" type="text" id="username" name="username" lay-verify="required" lay-verType="tips" autocomplete="off" data-i18n="[placeholder]login.username"/>
+			       </div>
+			       <div class="layui-form-item">
+			       	<input class="input02" type="password" id="password" name="password" lay-verify="required" lay-verType="tips" autocomplete="off" data-i18n="[placeholder]login.password"/>
+			       </div>
+			       <a href="#">
+			       	<div class="btn" lay-submit="" lay-filter="login" data-i18n="login.btn"></div>
+			       </a>
+			   </div>
+			   </div>
+			    
+			</div>
+			<div class="child">
+			       <img src="statics/img/pig_img.jpg" width="100%" />
+			</div>
+		</div>
+
+		<!-- 底部 -->
+		<div class="footer">
+			<span data-i18n="login.footerCom"></span><span><img src="statics/img/icon_foot.png"></span><span data-i18n="login.footerRecord"></span>
+		</div>
+		<script type="text/javascript" src="statics/plugins/layui/layui.js"></script>
+		<script type="text/javascript" src="js/login.js"></script>
+		
+		<!-- 国际化        -->
+	<script src="statics/plugins/i18n/i18next.min.js"></script>
+	<script src="statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='statics/plugins/i18n/loc-i18next.min.js'></script>
+	</body>
+
+</html>

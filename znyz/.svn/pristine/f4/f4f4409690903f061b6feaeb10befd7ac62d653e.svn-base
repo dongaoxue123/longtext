@@ -1,0 +1,42 @@
+package com.xlqx.znyz.screen.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xlqx.znyz.screen.bean.FarmFarmRowsBean;
+
+
+
+/**
+ * 大屏幕猪场Service
+ * @author wangshoujian
+ *
+ */
+public interface FarmFarmService {
+	
+	/**
+	 * 查询猪场列表（分页）
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月10日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public List<FarmFarmRowsBean> getFarmListPage(Map<String, Object> parameter, String pageNum, String pageSize);
+
+	/**
+	 * 查询猪场总数（分页）
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月10日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public int getPageCount(Map<String, Object> parameter);
+	
+	
+	
+
+}

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	<form class="layui-form">
+    		<label class="layui-form-label" data-i18n="[prepend]common.groupName">:</label>
+        <div class="layui-input-inline">
+          <select id="groupId" name="groupId" lay-filter="groupId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+		    	</select>
+		    </div>
+        <label class="layui-form-label" data-i18n="[prepend]common.farmName">:</label>
+        <div class="layui-input-inline">
+	    	 		<select id="farmId" name="farmId"  lay-filter="farmId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+			    	</select>
+		    </div>
+		    <label class="layui-form-label" data-i18n="[prepend]common.houseList">:</label>
+        <div class="layui-input-inline">
+          <select id="houseId" name="houseId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+          	<option value='' data-i18n="field.houseOptionDefault"></option>
+		    	</select>
+		    </div>
+		</form>
+		
+		<label class="layui-form-label" style="width: 100px;" data-i18n="[prepend]device.deviceName">:</label>
+		<div class="layui-input-inline">
+			<input class="layui-input" autocomplete="off" id="code"  oninput = "value=value.replace(/[^\w]/g,'')" name="code" style="float: left;" autocomplete="off">   
+		</div>
+		
+		<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+		
+		<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+		
+		<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+		</div>
+<!-- 	deviceMarkName	<div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	
+    </div> -->
+<table class="layui-hide" id="deviceInfo" lay-filter="deviceInfo"></table>
+<script type="text/html" id="barDemo">
+	<a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="control" data-i18n="device.control"></a>
+  <a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>
+  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail" data-i18n="device.details"></a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="conf" data-i18n="device.configurationManagement"></a>
+</script>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var farmId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+	i18n('../../locales', onLangReady) //国际化
+		function onLangReady() {
+	if(!checkToken()){
+  		alert(i18next.t("timeout"));
+ 			window.top.location.href = '../../login.html';
+	}
+
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		getGroupList() 
+		  //方法级渲染
+		table.render({
+		    elem: '#deviceInfo'
+		    ,url: commonIP + "api/system/device/getListPage?authToken="+authToken  //数据请求路径
+		    ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'3%'}
+		      ,{field:'groupName', title: i18next.t("common.groupName"),width:'12%'}
+		      ,{field:'farmName', title:i18next.t("common.farmName") ,width:'12%'}
+		      ,{field:'houseName', title:i18next.t("common.houseName") ,width:'12%'}
+			  ,{field:'deviceName', title:i18next.t("device.nickName") ,width:'12%'}
+		      ,{field:'code', title:i18next.t("device.deviceName") ,width:'15%'}
+		      ,{field:'deviceType', title:i18next.t("device.deviceType") ,width:'15%'}
+		      ,{field:'state', title:i18next.t("device.deviceState") ,width:'11%'}
+		      ,{fixed: 'right',title: i18next.t("opt") , width:'20%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,done:function(res, page, count){    //res 接口返回的信息
+			console.log(res)
+		    	i18n('../../locales', function(){
+		    		$("[data-field = 'state']").children().each(function(){
+			        if($(this).text() == '1'){
+			            $(this).text(i18next.t("group.usable"));
+			        }
+					 if($(this).text() == '0'){
+			             $(this).text(i18next.t("group.unusable"));
+			        }
+					
+			    })
+			    $("[data-field = 'deviceType']").children().each(function(){
+			        if($(this).text() == '1'){
+			            $(this).text(i18next.t("device.collectBox"));
+			        }else if($(this).text() == '0'){
+			             $(this).text(i18next.t("device.warder"));
+			        }else if($(this).text() == '2'){
+			             $(this).text(i18next.t("device.sensor"));
+			        }else if($(this).text() == '3'){
+			             $(this).text(i18next.t("device.collectionBox"));
+			        }
+			    })
+		    		
+		    	}) //国际化
+			    
+			    }
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:10   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'
+		});
+		function getGroupList() {
+		
+		//获取集团下拉列表
+   	$.ajax({
+        url: commonIP + 'api/system/group/getListPage?authToken='+authToken+'&page=0&limit=0',
+        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+        success: function (res) {
+    	var dataObj = JSON.parse(res);
+	    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	    	var groupOption = '<option value="">请选择集团</option>';
+          //  var groupOption='<option value="">' + i18next.t(farm.groupValDefault) + '</option>';
+            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+            }
+            $("#groupId").append(groupOption);
+            form.render('select');//一定要加form.render();
+            bindFarmSelectList();
+            
+    	  }
+    }
+    }); 
+    }
+    form.on('select(groupId)', function (data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+	 	   	/**改变集团后先清空猪场下拉值*/
+	    	document.getElementById("farmId").options.length = 0;
+	    	document.getElementById("houseId").options.length = 0;
+	  
+			$('#farmId').val("");
+			$('#houseId').val("");
+	
+			form.render('select');
+	    	bindFarmSelectList();
+    });
+    
+    //获取猪场下拉
+    function bindFarmSelectList(){
+    var groupId = $("#groupId").val();
+   	$.ajax({
+        url: commonIP + 'api/system/farm/getListPage?authToken='+authToken+'&page=0&limit=0&groupId=' + groupId,
+        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+        success: function (res) {
+        	var dataObj = JSON.parse(res);
+
+        	  if(dataObj!=null && dataObj.dataSource.list.length>0){
+	                var farmOption = '<option value="">' + i18next.t("device.farmValDefault") + '</option>';
+	                for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+		            			farmOption = farmOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	                }
+	                $("#farmId").append(farmOption);
+	                form.render('select');//一定要加form.render();
+        	  }
+        }
+    });
+    
+    
+    form.on('select(farmId)', function (data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+	 	   	/**改变集团后先清空猪场下拉值*/
+	    	document.getElementById("houseId").options.length = 0;
+
+				$('#houseId').val("");
+
+			form.render('select');
+	    	bindHouseSelectList();
+    });
+    }
+		//获取栋舍下拉列表
+		function bindHouseSelectList(){
+    var farmId = $("#farmId").val();
+    if(farmId==null || farmId==''){
+    	  $("#houseId").html('');
+        form.render('select');//一定要加form.render();
+    }else{
+	   	$.ajax({
+	        url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&page=0&limit=0&farmId='+ farmId,
+	        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+	        success: function (res) {
+		    	var dataObj = JSON.parse(res);
+			    if(dataObj!=null && dataObj.dataSource.list.length>0){
+		            var houseOption = '<option value="">' + i18next.t("field.houseOptionDefault") + '</option>';
+		            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+		            	houseOption = houseOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+		            }
+		            $("#houseId").html(houseOption);
+		            form.render('select');//一定要加form.render();
+		    	  }
+		    }
+	    }); 
+    }
+   }
+
+		//监听工具条
+			table.on('tool(deviceInfo)', function(obj){
+			    var data = obj.data;
+			    if(obj.event === 'detail'){
+			      var index = layer.open({
+										    type: 2,
+										    content: "deviceDetail.html?id=" + data.id + "&code=" + data.code,
+										    area: ['800px', '600px'],
+										    maxmin: true
+						});  
+			    } else if(obj.event === 'control'){
+			   		  var index = layer.open({
+					    type: 2,
+					    content: "deviceCamera.html?code="+data.code,
+					    area: ['800px', '600px'],
+					    maxmin: true
+					});
+			    }else if(obj.event === 'conf'){
+			   		  var index = layer.open({
+					    type: 2,
+					    content: "addAutoExecute.html?code="+data.code,
+					    area: ['800px', '700px'],
+					    maxmin: true
+					});
+			    } else if(obj.event === 'edit'){
+			      				    var index = layer.open({
+										    type: 2,
+										    content: "addDeviceInfo.html?id="+data.id,
+										    area: ['800px', '600px'],
+										    maxmin: true
+										});  
+			    }
+		  });
+			  
+		  $('#add').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'addDeviceInfo.html',
+					    area: ['800px', '600px'],
+					    maxmin: true
+					});
+//					layer.full(index);
+		  });
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	groupId: $("#groupId").val(),
+	            	farmId: $("#farmId").val(),
+	            	houseId: $("#houseId").val(),
+	            	code: $("#code").val()           	
+		        }
+		      });
+		    },
+		};
+
+    //创建时间 日期控件
+    laydate.render({
+		  	elem: '#createDate' //指定元素
+		  	,range: true //是否开启范围选择，即双控件
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+//		  	,mark: {'2018-5-14': '生日','2018-5-28': '纪念日'} //日期备注，如重要事件或活动标记
+		});
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		$('#reset').on('click', function(){
+			$('#farmId').empty();
+			$('#groupId').empty();
+			$('#houseId').empty();
+			$('#code').val("");
+			form.render('select');
+			getGroupList() 
+			bindFarmSelectList();
+				
+				
+			/*$("#farmId option:first").prop("selected", 'selected');  */
+		});
+	});
+}
+</script>
+
+</body>
+</html>

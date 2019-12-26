@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+	<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" />
+	<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+	<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" />
+	<!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" />
+    <title></title>
+    <script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body>
+	<main>
+		<div class="page_top">
+			<!--<h4>2017年9月5日 星期二 第36周</h4>-->
+			<h4 id="logInfo"></h4>
+			<div id="pigCountDiv" class="container">
+			</div>
+		</div>
+		<div class="main">
+			<table border="0" cellspacing="0" cellpadding="0" class="main_table" id="fatPigInfo">
+				<tr><th colspan="5" align="center">肥猪存栏汇总数据</th></tr>
+				<tr><td>栋舍</td><td>乳猪</td><td>保育</td><td>育肥</td></tr>
+				<!--<tr><td>保育1</td><td>20</td><td>35</td><td>10</td></tr>
+				<tr><td>保育2</td><td>22</td><td>15</td><td>20</td></tr>
+				<tr><td>育肥1</td><td>32</td><td>30</td><td>50</td></tr>
+				<tr><td>育肥2</td><td>32</td><td>30</td><td>26</td></tr>
+				<tr><td>育肥3</td><td>32</td><td>30</td><td>60</td></tr>
+				<tr><td>合计</td><td>32</td><td>30</td><td>20</td></tr>-->
+			</table>
+		</div>
+		<div class="line"></div>
+		<div class="main">
+			<table border="0" cellspacing="0" cellpadding="0" class="main_table" id="pregnancyPigInfo">
+				<tr><th colspan="5" align="center">妊娠期母猪数据： 
+				<select name="data" id="houseId" onchange="getPregnancyPigInfo()">
+				<!--<select name="data" id="houseId">-->
+				</select>
+				<tr><td>状态</td><td>初配</td><td>增重kg</td><td>经产</td><td>增重kg</td></tr>
+				<tbody id="pregnancyPigInfoData">
+					
+				</tbody>
+				<!--<tr><td>配种1-35天</td><td>20</td><td class="red">+3.5</td><td>120</td><td class="red">+2.2</td></tr>
+				<tr><td>配种36-90天</td><td>22</td><td class="red">+15</td><td>240</td><td class="red">+12</td></tr>
+				<tr><td>配种91-112天</td><td>32</td><td class="red">+30</td><td>260</td><td class="red">+22</td></tr>-->
+			</table>
+		</div>
+		<div class="line"></div>
+		<div class="main" id="productFunction">
+			
+		</div>
+		<div class="line"></div>
+		
+		<div class="main" id="settingFunction">
+			
+		</div>
+		<div class="line"></div>
+		
+		<div class="block"></div>
+		
+		<div class="footer">
+			<ul>
+				<li id="indexFooter" onclick="location='index.html'" class="active"><span class="iconfont icon-weibiaoti1"></span><h5>首页</h5></li>
+				<li id="weightFooter" onclick="location='fieldList.html'"><span class="iconfont icon-pig"></span><h5>测重</h5></li>
+				<li id="setFooter" onclick="location='set.html'"><span class="iconfont icon-shezhi"></span><h5>配置</h5></li>
+			</ul>
+		</div>
+	</main>	
+	<script>
+		var authToken = localStorage.getItem('authToken');// 取得authToken
+		var roleId = localStorage.getItem("roleId");
+		$(document).ready(function() {
+			setInterval("setCurDate()", 1000);
+			initFunction();
+			getPigCountByStatus();
+			getHouseList();//栋舍下拉
+		});
+		function initFunction(){
+			$.ajax({
+				type:"get",
+				url: commonIP + "api/system/roleperms/get?authToken="+authToken+'&roleId='+roleId,
+				contentType: 'application/json',
+				dataType:'json',
+				async:true,
+				success:function(data){
+					console.log(data)
+					if (data) {
+						var productStr = '';//生产工具管理
+						var feedCalcStr = '';//限饲计算
+						var feedStandStr = '';//饲喂标准
+						var settingStr = '';//配置管理
+						var weightEquiStr = '';//设备管理
+						var weightCaliStr = '';//测重校准
+						var userStr = '';//账号管理
+						var pigHouseStr = '';//猪舍信息
+						var settingCount =0;
+						if (data.errcode == 200) {
+							var arr = new Array();
+							for (var key in data.dataSource.list) {
+								var linkUrl = data.dataSource.list[key].linkUrl;
+								if(linkUrl == 'feedCalculation.html'){
+									feedCalcStr = feedCalcStr+'<div><img src="style/icon-1.jpg"/><h4 onclick="location=\'feedCalculation.html\'">限饲计算</h4></div>';
+								}else if(linkUrl == 'feedStandard.html'){
+									feedStandStr = feedStandStr +'<div><img src="style/icon-2.jpg"/><h4 onclick="location=\'feedStandard.html\'">饲喂标准</h4></div>';
+//								}else if(linkUrl == 'weightEquipment.html'){
+//									weightEquiStr = weightEquiStr+'<div><img src="style/icon-3.jpg"/><h4 onclick="location=\'weightEquipment.html\'">设备管理</h4></div>';
+//									arr.push(weightEquiStr);
+//								}else if(linkUrl == 'weightCalibration.html'){
+//									weightCaliStr = weightCaliStr+'<div><img src="style/icon-4.jpg"/><h4 onclick="location=\'weightCalibration.html\'">测重校准</h4></div>';
+//									arr.push(weightCaliStr);
+								}else if(linkUrl == 'user.html'){
+									userStr = userStr+'<div><img src="style/icon-5.jpg"/><h4 onclick="location=\'user.html\'">用户管理</h4></div>';
+									arr.push(userStr);
+								}else if(linkUrl == 'pigHouse.html'){
+									pigHouseStr = pigHouseStr+'<div><img src="style/icon-6.jpg"/><h4 onclick="location=\'pigHouse.html\'">猪舍信息</h4></div>';
+									arr.push(pigHouseStr);
+								}
+							}
+							if(feedCalcStr!='' || feedStandStr!=''){//生产工具模块
+								productStr = productStr+'<div class="main_tit"><span></span><h5 class="blue">生产工具</h5></div>'+
+											'<div class="main_btn">'+
+												feedCalcStr+
+												feedStandStr+
+											'</div>'+
+											'</div>';
+							}
+							if(weightEquiStr!=''||weightCaliStr!=''||userStr!=''||pigHouseStr!=''){
+								settingStr = settingStr+'<div class="main_tit"><span></span><h5 class="blue">配置管理</h5></div>';
+								for(var i=0;i<arr.length;i++){
+									if(i%2==0){
+										settingStr = settingStr+'<div class="main_btn">';
+									}
+									settingStr = settingStr+arr[i];
+									if(i%2==1){
+										settingStr = settingStr+'</div>';
+									}
+								}
+								
+							}
+							$("#productFunction").append(productStr);
+							$("#settingFunction").append(settingStr);
+						} else {
+							if (data.errcode == "10005") {
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				
+				}
+			});
+		}
+		// 根据生产状态分组查询猪数量
+		function getPigCountByStatus() {
+			// 取得user信息
+			var user = localStorage.getItem('user');
+			var groupId = JSON.parse(user).groupId;
+			var farmId = JSON.parse(user).farmId;
+			if (authToken.length = 0) {
+				alert("请重新登录");
+				window.top.location.href = 'wxlogin.html';
+				return false;
+			}
+			$.ajax({
+				type: "GET",
+//				url: commonIP + 'api/pig/weight/getPigCountByStatus',
+				url: commonIP + 'api/pig/pignumber/getPigNumberBean',
+				contentType: 'application/json',
+				data: 'authToken=' + authToken + '&farmId=' + farmId,
+				dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					console.log(data)
+					if (data) {
+						var result = '';
+						if (data.errcode == 200) {
+//							for (var key in data.dataSource.list) {
+//								//循环显示
+////								if (key % 3 == 0) {
+////									color = "green";
+////								} else if (key % 3 == 1) {
+////									color = "blue";
+////								} else if (key % 3 == 2) {
+////									color = "red";
+////								}
+//								color = "#ffb400";
+//								result = result + '<div class="container_list"><h2 style="color:'+color+'">' + data.dataSource.list[key].count + '</h2>' +
+//									'<h4>' + data.dataSource.list[key].production_status_name + '</h4></div>';
+//							}
+							color = "#ffb400";
+							result = result + '<div class="container_list"><h2 style="color:'+color+'">' + data.dataSource.list[0].sowsNumber + '</h2>' +
+									'<h4>' + '母猪' + '</h4></div>';
+							result = result + '<div class="container_list"><h2 style="color:'+color+'">' + data.dataSource.list[0].boarsNumber + '</h2>' +
+									'<h4>' + '公猪' + '</h4></div>';
+							result = result + '<div class="container_list"><h2 style="color:'+color+'">' + data.dataSource.list[0].commercialNumber + '</h2>' +
+									'<h4>' + '肥猪' + '</h4></div>';
+//							result = result.replace('配种', '母猪')
+//							result = result.replace('怀孕', '公猪')
+//							result = result.replace('非生产', '肥猪')
+							$('#pigCountDiv').append(result);
+						} else {
+							alert(data.errmsg);
+							if (data.errcode == "10005") {
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				}
+			});
+		}
+		function getHouseList(){
+			var user = localStorage.getItem('user');
+			var groupId = JSON.parse(user).groupId;
+			var farmId = JSON.parse(user).farmId;
+			$.ajax({
+				type: "GET",
+				url: commonIP + '/api/system/house/getHouseListPage',
+				contentType: 'application/json',
+				data: 'authToken='+authToken+'&groupId='+groupId+'&farmId='+farmId+'&pageNum=0&pageSize=0',
+				dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					console.log(data)
+					if (data) {
+						if (data.errcode == 200) {	
+							var html = '';
+					        for (var key in data.dataSource.list){
+					        	let tmpType = data.dataSource.list[key].type
+				        		if(tmpType=='00060'||tmpType=='00022'||tmpType=='00023'||tmpType=='00059'){
+				        			continue;
+				        		}
+					        	html = html + '<option value="'+ data.dataSource.list[key].id +'">'+ data.dataSource.list[key].name +'</option>';
+					        	if(html==''){
+					        		houseId = data.dataSource.list[key].id;
+					        	}
+					        }
+					        $("#houseId").html(html);
+					        getFatPigInfo()
+					        getPregnancyPigInfo();//查询妊娠期母猪信息
+						} else {
+							alert(data.errmsg);
+							if(data.errcode =="10005"){
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				}
+			});
+		}
+		function getFatPigInfo(){
+			var user = localStorage.getItem('user');
+			var farmId = JSON.parse(user).farmId;
+//			var houseId = $("#houseId").val();
+			$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/pignumber/getCommercialPigNumberBean',
+				contentType: 'application/json',
+				data: 'authToken='+authToken+'&farmId='+farmId,
+				dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+	            success: function(data){
+	            	console.log(data);
+					if (data && data.errcode == 200) {
+						var result = "";
+						var sucklingCount = 0
+						var nurseryCount = 0
+						var fatteningCount = 0
+				        for (var key in data.dataSource.list){
+				        	var houseName = data.dataSource.list[key].houseName;//生产阶段、配种状态
+				        	var nurseryPigNumber = data.dataSource.list[key].nurseryPigNumber;//保育
+				        	var fatteningPigNumber = data.dataSource.list[key].fatteningPigNumber;//育肥
+				        	var sucklingPigNumber = data.dataSource.list[key].sucklingPigNumber;//乳猪
+//				        	var otherMatingWeight = data.dataSource.list[key].otherMatingWeight;//经产猪只增重
+				        	result = result + '<tr><td>'+houseName+'</td><td>'+sucklingPigNumber+'</td><td>';
+//				        	if(firstMatingWeight>=0){
+				        		result = result + nurseryPigNumber+'</td><td>'+fatteningPigNumber+'</td></tr>';
+//				        	}else{
+//				        		result = result + firstWeight+'</td><td>'+otherMatingCount+'</td><td class="red">';
+//				        	}
+//				        	if(otherMatingWeight>=0){
+//				        		result = result + '+'+ otherMatingWeight+'</td></tr>';
+//				        	}else{
+//				        		result = result + otherWeight+'</td></tr>';
+//				        	}
+							sucklingCount += data.dataSource.list[key].sucklingPigNumber
+							nurseryCount += data.dataSource.list[key].nurseryPigNumber
+							fatteningCount += data.dataSource.list[key].fatteningPigNumber
+				        }
+				        result = result + '<tr><td>' + '合计' +'</td><td>' + sucklingCount + '</td><td>' + nurseryCount + '</td><td>' + fatteningCount + '</td></tr>';
+				        $("#fatPigInfo").append(result);
+					} else if(data.errcode == 10015){
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+	            }
+	        });
+		}
+		function getPregnancyPigInfo(){
+			var houseId = $("#houseId").val();
+			$("#pregnancyPigInfoData").html('')
+			$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/weight/getPregnancyPigInfo',
+				contentType: 'application/json',
+				data: 'authToken='+authToken+'&house_id='+houseId,
+				dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+	            success: function(data){
+	            	console.log(data);
+					if (data && data.errcode == 200) {
+						var result = "";
+				        for (var key in data.dataSource.list){
+				        	var stageName = data.dataSource.list[key].stageName;//生产阶段、配种状态
+				        	var firstMatingCount = data.dataSource.list[key].firstMatingCount;//初配猪只数量
+				        	var firstMatingWeight = data.dataSource.list[key].firstMatingWeight;//初配猪只增重
+				        	var otherMatingCount = data.dataSource.list[key].otherMatingCount;//经产猪只数量
+				        	var otherMatingWeight = data.dataSource.list[key].otherMatingWeight;//经产猪只增重
+				        	result = result + '<tr><td>'+stageName+'</td><td>'+firstMatingCount+'</td><td class="red">';
+				        	if(firstMatingWeight>=0){
+				        		result = result + '+'+ firstMatingWeight+'</td><td>'+otherMatingCount+'</td><td class="red">';
+				        	}else{
+				        		result = result + firstWeight+'</td><td>'+otherMatingCount+'</td><td class="red">';
+				        	}
+				        	if(otherMatingWeight>=0){
+				        		result = result + '+'+ otherMatingWeight+'</td></tr>';
+				        	}else{
+				        		result = result + otherWeight+'</td></tr>';
+				        	}
+				        }
+				        $("#pregnancyPigInfoData").append(result);
+					} else if(data.errcode == 10015){
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+	            }
+	        });
+		}
+		function setCurDate() {
+			var ndate = getCurDate();
+			var divT = document.getElementById("logInfo");
+			divT.innerHTML = ndate;
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+#course.dubbo.url=dubbo://127.0.0.1:20881/
+#qynx
+#sys.user.dubbo.url=dubbo://127.0.0.1:11102/
+#dlgc
+#sys.user.dubbo.url=dubbo://127.0.0.1:21102/
+service.dubbo.port=20888
+#zookeeper address
+zookeeper.url=zookeeper://127.0.0.1:2181
+pig.dubbo.url=dubbo://127.0.0.1:20870/
+sys.dubbo.url=dubbo://127.0.0.1:20880/

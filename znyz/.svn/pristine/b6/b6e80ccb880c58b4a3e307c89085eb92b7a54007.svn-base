@@ -1,0 +1,75 @@
+var footer = '<div class="rowbox container clear">'+
+				'<dl class="links">'+
+					'<dt>关于我们</dt>'+
+					'<dd>'+
+						'<a href="about.html">公司介绍</a>'+
+					'</dd>'+
+				'</dl>'+
+				'<dl class="links">'+
+					'<dt>智能养猪</dt>'+
+					'<dd>'+
+						'<a href="systemCharacteristics.html">系统特性</a>'+
+					'</dd>'+
+					'<dd>'+
+						'<a href="industryMap.html">行业地图</a>'+
+					'</dd>'+
+				'</dl>'+
+				'<dl class="links">'+
+					'<dt>帮助中心</dt>'+
+					'<dd>'+
+						'<a href="help.html">常见问题</a>'+
+					'</dd>'+
+				'</dl>'+
+				'<dl class="links">'+
+					'<dd>'+
+						'<img src="images/qrcode.png" class="qrcode" style="width:100px;height:100px"></img>'+
+					'</dd>'+
+				'</dl>'+
+				'<div class="contact">'+
+					'<div class="text">客服电话：15663675272</div>'+
+					'<div class="text">服务时间：工作日&nbsp;&nbsp;&nbsp;09:00~12:00,13:00~17:30</div>'+
+				'</div>'+
+			'</div>'+
+
+			'<div class="container">'+
+				'<dl class="gamealert clear">'+
+					'<dd style="visibility: hidden;">'+
+						'<a target="_blank" href=""><img src=""></a>'+
+					'</dd>'+
+					'<dd style="visibility: hidden;">'+
+						'<a target="_blank" href=""><img src=""></a>'+
+					'</dd>'+
+					'<dd style="visibility: hidden;">'+
+						'<a target="_blank" href=""><img src=""></a>'+
+					'</dd>'+
+//					'<dd>'+
+//						'<a target="_blank" href="http://www.yuyuejingdian.com/images/网文经营许可证.jpg"><img src="images/CC1.png"></a>'+
+//					'</dd>'+
+//					'<dd>'+
+//						'<a target="_blank" href="http://www.yuyuejingdian.com/images/软件著作权.jpg"><img src="images/CC4.png"></a>'+
+//					'</dd>'+
+					'<dd style="visibility: hidden;">'+
+						'<a target="_blank" href=""><img src=""></a>'+
+					'</dd>'+
+					'<dd style="visibility: hidden;">'+
+						'<a id="___szfw_logo___" href="" target="_blank"><img src="" border="0"></a>'+
+					'</dd>'+
+				'</dl>'+
+			'</div>'+
+			'<div class="bottomdiv">'+
+                 '<div class="bottom_copyright">'+
+                    '<script src="http://s15.cnzz.com/stat.php?id=4174357&web_id=4174357&show=pic" language="JavaScript"></script>'+
+					'©2018 北京小龙潜行科技有限公司 版权所有&nbsp;&nbsp;&nbsp;&nbsp;'+
+					'<a target="_blank" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=11010802026567" style="display:inline-block;text-decoration:none;height:20px;line-height:20px;width:220px;"><img src="images/ghs.png" style="float:left;"/> 京公网安备 11010802026567号</a>&nbsp;&nbsp;&nbsp;&nbsp;'+
+					'<a target="_blank" href="http://www.miitbeian.gov.cn/">京ICP备18031293号-1</a>'+
+				'</div>'+
+             '</div>';
+		 
+//			'<!--下载游戏二维码-->'+
+//			'<div class="qrcode_download">'+
+//				'<img src="images/qrcode.png" class="qrcode"></img>'+
+//				'<p>扫一扫下载智能养猪</p>'+
+//			'</div>';
+			
+			
+document.querySelector('.footer').innerHTML = footer

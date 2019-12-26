@@ -1,0 +1,40 @@
+package com.xlqx.znyz.screen.dao.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.xlqx.znyz.core.dao.BaseDaoImpl;
+import com.xlqx.znyz.screen.bean.FieldHogWeightRowsBean;
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+import com.xlqx.znyz.screen.dao.FieldHogWeightDao;
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+@Service("fieldHogWeightDaoImpl")
+public class FieldHogWeightDaoImpl extends BaseDaoImpl<ScreenNumberBean> implements FieldHogWeightDao {
+
+	private final Logger logger = LoggerFactory.getLogger(FieldHogWeightDaoImpl.class);
+
+	private final String namespace = "com.xlqx.znyz.screen.mapper.FieldHogWeightMapper.";
+
+	private String sqlId(String method) {
+		return namespace + method;
+	}
+
+	@Override
+	public List<FieldHogWeightRowsBean> getList(Map<String, Object> parameter) {
+		logger.info("fieldHogWeightDaoImpl ==> getList()");
+
+		return getWriteSession().selectList(sqlId("getList"), parameter);
+	}
+
+}

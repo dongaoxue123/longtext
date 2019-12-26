@@ -1,0 +1,52 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.xlqx.znyz.core.screendatasourcebean.FieldDeviceDataBean;
+import com.xlqx.znyz.core.screendatasourcebean.FieldDeviceDataSource;
+
+/**
+ * 猪场栏位设备Controller
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/fielddevice")
+public class FieldDeviceController {
+	private final Logger logger = LoggerFactory.getLogger(FieldDeviceController.class);
+
+	// 目前固定写死 丰宁猪场 育肥二舍
+	public final static String houseIdCom = "0000000000000000b9b17b82adcca8f3";
+
+	@RequestMapping(value = "/getList", method = RequestMethod.POST)
+	public FieldDeviceDataBean<FieldDeviceDataSource> getList() {
+		logger.info("FieldDeviceController==>getList()");
+		FieldDeviceDataBean<FieldDeviceDataSource> sdb = new FieldDeviceDataBean<FieldDeviceDataSource>();
+		List<FieldDeviceDataSource> res = new ArrayList();
+		FieldDeviceDataSource fieldDeviceDataSource1 = new FieldDeviceDataSource();
+		fieldDeviceDataSource1.setName("守望者1");
+		fieldDeviceDataSource1.setValue("S01");
+		fieldDeviceDataSource1.setCode("123");
+		res.add(fieldDeviceDataSource1);
+		FieldDeviceDataSource fieldDeviceDataSource2 = new FieldDeviceDataSource();
+		fieldDeviceDataSource2.setName("守望者2");
+		fieldDeviceDataSource2.setValue("S02");
+		fieldDeviceDataSource2.setCode("123");
+		res.add(fieldDeviceDataSource2);
+		sdb.setData(res);
+		if (res != null && res.size() > 0) {
+			sdb.setMessage(0, "查询成功");
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+		return sdb;
+	}
+}

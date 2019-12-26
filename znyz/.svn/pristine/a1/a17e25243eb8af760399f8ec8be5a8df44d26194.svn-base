@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>饲喂标准管理</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+	    <form class="layui-form">
+			    <label class="layui-form-label">猪场名称:</label>
+			    <div class="layui-input-inline">
+			    	 		<select id="farmId" name="farmId"></select>
+				  </div>
+		  </form>
+    	<button class="layui-btn" id="search">查询</button>
+    	
+    	<button class="layui-btn" id="reset">重置</button>
+    	
+    	<button class="layui-btn" id="add">添加</button>
+    </div>
+<table class="layui-hide" id="feedStandard" lay-filter="feedStandard"></table>
+<script type="text/html" id="barDemo">
+  <!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>-->
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+
+	if(!checkToken()){
+  		alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+	}
+
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		  //方法级渲染
+		table.render({
+		    elem: '#feedStandard'
+		    ,url: commonIP + "api/pig/feedstandard/getFeedStandardList?authToken="+authToken  //数据请求路径
+		    ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'5%'}
+		      ,{field:'farmName', title:'猪场名称',width:'10%'}
+		      ,{field:'stageName', title:'生产阶段',width:'10%'}
+		      ,{field:'pigTypeName', title:'猪只类型',width:'10%'}
+		      ,{field:'feedType', title:'饲料类型',width:'10%'}
+		      ,{field:'feedAmount', title: '料量',width:'10%'}
+		      ,{field:'numberTimes', title: '次数',width:'10%'}
+		      ,{field:'remark', title: '备注',width:'20%'}
+		      ,{fixed: 'right',title: '操作', width:'10%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:20   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'
+		});
+		//监听工具条
+		table.on('tool(feedStandard)', function(obj){
+		    var data = obj.data;
+		    if(obj.event === 'detail'){
+		      //layer.msg('ID：'+ data.id + ' 的查看操作');
+  
+			    } else if(obj.event === 'del'){
+		        layer.confirm('确定删除此行数据吗', function(index){
+		      		  $.ajax({  
+				            url: commonIP + "api/pig/feedstandard/delete?authToken="+authToken,
+				            type: 'POST',
+										contentType: 'application/json',
+										data: JSON.stringify({"id":data.id}),
+		                success: function(text) {
+		                	var dataObj = JSON.parse(text);
+		                		if(dataObj.code == 0){
+				                		layer.msg(dataObj.msg, {icon: 6});
+										        obj.del();
+										        layer.close(index);  
+		                		}else{
+		                				layer.msg(dataObj.msg, {icon: 5});
+		                		}
+		                }
+			            });  
+		      		});
+		    } else if(obj.event === 'edit'){
+  				  var index = layer.open({
+						    type: 2,
+						    content: "addFeedStandard.html?id="+data.id,
+						    area: ['700px', '450px'],
+						    maxmin: true
+						});  
+		    }
+	  });
+		  
+	  $('#add').on('click', function(){
+	   		var index = layer.open({
+				    type: 2,
+				    content: 'addFeedStandard.html',
+				    area: ['700px', '450px'],
+				    maxmin: true
+				});
+//					layer.full(index);
+	  });
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+	            	farmId: $("#farmId").val()
+		        }
+		      });
+		    },
+		};
+		//获取猪场下拉
+   	$.ajax({
+        url: commonIP + 'api/system/farm/getListPage?authToken='+authToken+'&page=0&limit=0',
+        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+        success: function (res) {
+        	var dataObj = JSON.parse(res);
+
+        	  if(dataObj!=null && dataObj.dataSource.list.length>0){
+	                var farmOption='<option value="">请选择猪场</option>';
+	                for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+		            			farmOption = farmOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	                }
+	                $("#farmId").append(farmOption);
+	                form.render('select');//一定要加form.render();
+        	  }
+        }
+    });
+    //创建时间 日期控件
+    laydate.render({
+		  	elem: '#createDate' //指定元素
+		  	,range: true //是否开启范围选择，即双控件
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+//		  	,mark: {'2018-5-14': '生日','2018-5-28': '纪念日'} //日期备注，如重要事件或活动标记
+		});
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		$('#reset').on('click', function(){
+				$('#farmId').val("");
+				form.render('select');
+				/*$("#farmId option:first").prop("selected", 'selected');  */
+		});
+	});
+</script>
+
+</body>
+</html>

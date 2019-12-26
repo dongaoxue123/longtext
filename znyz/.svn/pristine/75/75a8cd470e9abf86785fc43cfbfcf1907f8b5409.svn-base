@@ -1,0 +1,159 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="weaning.weaningDate"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="weaningDate" name="weaningDate" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="weaning.weaningHouse"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="houseName" name="houseName" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="weaning.weaningField"></label>
+            <div class="layui-input-inline">
+               <input type="text" id="fieldName" name="fieldName" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label" style="width: 120px" data-i18n="common.pigNumber"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="pigNumbers" name="pigNumbers" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="weaning.weaningCount"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="weaningNumber" name="weaningNumber" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="weaning.weaningWeight"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="weaningWeight" name="weaningWeight" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="common.remark"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="submit" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"  data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	
+	i18n('../../locales', onLangReady) //国际化
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+				if(!checkToken()){
+			  		alert(i18next.t("timeout"));
+			 			window.top.location.href = '../../login.html';
+				}
+				
+        //创建时间 日期控件
+	    	laydate.render({
+				  	elem: '#deliveryDate' //指定元素
+				  	,theme: 'molv'
+				  	,calendar: true //重要节日
+				});
+		
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+		
+		var page = 1;
+		var pageSize = 30;
+		var pigsType ='00034';
+	    
+	    form.on('submit(submit)', function(res){
+		   		$.ajax({  
+		            type: 'POST',           
+					url: commonIP + "api/pig/weaningbusiness/update?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify({
+				    "id":userId,
+					"weaningDate":res.field.weaningDate, 
+					"remark":res.field.remark,
+					"weaningNumber":res.field.weaningNumber,		
+					"weaningWeight":res.field.weaningWeight
+				    }),
+				    async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+						     alert(i18next.t("updateSucc"));
+		                     layer.close(layer.index);  
+		                     window.parent.location.reload();  
+							} else {
+							 alert(i18next.t("updateFailed"));
+							}
+						}
+					}
+		      }); 
+        });
+
+    	$.ajax({
+		type: "GET",
+		url: commonIP + "api/pig/weaningbusiness/getListPage?authToken="+authToken+"&id="+userId+"&page=0&limit=0",
+		contentType: 'application/json',
+		success: function(data) {
+			var datas = JSON.parse(data);
+			console.log(datas);
+			if (datas.errcode == 200) {
+				//赋值
+				$("#weaningDate").val(datas.dataSource.list[0].weaningDate);
+				$("#houseName").val(datas.dataSource.list[0].houseName);
+                $("#fieldName").val(datas.dataSource.list[0].fieldName);		
+				$("#pigNumbers").val(datas.dataSource.list[0].pigNumbers);
+				$("#weaningNumber").val(datas.dataSource.list[0].weaningNumber);
+				$("#weaningWeight").val(datas.dataSource.list[0].weaningWeight);
+				$("#remark").val(datas.dataSource.list[0].remark);
+			} else {
+				alert(data.errmsg);
+				if(data.errcode=="10005"){
+						window.top.location.href = '../../login.html';
+				}
+			}
+		}
+	  });
+    });
+    }
+    function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+</script>
+</body>
+</html>

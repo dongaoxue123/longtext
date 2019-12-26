@@ -1,0 +1,225 @@
+
+<html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+            <title>Title</title>
+            <script src="statics/libs/jquery-1.7.2.js"></script>
+            <link rel="stylesheet" href="statics/css/font-awesome.min.css">
+            <link rel="stylesheet" href="common/css/cyType.css">
+            <link rel="stylesheet" href="common/css/extendedStyle.css">
+            <link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all">
+            <link rel="shortcut icon" type="image/x-icon" href="statics/img/favicon.ico" media="screen"/>
+            <link rel="stylesheet" href="statics/plugins/layui/css/layui.css">
+            <link rel="stylesheet" href="statics/plugins/layer/skin/default/layer.css">
+            <link rel="stylesheet" href="statics/css/font-awesome.min.css">
+            <link rel="stylesheet" href="statics/css/index.css">
+            <link rel="stylesheet" href="common/css/cyStyle.css">
+            <link rel="stylesheet" href="statics/plugins/ContextJS/css/context.standalone.green.css">
+            <script src="statics/plugins/layui/layui.js"></script>
+            <script src="common/js/whole/cyLayer.js"></script>
+            <script src="common/js/whole/utils.js"></script>
+            <script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+        </head>
+        <body>
+        <div class="layui-field-box" >
+            <form class="layui-form" >
+                <div style="margin: 0 auto; width: 100px;height: 100px;margin-bottom: 10px;"><img style="width: 80px;height: 80px;" src="statics/img/index/head.jpg" alt=""></div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                        <label class="layui-form-label layui-required" data-i18n="集团名称"></label>
+                        <div class="layui-input-block">
+                            <input style="width: 80%;" value="测试集团" disabled  type="text" id="groupId" name="groupId" lay-verify="required|groupId"  data-i18n="user.userNamePlaceholder" class="layui-input"  maxlength="10"  autocomplete="off" >
+                        </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                        <label class="layui-form-label layui-required" data-i18n="猪场名称"></label>
+                        <div class="layui-input-block">
+                            <input style="width: 80%;" value="" disabled type="text" id="farmId" name="farmId" lay-verify="required|farmId"  data-i18n="user.userNamePlaceholder" class="layui-input"  maxlength="10"  autocomplete="off" >
+                        </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                        <label class="layui-form-label layui-required" data-i18n="角色名"></label>
+                        <div class="layui-input-block">
+                            <input style="width: 80%;" disabled type="text" id="roleName" name="roleName" value="" lay-verify="required|roleName" data-i18n="" class="layui-input" autocomplete="off" maxlength="11" >
+                        </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                    <label class="layui-form-label layui-required" data-i18n="联系人姓名"></label>
+                    <div class="layui-input-block">
+                        <input style="width: 80%;" type="text" id="name" name="name" lay-verify="required|name"  data-i18n="user.userNamePlaceholder" class="layui-input"  maxlength="10"  autocomplete="off" >
+                    </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                    <label class="layui-form-label layui-required" data-i18n="登录名"></label>
+                    <div class="layui-input-block">
+                        <input style="width: 80%;" disabled type="text" id="loginName" name="loginName" lay-verify="required|loginName"  data-i18n="user.loginNamePlaceholder" maxlength="10" class="layui-input" autocomplete="off" >
+                        <span id="passwordChange" style="color: blue;float: right;display: block;margin-top: -30px;">修改密码</span>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                    <label class="layui-form-label layui-required" data-i18n="手机号码"></label>
+                    <div class="layui-input-block">
+                        <input style="width: 80%;" type="text" id="phone" name="phone"  lay-verify="required|phone" data-i18n="user.phonePlaceholder" class="layui-input phone-reg" maxlength="11" oninput = "value=value.replace(/[^\d]/g,'')"  autocomplete="off">
+                    </div>
+                </div>
+                <div class="layui-form-item" style="padding-right: 20px">
+                    <label class="layui-form-label" data-i18n="邮箱"></label>
+                    <div class="layui-input-block">
+                        <input style="width: 80%;" type="text" id="mail" name="mail"   data-i18n="[placeholder]user.emailPlaceholder" class="layui-input" autocomplete="off" maxlength="20" >
+                        <!-- <input type="password" id="password" name="password" lay-verify="required|password"  data-i18n="[placeholder]user.oldPhonePassword" maxlength="100" class="layui-input"> -->
+                    </div>
+                </div>
+                <div class="page-footer">
+                    <div class="btn-list">
+                        <div class="btnlist">
+                            <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="保存"></button>
+                            <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="返回"></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 国际化        -->
+            <script src="statics/plugins/i18n/i18next.min.js"></script>
+            <script src="statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+            <script src='statics/plugins/i18n/loc-i18next.min.js'></script>
+        <script>
+            var authToken=localStorage.getItem("authToken");
+            //alert(authToken);
+            var user1 =localStorage.getItem("user");
+            var user = JSON.parse(user1);
+            var groupId;
+            $("#loginName").val('');
+            $("#password").val('');
+            $("#roleName").val('');
+            i18n('../../locales', onLangReady) 
+            //国际化
+                function onLangReady() {
+            layui.use(['form','laydate'], function(){
+                var form = layui.form;
+                var $ = layui.$;
+                var laydate = layui.laydate;
+                        if(!checkToken()){
+                              alert(i18next.t("timeout"));
+                                 window.top.location.href = 'login.html';
+                        }
+                        
+                //创建时间 日期控件
+                    laydate.render({
+                              elem: '#bornDate' //指定元素
+                              ,theme: 'molv'
+                              ,calendar: true //重要节日
+                        });
+                //创建时间 日期控件
+                    laydate.render({
+                      elem: '#enterDate' //指定元素
+                      ,theme: 'molv'
+                      ,calendar: true //重要节日
+                });
+                var userId = user.id
+                console.log(userId)
+                    form.on('submit(submit)', function(res){
+                       $.ajax({  
+                        type: 'POST',
+                        url: commonIP + "api/system/user/update?authToken="+authToken,
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                                "id":userId,
+                                "groupId":res.field.groupId,
+                                "farmId":res.field.farmId,
+                                "name":res.field.name,
+                                "mail":res.field.mail,
+                                "phone":res.field.phone,
+                                "roleName": res.field.roleName
+                            }) ,
+                        async: false,
+                        success: function(data) {
+                            var dataObj = JSON.parse(data);
+                            if (dataObj) {
+                                console.log(dataObj)
+                                if (dataObj.errcode == "200") {
+                                    console.log(111)
+                                 alert("修改成功");
+                                 layer.close(layer.index);  
+                                 window.parent.location.reload();  
+                                } else {
+                                 alert(dataObj.errmsg);
+                                }
+                            }
+                        }
+                     });
+                     return false;
+                   });
+                // }
+                BindUpdateList()
+                function BindUpdateList(){
+                    // alert(userId11);
+                    console.log(commonIP + 'api/system/user/get?authToken='+authToken+'&page=1&limit=1&id='+userId);
+                        $.ajax({
+                        type: "GET",
+                        url: commonIP + 'api/system/user/get?authToken='+authToken+'&page=1&limit=1&id='+user.id,
+                        parseData: function(res){ //res 即为原始返回的数据
+                        return {
+                            "code": res.code, //解析接口状态
+                          "msg": res.msg, //解析提示文本
+                          "count": res.count, //解析数据长度
+                          "data": res.dataSource.list //解析数据列表
+                        };
+                          },
+                        contentType: 'application/json',
+                        async: false,
+                        success: function(data) {
+                            var datas = JSON.parse(data);
+                            console.log(datas.dataSource)
+                            console.log(datas.dataSource.list[0].roleName);
+                            if (datas.errcode == 200) {
+                                //赋值
+                                console.log(datas.dataSource.list[0].roleName);
+                                $("#groupId").val(datas.dataSource.list[0].groupId);
+                                $("#farmId").val(datas.dataSource.list[0].farmId);
+                                // $("#roleName").val(datas.dataSource.list[32].roleName);
+                                $("#name").val(datas.dataSource.list[0].name);//填充内容
+                                $("#loginName").val(datas.dataSource.list[0].loginName);
+                                $("#roleName").val(datas.dataSource.list[0].roleName);
+                                $("#phone").val(datas.dataSource.list[0].phone);
+                                $("#mail").val(datas.dataSource.list[0].mail);
+                                form.render();
+                            } else {
+                                if(data.errcode=="10005"){
+                                        window.top.location.href = '../../login.html';
+                                }
+                            }
+                        }
+                        });
+                }
+            });
+            
+            }
+            function GetQueryString(name)
+            {
+                 var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+                 var r = window.location.search.substr(1).match(reg);
+                 if(r!=null)return  unescape(r[2]); return null;
+            }
+        
+            /**
+             * 编辑功能赋值
+             */
+            function BindData(userId) {
+        
+            }
+            $('#passwordChange').on('click', function() {
+						var index = layer.open({
+							type: 2,
+							content: 'passwordChange.html',
+                            area: ['450px', '450px'],
+                            title: ['密码修改'],
+							maxmin: true
+						});
+						//					layer.full(index);
+					});
+        </script>
+        </body>
+        </html>
+        

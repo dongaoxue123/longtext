@@ -1,0 +1,426 @@
+<html>
+
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script language="JavaScript" type="text/javascript">
+			function clearNoNum(obj) {
+				//修复第一个字符是小数点 的情况.
+				if(obj.value != '' && obj.value.substr(0, 1) == '.') {
+					obj.value = "";
+				}
+				obj.value = obj.value.replace(/^0*(0\.|[1-9])/, '$1'); //解决 粘贴不生效
+				obj.value = obj.value.replace(/[^\d.]/g, ""); //清除“数字”和“.”以外的字符
+				obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的     
+				obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+				obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3'); //只能输入两个小数     
+				if(obj.value.indexOf(".") < 0 && obj.value != "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+					if(obj.value.substr(0, 1) == '0' && obj.value.length == 2) {
+						obj.value = obj.value.substr(1, obj.value.length);
+						0
+					}
+				}
+			}
+		</script>
+
+	</head>
+
+	<body>
+		<div class="layui-field-box">
+			<form class="layui-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="[prepend]common.groupName">:</label>
+					<div class="layui-input-inline">
+
+						<select id="groupId" name="group_id" lay-verify="required|groupId" lay-filter="groupId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+							<option value=""></option>
+						</select>
+
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="[prepend]common.farmName">:</label>
+					<div class="layui-input-inline">
+						<select id="farmId" name="farm_id" lay-verify="required|farmId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+							<option value="" data-i18n="device.farmValDefault"></option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="pigScore.minBackfat"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="minBackFat" name="minBackFat" onkeyup="clearNoNum(this)" lay-verify="required|minBackFat" class="layui-input" autocomplete="off" maxlength="5" data-i18n="[placeholder]pigScore.minBFPlaceHolderText">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="pigScore.maxBackfat"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="maxBackFat" name="maxBackFat" onkeyup="clearNoNum(this)" lay-verify="required|maxBackFat" class="layui-input" autocomplete="off" maxlength="5" data-i18n="[placeholder]pigScore.minBFPlaceHolderText">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="pigScore.bodyScore"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="score" name="score" lay-verify="required|score" class="layui-input" data-i18n="[placeholder]pigScore.bodyScoreText" autocomplete="off" maxlength="2" oninput="value=value.replace(/[^\d]/g,'')">
+					</div>
+				</div>
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							<button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			var groupId = '';
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				layui.use(['form', 'laydate'], function() {
+					var form = layui.form;
+					var $ = layui.$;
+					var laydate = layui.laydate;
+
+					if(!checkToken()) {
+						alert(i18next.t("timeout"));
+						window.top.location.href = '../../login.html';
+					}
+
+					//创建时间 日期控件
+					laydate.render({
+						elem: '#bornDate' //指定元素
+							,
+						theme: 'molv',
+						calendar: true //重要节日
+					});
+					//创建时间 日期控件
+					laydate.render({
+						elem: '#enterDate' //指定元素
+							,
+						theme: 'molv',
+						calendar: true //重要节日
+					});
+
+					function clearNoNum(obj) {
+						obj.value = obj.value.replace(/[^\d.]/g, ""); //清除“数字”和“.”以外的字符   
+						obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的   
+						obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+						obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3'); //只能输入两个小数   
+						if(obj.value.indexOf(".") < 0 && obj.value != "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额  
+							obj.value = parseFloat(obj.value);
+						}
+					}
+
+					var stageId = GetQueryString("stageId"); //stageId为空表示新增，否则是修改
+					if(stageId != null && stageId != '') {
+						$.ajax({
+							type: "GET",
+							url: commonIP + 'api/pig/score/getPigScoreListPage?authToken=' + authToken + '&page=0&limit=0&stageId=' + stageId,
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							contentType: 'application/json',
+							async: false,
+							success: function(data) {
+								var datas = JSON.parse(data);
+								console.log(datas);
+								if(datas.errcode == 200) {
+									//赋值
+									groupId = datas.dataSource.list[0].group_id;
+								} else {
+									//alert(data.errmsg);
+									if(data.errcode == "10005") {
+										window.top.location.href = '../../login.html';
+									}
+								}
+							}
+						});
+					}
+					//校验数值
+					$("#minBackFat").change(function() {
+						var minBack = $("#minBackFat").val();
+						if(minBack <= 0) {
+							//alert(1);
+							var warnMessage = "请录入大于0的数，小数点最大两位";
+							alert(warnMessage);
+						} else {
+							if(/^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,2})?$/.test(minBack)) {
+								return true;
+							} else {
+								var warnMessage = "请录入大于0的数，小数点最大两位";
+								alert(warnMessage);
+							}
+
+						}
+					});
+
+					//校验数值
+					$("#maxBackFat").change(function() {
+						var minBack = $("#minBackFat").val();
+						if(minBack == "") {
+							var warnMessage = "请录入最小背膘值";
+							alert(warnMessage);
+						}
+						var maxBack = $("#maxBackFat").val();
+						if(maxBack <= 0) {
+							//alert(1);
+							var warnMessage = "请录入大于0的数，小数点最大两位";
+							alert(warnMessage);
+						} else {
+							if(/^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,2})?$/.test(maxBack)) {
+								if(minBack > maxBack) {
+									var warnMessage = "最大背膘值应大于最小背膘值";
+									alert(warnMessage);
+								}
+							} else {
+								var warnMessage = "请录入大于0的数，小数点最大两位";
+								alert(warnMessage);
+							}
+
+						}
+					});
+
+					$("#score").change(function() {
+						var score = $("#score").val();
+						if(score == 0) {
+							//alert(1);
+							var warnMessage = "请录入大于0的正整数";
+							alert(warnMessage);
+						}
+					});
+
+					//获取集团下拉列表
+					$.ajax({
+						url: commonIP + 'api/system/group/getListPage?authToken=' + authToken + '&page=0&limit=0',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						async: false,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if(dataObj != null && dataObj.dataSource.list.length > 0) {
+								var groupOption;
+								for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+									if(groupId == dataObj.dataSource.list[i].id) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '" selected="">' + dataObj.dataSource.list[i].name + '</option>';
+									} else {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+									}
+								}
+								$("#groupId").append(groupOption);
+								form.render('select'); //一定要加form.render();
+								var change = "0";
+								BindFarmDropList(change);
+							}
+						}
+					});
+
+					form.on('select(groupId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						/**改变集团后先清空猪场下拉值*/
+						document.getElementById("farmId").options.length = 0;
+						var change = "1";
+						$('#farmId').val("");
+						form.render("select");
+						BindFarmDropList(change);
+
+					});
+
+					//获取猪场下拉列表
+					function BindFarmDropList(change) {
+						var groupId = $("#groupId").val();
+						$.ajax({
+							url: commonIP + 'api/system/farm/getListPage?authToken=' + authToken + '&page=0&limit=0&groupId=' + groupId,
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									var farmOption;
+									for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+										farmOption = farmOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+									}
+									$("#farmId").append(farmOption);
+									form.render('select'); //一定要加form.render();
+									if(change == "0") {
+										BindUpdateList();
+									}
+								}
+							}
+						});
+					}
+					//监听提交
+					if(stageId == null) { //添加
+						form.on('submit(submit)', function(res) {
+
+							var score = $("#score").val();
+							if(score == 0) {
+								var warnMessage = "体况评分请录入大于0的正整数";
+								alert(warnMessage);
+								return false;
+							}
+							var minBack = $("#minBackFat").val();
+							var maxBack = $("#maxBackFat").val();
+							if(maxBack == 0 || maxBack == "0." || minBack == 0 || minBack == "0.") {
+								var warnMessage = "背膘请录入大于0的数，小数点最大两位";
+								alert(warnMessage);
+								return false;
+							}
+							if(minBack >= maxBack) {
+								var warnMessage = "最小背膘值必须小于最大背膘值";
+								alert(warnMessage);
+								return false;
+							}
+
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/pig/score/create?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify(res.field),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									//					console.log(dataObj);
+									//					console.log(dataObj.errcode);
+									if(dataObj) {
+										if(dataObj.errcode == "200") {
+											alert(i18next.t("addSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(dataObj.errmsg);
+										}
+									}
+								}
+							});
+						});
+					} else { //编辑
+
+						BindUpdateList();
+						form.on('submit(submit)', function(res) {
+							var score = $("#score").val();
+							if(score == 0) {
+								var warnMessage = "体况评分请录入大于0的正整数";
+								alert(warnMessage);
+								return false;
+							}
+							var minBack = $("#minBackFat").val();
+							var maxBack = $("#maxBackFat").val();
+							if(maxBack == 0 || maxBack == "0." || minBack == 0 || minBack == "0.") {
+								var warnMessage = "背膘请录入大于0的数，小数点最大两位";
+								alert(warnMessage);
+								return false;
+							}
+							if(minBack >= maxBack) {
+								var warnMessage = "最小背膘值必须小于最大背膘值";
+								alert(warnMessage);
+								return false;
+							}
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/pig/score/update?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify({
+									"stageId": stageId,
+									"groupId": res.field.group_id,
+									"farmId": res.field.farm_id,
+									"minBackFat": res.field.minBackFat,
+									"maxBackFat": res.field.maxBackFat,
+									"score": res.field.score
+								}),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									if(dataObj) {
+										if(dataObj.errcode == "200") {
+											alert(i18next.t("updateSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(dataObj.errmsg);
+										}
+									}
+								}
+							});
+						});
+					}
+
+					function BindUpdateList() {
+						if(stageId != null) { //编辑
+							$.ajax({
+								type: "GET",
+								url: commonIP + 'api/pig/score/getPigScoreListPage?authToken=' + authToken + '&page=0&limit=0&stageId=' + stageId,
+								parseData: function(res) { //res 即为原始返回的数据
+									return {
+										"code": res.code, //解析接口状态
+										"msg": res.msg, //解析提示文本
+										"count": res.count, //解析数据长度
+										"data": res.dataSource.list //解析数据列表
+									};
+								},
+								contentType: 'application/json',
+								success: function(data) {
+									var datas = JSON.parse(data);
+									console.log(datas);
+									if(datas.errcode == 200) {
+										//赋值
+										$("#groupId").val(datas.dataSource.list[0].group_id);
+										$("#farmId").val(datas.dataSource.list[0].farm_id);
+										form.render('select');
+
+										$("#minBackFat").val(datas.dataSource.list[0].minBackFat);
+										$("#maxBackFat").val(datas.dataSource.list[0].maxBackFat);
+										$("#score").val(datas.dataSource.list[0].score);
+									} else {
+										//alert(data.errmsg);
+										if(data.errcode == "10005") {
+											window.top.location.href = '../../login.html';
+										}
+									}
+								}
+							});
+						} else {
+							//新增
+						}
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

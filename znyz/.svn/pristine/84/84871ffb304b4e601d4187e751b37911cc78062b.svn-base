@@ -1,0 +1,414 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.xlqx.znyz.core.constant.RestCode;
+import com.xlqx.znyz.core.datasourcebean.DataSource;
+import com.xlqx.znyz.core.screendatasourcebean.FarmDataSource;
+import com.xlqx.znyz.core.screendatasourcebean.FarmFarmColumnsBean;
+import com.xlqx.znyz.core.screendatasourcebean.FarmSourceDataBean;
+import com.xlqx.znyz.core.screendatasourcebean.NumberData;
+import com.xlqx.znyz.core.screendatasourcebean.NumberDataSource;
+import com.xlqx.znyz.core.screendatasourcebean.NumberSourceDataBean;
+import com.xlqx.znyz.pig.bean.HogWeightWeekAndAverageBean;
+import com.xlqx.znyz.pig.bean.weightCalibrationBean;
+import com.xlqx.znyz.pig.entity.HogWeightDayEntity;
+import com.xlqx.znyz.pig.service.HogWeightDayService;
+import com.xlqx.znyz.pig.service.WeightService;
+import com.xlqx.znyz.screen.bean.FarmFarmDependenceBean;
+import com.xlqx.znyz.screen.bean.FieldHogWeightRowsBean;
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+import com.xlqx.znyz.screen.service.FieldHogWeightService;
+
+/**
+ * 栏位重量数据表格Controller
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/fieldhogweight")
+public class FieldHogWeightController {
+	private final Logger logger = LoggerFactory.getLogger(FieldHogWeightController.class);
+
+
+	@Autowired
+	private WeightService weightServiceImpl;
+	@Autowired
+	private FieldHogWeightService fieldHogWeightService;
+	@Autowired
+	private HogWeightDayService hogWeightDayService;
+
+	// 目前固定写死 丰宁猪场
+	public final static String farmIdCom = "14";
+	// 目前固定写死 丰宁猪场 育肥二舍 10001
+	public final static String fieldIdCom = "00000000000000009cf6ccb59bda48af";
+	// 批次ID目前写死
+	public final static String batchIdCom = "14";
+	
+	/**
+	 * 栏位下的重量数据图表
+	 * wangshoujian
+	 * @return
+	 */
+	@RequestMapping(value = "/getFieldHogWeightList", method = RequestMethod.POST)
+	public NumberSourceDataBean<NumberDataSource> getFieldHogWeightList() {
+		String weekOrMonth ="Month";
+		String pointTime = "2019-6-6";
+		logger.info("FieldHogWeightController==>getFieldHogWeightList()");
+		NumberSourceDataBean<NumberDataSource> sdb = new NumberSourceDataBean<NumberDataSource>();
+		Map<String, Object> paramMap = new HashMap<String, Object>();
+		paramMap.put("farm_id", farmIdCom);
+		paramMap.put("type", "3");// 查询表名类型
+		paramMap.put("batchId", batchIdCom);
+		paramMap.put("fieldId", fieldIdCom);
+		
+		Date dayS = new Date();// 当前日期
+		
+		List<weightCalibrationBean> resTableName = weightServiceImpl.getHogTable(paramMap);
+
+		HogWeightWeekAndAverageBean returnBean = new HogWeightWeekAndAverageBean();
+		
+		// 封装返回list
+		List<HogWeightWeekAndAverageBean> returnList = new ArrayList<HogWeightWeekAndAverageBean>();//定义返回数组
+		
+		List<HogWeightWeekAndAverageBean> getHogInfo = hogWeightDayService.getHogInfo(paramMap);// 获取商品猪信息
+		
+		if (getHogInfo != null && getHogInfo.size() > 0) {
+			//批次开始日期
+			returnBean.setCreateDate(getHogInfo.get(0).getCreateDate());
+			//批次预计结束日期
+			returnBean.setForecastEndTime(getHogInfo.get(0).getForecastEndTime());
+			//出生日期
+			returnBean.setBornDate(getHogInfo.get(0).getBornDate());
+			//栋舍名称
+			returnBean.setHouseName(getHogInfo.get(0).getHouseName());
+			//商品猪批次号
+			returnBean.setBatchCode(getHogInfo.get(0).getBatchCode());
+			//栏位编码
+			returnBean.setFieldCode(getHogInfo.get(0).getFieldCode());
+			// 预计出栏天数
+		//	returnBean.setForecastEndTime(getHogInfo.get(0).getForecastEndTime());
+			//正常猪的数量
+			returnBean.setGoodCapacity(getHogInfo.get(0).getGoodCapacity());
+			
+			returnBean.setStrainName(getHogInfo.get(0).getStrainName());
+			
+			Date dayE = getHogInfo.get(0).getBornDate();
+			long day = (dayS.getTime() - dayE.getTime()) / (24 * 60 * 60 * 1000);
+			String growingDays = String.valueOf(day);
+			returnBean.setGrowingDays(growingDays);// 生长天数
+
+			returnBean.setHouseName(getHogInfo.get(0).getHouseName());
+			returnBean.setPigVarietyName(getHogInfo.get(0).getPigVarietyName());
+			returnList.add(returnBean);
+
+		}else {
+			return sdb;
+		}
+
+		if (resTableName != null && resTableName.size() > 0) {
+
+			paramMap.put("tableName", resTableName.get(0).getTable_name());
+
+			DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				Date data = format.parse(pointTime);// 时间点
+				if (weekOrMonth.equals("Week")) {
+					String firstDayOfWeek = firstDayOfWeek(data);
+					String lastDayOfWeek = lastDayOfWeek(data);
+					paramMap.put("startTime", firstDayOfWeek);
+					paramMap.put("endTime", lastDayOfWeek);
+				}
+				if (weekOrMonth.equals("Month")) {
+					String firstDayOfMonth = firstDayOfMonth(data);
+					String lastDayOfMonth = lastDayOfMonth(data);
+					paramMap.put("startTime", firstDayOfMonth);
+					paramMap.put("endTime", lastDayOfMonth);
+				}
+				//周期显示是以开始时间 到结束时间
+				if (weekOrMonth.equals("Cycle")) {
+					 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");			   
+					//String startTime = sdf.format(getHogInfo.get(0).getCreateDate());
+					//String endTime = sdf.format(getHogInfo.get(0).getForecastEndTime());
+					//paramMap.put("startTime", startTime);
+					//paramMap.put("endTime", endTime);
+				}
+
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			List<HogWeightDayEntity> res = hogWeightDayService.getDayList(paramMap);// 获取周猪重以及时间
+
+			if (res != null && res.size() > 0) {
+				String[] weekInfo = new String[res.size()];// 测重周记录数组
+				String[] timeInfo = new String[res.size()];// 测重周时间数组
+				Map<String, Object> paramMapAvg = new HashMap<String, Object>();
+				Date date = new Date();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				paramMapAvg.put("farm_id", farmIdCom);
+				paramMapAvg.put("type", "3");// 查询表名类型
+				paramMapAvg.put("batchId", batchIdCom);
+				paramMapAvg.put("fieldId", fieldIdCom);
+				paramMapAvg.put("fieldId", fieldIdCom);									
+				paramMapAvg.put("startTime", sdf.format(date));
+				paramMapAvg.put("endTime", sdf.format(date));
+				paramMapAvg.put("tableName", resTableName.get(0).getTable_name());
+				//今日均重
+				float avgWeight = hogWeightDayService.getAvgWeight(paramMapAvg);// 获取测重平均数				
+				//float avgWeight = hogWeightDayService.getAvgWeight(paramMap);// 获取测重平均数
+				for (int i = 0; i < res.size(); i++) {
+					HogWeightDayEntity HogWeightDayEntity = res.get(i);// 猪重周数据
+					weekInfo[i] = HogWeightDayEntity.getWeightData();// 猪重周时间
+					java.util.Date firstDayWeekDate;
+					try {
+						Date data = format.parse(pointTime);// 时间点
+						if (weekOrMonth.equals("Week")) {
+							
+							String firstDayOfWeek = firstDayOfWeek(data);
+							firstDayWeekDate = format.parse(firstDayOfWeek); 
+							Date dateTime = HogWeightDayEntity.getWeightTime();
+							long dayWeek = (dateTime.getTime()-firstDayWeekDate.getTime())/(24*60*60*1000); 
+							String timeX = String.valueOf(dayWeek);
+							timeInfo[i] = timeX.toString();
+						}
+						if(weekOrMonth.equals("Month")){
+							Date dateTime = HogWeightDayEntity.getWeightTime();
+							String timeX = String.valueOf(format.format(dateTime));
+							timeInfo[i] = timeX;
+						}
+						if(weekOrMonth.equals("Cycle")){
+							Date dateTime = HogWeightDayEntity.getWeightTime();
+							String timeX = String.valueOf(format.format(dateTime));
+							timeInfo[i] = timeX;
+						}						
+						
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				returnBean.setAverageWeight(avgWeight);
+				returnBean.setCycleDataX(timeInfo);
+				returnBean.setWeightY(weekInfo);
+			}
+
+		}
+		return sdb;
+	}
+
+	
+
+	/**
+	 * 栏位下的重量数据图表
+	 * wangshoujian
+	 * @return
+	 */
+	@RequestMapping(value = "/getFieldHogWeightListBAK", method = RequestMethod.POST)
+	public NumberSourceDataBean<NumberDataSource> getFieldHogWeightListBAK() {
+		logger.info("FieldHogWeightController==>getFieldHogWeightList()");
+		NumberSourceDataBean<NumberDataSource> sdb = new NumberSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = null;
+
+		//List<ScreenNumberBean> res = screenNumberService.getList(parameter, "0", "0");
+		
+		List<ScreenNumberBean> res =new ArrayList();
+		List<NumberData> numberDataList = new ArrayList();
+		
+		String[] date = new String[] {"2019-7-09","2019-7-10","2019-7-11","2019-7-12"};
+		//String[] weight = new String[] {"10.1","10.2","10.4","10.6"};
+	
+		//sdb.getData().setCategories(new String[] {"2019-7-09","2019-7-10","2019-7-11","2019-7-12"});
+		//sdb.getData().setCategories(new String[] { "2019-7-09","2019-7-10","2019-7-11","2019-7-12" });
+		
+		NumberData numberData1 = new NumberData();
+		numberData1.setName("体重");
+		numberData1.setData(new String[] {"10.1","10.2","10.4","10.6"});
+		numberDataList.add(numberData1);
+		NumberData numberData2 = new NumberData();
+		numberData2.setName("体重标准");
+		numberData2.setData(new String[] {"10.1","10.1","10.1","10.1"});
+		numberDataList.add(numberData2);
+		
+		sdb.setData(new NumberDataSource<NumberDataSource>(numberDataList));
+		sdb.getData().setCategories(date);
+//		if (res != null && res.size() > 0) {
+//			String[] date = new String[res.size()];
+//			double[] pigNumber = new String[res.size()];
+//
+//			// 取出日期扔进数组
+//			for (int i = 0; i < res.size(); i++) {
+//				date[i] = res.get(i).getDate();
+//				pigNumber[i] = String.valueOf(res.get(i).getPigNumber());
+//				hogNumber[i] = res.get(i).getHogNumber();
+//			}
+//			NumberData numberData = new NumberData();
+//			numberData.setName("种猪");
+//			numberData.setData(pigNumber);
+//			numberDataList.add(numberData);
+//			sdb.setData(new NumberDataSource<NumberDataSource>(numberDataList));
+//
+//			sdb.getData().setCategories(date);
+//			sdb.getData().setSeries(numberDataList);
+//			sdb.setMessage(0, "查询成功");
+//
+//		} else {
+//			sdb.setMessage(1, "猪场未找到");
+//		}
+
+		return sdb;
+
+	}
+
+	
+	
+	/**
+	 * 栏位下的重量数据表格的（十条）
+	 * wangshoujian
+	 * @return
+	 */
+	@RequestMapping(value = "/getList", method = RequestMethod.POST)
+	public FarmSourceDataBean<FieldHogWeightRowsBean> getList() {
+		// public FarmSourceDataBean<FieldHogWeightRowsBean> getList(@RequestBody
+		// ScreenBodyBean screenBodyBean) {
+		logger.info("FieldHogWeightController==>getList()");
+		FarmFarmDependenceBean farmFarmDependenceBean = new FarmFarmDependenceBean();
+		String farmName = "";
+		Map<String, Object> parameter = new HashMap<String, Object>();
+//		if(screenBodyBean.getDependence() ==""||screenBodyBean.getDependence() ==null||screenBodyBean.getDependence().equals("")||screenBodyBean.getDependence().equals(null)) {
+//		}else {
+//			String	msg = screenBodyBean.getDependence();
+//			try {
+//				 farmFarmDependenceBean = JSON.parse(msg, FarmFarmDependenceBean.class);
+//				 farmName = farmFarmDependenceBean.getItem().getName();
+//				 if(farmName=="全部猪场"||farmName.equals("全部猪场")) {				 
+//				 }else {
+//					 parameter.put("name", farmName);
+//				 }
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}			
+//		}
+
+		FarmSourceDataBean<FieldHogWeightRowsBean> sdb = new FarmSourceDataBean<FieldHogWeightRowsBean>();
+		parameter.put("farm_id", farmIdCom);
+		List<weightCalibrationBean> tableNameBean = weightServiceImpl.getHogTable(parameter);
+		if (tableNameBean != null && tableNameBean.size() == 1
+				&& StringUtils.isNotBlank(tableNameBean.get(0).getTable_name())) {
+			String tableName = tableNameBean.get(0).getTable_name();
+			parameter.put("tableName", tableName);
+			parameter.put("fieldId", fieldIdCom);
+		} else {
+			sdb.setMessage(1, "重量表未找到");
+		}
+
+		List<FieldHogWeightRowsBean> res = fieldHogWeightService.getList(parameter);
+		if (res != null && res.size() > 0) {
+
+			int total = 10;
+			int xh = 0;
+			for (FieldHogWeightRowsBean fieldHogWeightRowsBean : res) {
+				xh += 1;
+				fieldHogWeightRowsBean.setXh(String.valueOf(xh));
+			}
+
+			// 创建表的列
+			List<FarmFarmColumnsBean> farmFarmColumnsBeanList = new ArrayList();
+			FarmFarmColumnsBean farmFarmColumnsBean = new FarmFarmColumnsBean();
+			farmFarmColumnsBean.setName("序号");
+			farmFarmColumnsBean.setId("xh");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean);
+
+			FarmFarmColumnsBean farmFarmColumnsBean1 = new FarmFarmColumnsBean();
+			farmFarmColumnsBean1.setName("时间");
+			farmFarmColumnsBean1.setId("date");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean1);
+
+			FarmFarmColumnsBean farmFarmColumnsBean2 = new FarmFarmColumnsBean();
+			farmFarmColumnsBean2.setName("重量");
+			farmFarmColumnsBean2.setId("weight");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean2);
+
+			sdb.setData(new FarmDataSource<FieldHogWeightRowsBean>(res, farmFarmColumnsBeanList));
+			sdb.getData().setTotal(total);
+			sdb.setMessage(0, "查询成功");
+
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+
+		return sdb;
+
+	}
+	public String firstDayOfMonth(Date date) {// 2月可用
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.set(Calendar.DAY_OF_MONTH, 1);
+		String firstDayOfWeek = sdf.format(calendar.getTime());
+		return firstDayOfWeek;
+	}
+
+	public String lastDayOfMonth(Date date) {// 2月可用
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.set(Calendar.DAY_OF_MONTH, 1);
+		calendar.add(Calendar.MONTH, 1);
+		calendar.add(Calendar.DAY_OF_MONTH, -1);
+		String lastDayOfWeek = sdf.format(calendar.getTime());
+		return lastDayOfWeek;
+	}
+	public String firstDayOfWeek(Date date) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 设置时间格式
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		// 判断要计算的日期是否是周日，如果是则减一天计算周六的，否则会出问题，计算到下一周去了
+		int dayWeek = calendar.get(Calendar.DAY_OF_WEEK);// 获得当前日期是一个星期的第几天
+		if (1 == dayWeek) {
+			calendar.add(Calendar.DAY_OF_MONTH, -1);
+		}
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);// 设置一个星期的第一天，按中国的习惯一个星期的第一天是星期一
+		int daySeveral = calendar.get(Calendar.DAY_OF_WEEK);// 获得当前日期是一个星期的第几天
+		calendar.add(Calendar.DATE, calendar.getFirstDayOfWeek() - daySeveral);// 根据日历的规则，给当前日期减去星期几与一个星期第一天的差值
+		String firstDayOfWeek = sdf.format(calendar.getTime());
+		return firstDayOfWeek;
+	}
+	
+	public String lastDayOfWeek(Date date) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd"); // 设置时间格式
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		// 判断要计算的日期是否是周日，如果是则减一天计算周六的，否则会出问题，计算到下一周去了
+		int dayWeek = calendar.get(Calendar.DAY_OF_WEEK);// 获得当前日期是一个星期的第几天
+		if (1 == dayWeek) {
+			calendar.add(Calendar.DAY_OF_MONTH, -1);
+		}
+		calendar.setFirstDayOfWeek(Calendar.MONDAY);// 设置一个星期的第一天，按中国的习惯一个星期的第一天是星期一
+		int daySeveral = calendar.get(Calendar.DAY_OF_WEEK);// 获得当前日期是一个星期的第几天
+		calendar.add(Calendar.DATE, calendar.getFirstDayOfWeek() - daySeveral);// 根据日历的规则，给当前日期减去星期几与一个星期第一天的差值
+		calendar.add(Calendar.DATE, 6);
+		String lastDayOfMonth = sdf.format(calendar.getTime());
+		return lastDayOfMonth;
+	}
+	
+	
+}

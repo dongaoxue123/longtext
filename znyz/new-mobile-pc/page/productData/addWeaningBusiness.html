@@ -1,0 +1,246 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+	<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+    <script language="JavaScript" type="text/javascript"> 		
+function clearNoNum(obj){
+		//修复第一个字符是小数点 的情况.
+		if(obj.value !=''&& obj.value.substr(0,1) == '.'){
+			obj.value="";
+		}
+		obj.value = obj.value.replace(/^0*(0\.|[1-9])/, '$1');//解决 粘贴不生效
+		obj.value = obj.value.replace(/[^\d.]/g,"");  //清除“数字”和“.”以外的字符
+		obj.value = obj.value.replace(/\.{2,}/g,"."); //只保留第一个. 清除多余的     
+		obj.value = obj.value.replace(".","$#$").replace(/\./g,"").replace("$#$",".");    
+		obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d).*$/,'$1$2.$3');//只能输入一个小数     
+		if(obj.value.indexOf(".")< 0 && obj.value !=""){//以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+			if(obj.value.substr(0,1) == '0' && obj.value.length == 2){
+				obj.value= obj.value.substr(1,obj.value.length);	0
+			}
+		}    
+	}    
+</script>
+
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label layui-required" data-i18n="common.pigNumber"></label>
+            <div class="layui-input-inline">
+            	<select id="pigNumbers" name="pigNumbers" lay-verify="required" lay-filter="pigNumbers" style="height: 38px;border-color: #F0F0F0;" lay-search>
+					<option value=""></option>
+	    	    </select>
+            </div>
+        	<label class="layui-form-label layui-required" style="width: 120px" data-i18n="断奶猪舍|断奶栏位"></label>
+            <div class="layui-input-inline">
+                <input type="text" autocomplete="off" id="pigLocation" lay-verify="required" disabled="disabled" name="pigLocation" class="layui-input">
+            </div>
+
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="weaning.weaningDate"></label>
+            <div class="layui-input-inline">
+                <input type="text"  autocomplete="off" id="weaningDate" lay-verify="required" name="weaningDate" class="layui-input">
+            </div>
+            <label class="layui-form-label layui-required"  style="width: 120px" data-i18n="weaning.weaningPigletNum"></label>
+            <div class="layui-input-inline">
+                <input type="text" autocomplete="off" id="weaningNumber"  maxlength='2' data-i18n="[placeholder]录入大于0的正整数,长度2"  oninput = "value=value.replace(/[^\d]/g,'')" lay-verify="required" name="weaningNumber" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="断奶窝重(KG)"></label>
+            <div class="layui-input-inline">
+                <input type="text" autocomplete="off" id="weaningWeight" onkeyup="clearNoNum(this)" maxlength="5"  data-i18n="[placeholder]断奶头数总重量,一位小数"  lay-verify="required" name="weaningWeight" class="layui-input">
+            </div>
+        	<label class="layui-form-label" style="width: 120px" data-i18n="common.remark"></label>
+            <div class="layui-input-inline">
+                <input type="text"  autocomplete="off" data-i18n="[placeholder]common.remarkText"  maxlength="100" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script> 
+<script>
+	var farmId;
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 
+ i18n('../../locales', onLangReady) //国际化
+function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+	  		alert(i18next.t("timeout"));
+	 			window.top.location.href = '../../login.html';
+		}
+		farmId = JSON.parse(user).farmId; 
+		groupId = JSON.parse(user).groupId;
+		
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#weaningDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		
+		var page = 1;
+		var pageSize = 30;
+		var pigsType ='00034';
+		
+		//获取猪只下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page=0'+'&limit=0'+'&pigs_type=00032',
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].pigs_archives_id+'">'+dataObj.dataSource.list[i].pigs_number+'</option>';
+	            }
+	            $("#pigNumbers").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	    	  }
+	    }
+	    });
+	    
+	    form.on('select(pigNumbers)', function (data) {      
+	    	var pigId = $("#pigNumbers").val();
+	    	//获取当前猪只位置
+		   	$.ajax({
+		        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&pigs_archives_id='+pigId + '&page=1&limit=10',
+		        success: function (res) {
+		    	var dataObj = JSON.parse(res);
+				for (var i=0;i<dataObj.dataSource.list.length;i++) {  
+		        var b = dataObj.dataSource.list[i].houseName;
+				if(b == ""){
+					var a = i18next.t("common.noLocation") //"此猪无位置";
+					$("#pigLocation").val(a);
+				}else{		
+				var a = b + "|"+dataObj.dataSource.list[i].code;
+				$("#pigLocation").val(a);
+				}									                       
+	           } 
+		     }
+		    });
+		  });
+	    
+		//校验数值
+		$("#weaningWeight").change(function() {
+			var minBack = $("#weaningWeight").val();
+			if(minBack <= 0) {
+				//alert(1);
+				var warnMessage = "请录入大于0的数，小数点最大一位";
+				alert(warnMessage);
+			} else {
+				if(/^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,1})?$/.test(minBack)) {
+					return true;
+				} else {
+					var warnMessage = "请录入大于0的数，小数点最大一位";
+					alert(warnMessage);
+				}
+		
+			}
+		});
+		
+		
+		//校验数值
+		$("#weaningNumber").change(function() {
+			var minBack = $("#weaningNumber").val();
+			if(minBack <= 0) {
+				//alert(1);
+				var warnMessage = "请录入大于0的正整数";
+				alert(warnMessage);
+			} 
+		});
+		
+	    form.on('submit(submit)', function(res){
+	    			var pigLocation = $("#pigLocation").val();
+						//alert(pigLocation);
+						if("此猪无位置" == pigLocation) {
+							var warnMessage = "当前猪只无位置信息，请确认后在进行操作";
+							alert(warnMessage);
+							return false;
+						}
+						
+			if(confirm("请您确认信息无误？")){
+	    	var pigId = $("#pigNumbers").val();
+	        $.ajax({
+			        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&pigs_archives_id='+pigId + '&page=1&limit=10',
+			        success: function (res) {
+			    	var dataObj = JSON.parse(res);
+					for (var i=0;i<dataObj.dataSource.list.length;i++) {  
+			        var HouseId = dataObj.dataSource.list[i].houseId;
+			        var FieldId= dataObj.dataSource.list[i].fieldId;         	                            
+		            var pigsArchivesId= dataObj.dataSource.list[i].pigs_archives_id;
+					var weaningDate=$('#weaningDate').val();
+					var weaningNumber =$('#weaningNumber').val();
+					var weaningWeight =$('#weaningWeight').val();
+					var remark =$('#remark').val();
+
+			   		$.ajax({  
+			            type: 'POST',           
+						url: commonIP + "api/pig/weaningbusiness/create?authToken="+authToken,
+						contentType: 'application/json',
+						data: JSON.stringify({
+						"groupId":groupId,
+						"farmId":farmId,
+						"HouseId":HouseId,
+						"FieldId":FieldId,
+					    "pigsArchivesId":pigsArchivesId,
+						"weaningDate":weaningDate, 
+						"remark":remark,
+						"weaningNumber":weaningNumber,		
+						"weaningWeight":weaningWeight
+					    }),
+					    async: false,
+						success: function(data) {
+							var dataObj = JSON.parse(data);
+							if (dataObj) {
+								if (dataObj.errcode == "200") {
+							     alert(i18next.t("addSucc"));
+			                     layer.close(layer.index);  
+			                     window.parent.location.reload();  
+								} else {
+								 alert(i18next.t("addFailed"));
+								}
+							}
+						}
+			        }); 
+			       }
+			  }
+	       }); 
+		   }
+	         return false;
+        });
+     
+    });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xlqx.znyz.screen.mapper.AloneScreenMapper">
+
+	<!-- 根据日期查询测重记录 -->
+	<select id="getHogPigCount" resultType="integer">
+		SELECT
+		SUM(good_capacity)
+		FROM
+		t_hog_batch_field
+		WHERE
+		0 = 0
+		<if test="houseId != null and houseId !='' and houseId != 'null'">
+			and house_id=#{houseId,jdbcType=VARCHAR}
+		</if>
+		<if test="fieldId != null and fieldId !='' and fieldId != 'null'">
+			and field_id=#{fieldId,jdbcType=VARCHAR}
+		</if>
+	</select>
+
+
+	<!-- 获取商品猪重平均数 -->
+	<select id="getAvgWeight" parameterType="map" resultType="float">
+		SELECT
+		ifnull(round(avg(weight_data), 1) ,0)
+		FROM
+		${tableName}
+		<where>
+			field_id = '${fieldId}'
+			AND
+			date_format(weight_time, '%Y-%m-%d') between
+			#{startTime,jdbcType=VARCHAR}
+			and #{endTime,jdbcType=VARCHAR}
+		</where>
+		ORDER BY weight_time ASC
+	</select>
+
+</mapper>

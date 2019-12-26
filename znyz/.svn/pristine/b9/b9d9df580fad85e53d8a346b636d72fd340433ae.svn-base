@@ -1,0 +1,114 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>猪舍一览</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<style>
+	.btn{
+	height: 0.1rem;
+}
+	
+</style>
+<body  style="height:100%;">
+		<!--<header>
+			<span class="iconfont icon-arrow-left" onclick="goBack()"></span>
+				<h1>猪舍一览</h1>
+		</header>-->
+		<main>
+			
+			<div class="btn">
+				<input type="hidden" name="save" id="save" value="查询" onclick="location='pigHouse.html'"/>
+				<input type="hidden" name="save" id="save1" value="添加" onclick="location='addHouse.html'"/>
+			</div>
+			
+			<div class="addlist" id ="houselist">
+			</div>
+			<div class="footer">
+			</div>
+		</main>
+		<script  type="text/javascript">
+			function goBack()
+			{
+				window.history.back();
+			}
+	        $(document).ready(function () {
+	        	// 取得authToken
+				var authToken = localStorage.getItem('authToken');
+//				setInit();
+//				$("#setFooter").addClass("active");
+				if (authToken.length = 0){		
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				} else {
+					getHouseList(authToken);
+				}
+	        });			
+			function getHouseList(authToken){
+				var user = localStorage.getItem('user');
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				$.ajax({
+					type: "GET",
+					url: commonIP + '/api/system/house/getHouseListPage',
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&groupId='+groupId+'&farmId='+farmId+'&pageNum=0&pageSize=0',
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {	
+								var result = '<ul><li style="font-weight:bold;"><span style="width:120px;">栋舍名称</span><span>类型</span><span style="width:100px">代码</span></li>';
+								//获取模板
+								var pigRecordTemplate = $("#pigRecordTemplate").html();									
+						        for (var key in data.dataSource.list){	
+						        	var houseName = data.dataSource.list[key].name;
+									if(houseName.length>5){//最多只展示五位
+										houseName = houseName.substring(0,5)+'...';
+									}
+						        	//循环显示
+						        	result = result+'<li><span style="width:120px;">'+houseName+'</span><span>'+data.dataSource.list[key].typeName+'</span><span style="width:100px">'+data.dataSource.list[key].code+'</span>'+
+						        			'<div class="edit" onclick="editUser(event)"><span class="iconfont icon-bianji"></span><input type="text" id="id" style="display:none" value="'+data.dataSource.list[key].id+'"/>'+
+						        			'<input type="hidden" id="type" value="'+data.dataSource.list[key].type+'"/></div></li>';
+						        }
+						        result = result+'</ul>';
+						        $('#houselist').prepend(result);
+							} else {
+								alert(data.errmsg);
+								if(data.errcode =="10005"){
+									window.top.location.href = 'wxlogin.html';
+								}
+							}
+						}
+					}
+				});
+			}
+			function editUser(e) { 
+				var id = '';
+				var type = '';
+				var targetClass = $(e.target).attr("class");
+				if (targetClass == 'iconfont icon-bianji'){	
+					id = $(e.target).parent().find("#id").val();
+					type = $(e.target).parent().find("#type").val();
+				} else if(targetClass == 'edit'){
+					id = $(e.target).find("#id").val();
+					type = $(e.target).find("#type").val();
+				}
+				// 跳转页面并传输参数
+				window.location.href = 'edithouse.html?id='+id+'&type='+type;	
+			}
+		</script>
+</body>
+</html>

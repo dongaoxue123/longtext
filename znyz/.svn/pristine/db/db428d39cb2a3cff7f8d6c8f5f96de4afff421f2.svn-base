@@ -1,0 +1,72 @@
+{
+  "menuList": [
+  	{
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "试验数据管理",
+          "type": 1,
+          "url": "page/testdata/testDataList.html"
+        }
+      ],
+      "name": "试验数据管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-tachometer",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪场管理",
+          "type": 1,
+          "url": "page/basedata/farm.html"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪只信息管理",
+          "type": 1,
+          "url": "page/basedata/pigInfo.html"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "文件路径管理",
+          "type": 1,
+          "url": "page/basedata/filePath.html"
+        }
+      ],
+      "name": "基础数据管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "账号管理",
+          "type": 1,
+          "url": "page/user/userList.html"
+        }
+      ],
+      "name": "系统管理",
+      "type": 0,
+      "url": null
+    }
+  ],
+  "code": 0
+}

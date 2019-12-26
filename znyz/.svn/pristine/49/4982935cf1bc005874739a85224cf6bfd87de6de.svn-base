@@ -1,0 +1,105 @@
+<!doctype html>
+<html style="height: 100%;color:#333333;background: #fff;">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
+		<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+		<meta name="format-detection" content="telephone=no" />
+		<!--告诉设备忽略将页面中的数字识别为电话号码-->
+		<meta content="false" name="twcClient" id="twcClient" />
+		<!--判断页面是否在本地Native（本地APP）环境中-->
+		<title>测膘系统</title>
+		<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/jquery-1.8.2.min.js"></script>
+		<script src="script/AddFeeding.js"></script>
+		<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+	</head>
+
+	<body style="height:100%;">
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="goBack()"></span>
+			<div><h1 id = 'feedingTitle'>新增</h1></div>
+			<div class="record" id = 'record' onclick="location='AddFeeding.html'">饲喂记录</div>
+		</header>
+		<main>
+			<div class="addlist" id="add_feeding_div">
+				<ul>
+					<li>
+						<span>饲喂日期</span>
+						<input type="date" name="add_feeding_date" id="add_feeding_date" value="" />
+					</li>
+					<li>
+						<span>饲喂时间</span>
+						<input type="time" name="add_feeding_time" id="add_feeding_time" value="" />
+					</li>
+					<li>
+						<span>猪舍</span>
+						<input type="text" name="add_feeding_house_name" id="add_feeding_house_name" placeholder="XX舍" readonly= "true" />
+						<input type="hidden" name="add_feeding_house_id" id="add_feeding_house_id" />
+					</li>
+					<li>
+						<span>生产状态</span>
+						<select class="form-control" name="add_feeding_status_id" id="add_feeding_status_id" style="width:200px;"></select>
+					</li>
+					<li>
+						<span>饲料1</span>
+						<select class="form-control" name="add_feeding_materiel_id1" id="add_feeding_materiel_id1" style="width:200px;">
+							<option value = ''></option>
+						</select>
+					</li>
+					<li>
+						<span>重量</span>
+						<input type="number" name="add_feeding_scale1" id="add_feeding_scale1" placeholder="XXKG" />
+					</li>
+					<li>
+						<span>饲料2</span>
+						<select class="form-control" name="add_feeding_materiel_id2" id="add_feeding_materiel_id2" style="width:200px;">
+							<option value = ''></option>
+						</select>
+					</li>
+					<li>
+						<span>重量</span>
+						<input type="number" name="add_feeding_scale2" id="add_feeding_scale2" placeholder="XXKG" />
+					</li>
+					<li>
+						<span>饲料3</span>
+						<select class="form-control" name="add_feeding_materiel_id3" id="add_feeding_materiel_id3" style="width:200px;">
+							<option value = ''></option>
+						</select>
+					</li>
+					<li>
+						<span>重量</span>
+						<input type="number" name="add_feeding_scale3" id="add_feeding_scale3" placeholder="XXKG" />
+					</li>
+				</ul>
+			</div>
+
+			<div class="btn">
+				<input type="submit" name="save" id="save" onclick="javascript:save()" value="保存" />
+				<input type="submit" name="cancel" id="cancel" onclick="goBack()" value="取消" />
+			</div>
+
+		</main>
+		<script>
+			// 在页面任意位置点击而触发此事件
+			$(document).click(function(e) { 
+  				var targetClass = $(e.target).attr("class");
+  				if (targetClass == 'record'){	
+					var houseId=$('#add_feeding_house_id').val();
+					var houseName=$('#add_feeding_house_name').val();
+  					// 跳转页面并传输参数
+					window.location.href = 'FeedingRecord.html?houseId='+houseId+'&houseName='+houseName;
+  				} 
+			})	
+		</script>
+	</body>
+
+</html>

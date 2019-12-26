@@ -1,0 +1,44 @@
+package com.xlqx.znyz.screen.dao.impl;
+
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.xlqx.znyz.core.dao.BaseDaoImpl;
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+import com.xlqx.znyz.screen.dao.AloneScreenDao;
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+@Service("aloneScreenDaoImpl")
+public class AloneScreenDaoImpl extends BaseDaoImpl<ScreenNumberBean> implements AloneScreenDao {
+
+	private final Logger logger = LoggerFactory.getLogger(AloneScreenDaoImpl.class);
+
+	private final String namespace = "com.xlqx.znyz.screen.mapper.AloneScreenMapper.";
+
+	private String sqlId(String method) {
+		return namespace + method;
+	}
+
+	@Override
+	public int getHogPigCount(Map<String, Object> paramMap) {
+		logger.info("AloneScreenDaoImpl ==> getHogPigCount()");
+		return getWriteSession().selectOne(sqlId("getHogPigCount"), paramMap);
+	}
+	
+	@Override
+	public float getAvgWeight(Map<String,Object> paramMap){		
+		logger.info("AloneScreenDaoImpl ==> getAvgWeight()");
+		float res = getWriteSession().selectOne(sqlId("getAvgWeight"),paramMap);	
+		return res;
+	}
+
+}

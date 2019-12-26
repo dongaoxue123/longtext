@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>商品猪体况管理</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+
+	<body>
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<label class="layui-form-label">栋舍列表:</label>
+				<div class="layui-input-inline">
+					<select id="houseId" name="houseId" style="height: 38px;border-color: #F0F0F0;">
+						<option value="">请选择栋舍</option>
+					</select>
+				</div>
+			</div>
+			<div class="layui-form-item" style="padding-right: 20px">
+				<label id='field-total' class='layui-form-label' style="width:200px;">共栏 头猪</label><label class='layui-form-label' style="width:200px;">测重时间：9:00;12:00;16:00</label>
+			</div>
+		</div>
+		<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+		<script type="text/html" id="barDemo">
+			<a class="layui-btn layui-btn-xs" lay-event="detail">详细</a>
+		</script>
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+
+			if(!checkToken()) {
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+
+			layui.use(['form', 'table', 'laydate'], function() {
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					getFieldList()
+
+					//获取栋舍下拉列表
+					$.ajax({
+						url: commonIP + 'api/system/house/getHouseListPage?authToken=' + authToken + '&type=00059&page=0&limit=0&farmId=' + farmId,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if(dataObj != null) {
+								var datas = dataObj.dataSource.list
+								var groupOption;
+								for(var i = 0; i < datas.length; i++) {
+									groupOption = groupOption + '<option value="' + datas[i].id + '">' + datas[i].name + '</option>';
+								}
+								$("#houseId").append(groupOption);
+								form.render('select'); //一定要加form.render();
+							}
+						}
+					});
+
+					//监听工具条-详情
+					table.on('tool(hogBatch)', function(obj) {
+						var data = obj.data;
+						if(obj.event === 'detail') {
+							var index = layer.open({
+								type: 2,
+								content: "pigGrowDetail.html?id=" + data.fieldId + '&batchid=' + data.batchId + '&deviceStatus=' + data.deviceStatus,
+								area: ['1000px', '680px'],
+								maxmin: true
+							});
+						}
+					});
+					
+			function changeHouse() {
+				getFieldList()
+			}
+
+			function getFieldList() {
+				getFieldListInfo();
+
+			}
+			// 取得栏位信息
+			function getFieldListInfo() {
+				getList()
+			}
+			
+			function getList() {
+					//方法级渲染
+					var houseId = $("#houseId").val();
+					console.log(commonIP + "api/pig/hogbatch/getHogWeightDevicePage?authToken=" + authToken +  "&farmId=" + farmId + '&houseId=' + houseId + '&pageNum=1&pageSize=10')
+					table.render({
+						elem: '#hogBatch',
+						url: commonIP + "api/pig/hogbatch/getHogWeightDevicePage?authToken=" + authToken +  "&farmId=" + farmId + (houseId ? '&houseId=' + houseId : ''),
+						parseData: function(res) {
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"totalNumber": res.errcode === '200' ? res.dataSource.list[0].totalNumber: 0,
+								"data": res.errcode === '200' ? res.dataSource.list[0].hogBatchWeightDeviceBean : [] //解析数据列表
+							}
+						},
+						request:{
+							pageName: 'pageNum',
+							limitName: 'pageSize',
+						},
+						cellMinWidth: 80,
+						cols: [
+							[{
+									type: 'numbers',
+									width: '2%'
+								}, {
+									field: 'houseName',
+									title: '栋舍名称',
+									width: '8%'
+								},{
+									field: 'code',
+									title: '栏位编号',
+									width: '8%'
+								}
+
+								, {
+									field: 'batchCode',
+									title: '批次编号',
+									width: '10%'
+								}, 
+								{
+									field: 'pigVarietyName',
+									title: '品种',
+									width: '8%'
+								}, 
+								{
+									field: 'strainName',
+									title: '品系',
+									width: '8%'
+								},
+								{
+									field: 'pigAge',
+									title: '日龄(天)',
+									width: '7%'
+								}, {
+									field: 'totalNumber',
+									title: '头数',
+									width: '8%'
+								}, {
+									field: 'weightData',
+									title: '当前均重(kg)',
+									width: '8%'
+								}, {
+									field: 'deviceStatus',
+									title: '状态',
+									width: '8%',
+									color: 'red',
+									templet: function(row){
+										return row.deviceStatus==='100' ? '测重中' : '已测' + row.deviceStatus + '次'
+									},
+									DynamicForeColor:'red'
+								}, {
+									field: 'weightData',
+									title: '最新数据',
+									width: '8%'
+								}, {
+									field: 'testPigNumber',
+									title: '已测头次',
+									width: '8%'
+								}, {
+									fixed: 'right',
+									title: '操作',
+									width: '8%',
+									align: 'center',
+									toolbar: '#barDemo'
+								} //一个工具栏  具体请查看layui官网
+							]
+						],
+						page: true //开启分页
+							,
+						limit: 10 //默认十条数据一页
+							,
+						limits: [10, 20, 30, 50] //数据分页条
+							,
+						id: 'testReload',
+						done: function(res, curr, count){
+							currPage = curr;
+							var that = this.elem.next()
+							$.each(res.data, function (index, obj) {
+					           if(obj.deviceStatus === '100'){
+					                that.find(".layui-table-box tbody tr[data-index='" + index + "']").css("background-color", "#D3D3D3");
+					                that.find(".layui-table-box tbody tr[data-index='" + index + "'] td[data-field='deviceStatus']").css("color", "red");
+					           }
+  							})
+							let totalTxt = ''
+								totalTxt = '<span>共' + res.count + '栏  ' + res.totalNumber + '头猪</span>';
+							$('#field-total').html(totalTxt);
+							
+						}
+					});
+				}
+				
+			$('#houseId').on('change', function() {
+					changeHouse()
+				});
+			
+		})
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,124 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.alibaba.dubbo.common.json.JSON;
+import com.alibaba.dubbo.common.json.ParseException;
+import com.xlqx.znyz.core.screendatasourcebean.FarmDataSource;
+import com.xlqx.znyz.core.screendatasourcebean.FarmFarmColumnsBean;
+import com.xlqx.znyz.core.screendatasourcebean.FarmSourceDataBean;
+import com.xlqx.znyz.screen.bean.FarmFarmDependenceBean;
+import com.xlqx.znyz.screen.bean.FarmFarmRowsBean;
+import com.xlqx.znyz.screen.bean.ScreenBodyBean;
+import com.xlqx.znyz.system.bean.FarmBean;
+import com.xlqx.znyz.system.service.FarmService;
+
+/**
+ * 猪场Controller
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/farmfarm")
+public class FarmFarmController {
+	private final Logger logger = LoggerFactory.getLogger(FarmFarmController.class);
+
+	@Autowired
+	private FarmService farmServiceImpl;
+
+	@RequestMapping(value = "/getListPage", method = RequestMethod.POST)
+	public FarmSourceDataBean<FarmFarmRowsBean> getListPage(@RequestBody ScreenBodyBean screenBodyBean) {	
+		logger.info("FarmFarmController==>getListPage()");
+		System.out.println(screenBodyBean);  
+		FarmFarmDependenceBean farmFarmDependenceBean = new FarmFarmDependenceBean();
+		String farmName = "";
+
+		Map<String,Object> parameter=new HashMap<String,Object>();
+	
+		if(screenBodyBean.getDependence() ==""||screenBodyBean.getDependence() ==null||screenBodyBean.getDependence().equals("")||screenBodyBean.getDependence().equals(null)) {
+		}else {
+			String	msg = screenBodyBean.getDependence();
+			try {
+				 farmFarmDependenceBean = JSON.parse(msg, FarmFarmDependenceBean.class);
+				 farmName = farmFarmDependenceBean.getItem().getName();
+				 if(farmName=="全部猪场"||farmName.equals("全部猪场")) {				 
+				 }else {
+					 parameter.put("name", farmName);
+				 }
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+	     // System.out.println("message："+new String(screenBodyBean.getBody(),"utf-8"));
+//        System.out.println("messageBean："+messageBean.getMessage());
+       /// msg = new String(message.getBody(),"utf-8");
+       // UserOperationBean userOperation = JSON.parse(msg, UserOperationBean.class);
+		
+		 
+		FarmSourceDataBean<FarmFarmRowsBean> sdb = new FarmSourceDataBean<FarmFarmRowsBean>();
+		
+		List<FarmBean> res = farmServiceImpl.getFarmListPage(parameter, "0", "0");
+		List<FarmFarmRowsBean> farmFarmRowsBeanList = new ArrayList();
+		if (res != null && res.size() > 0) {
+			
+			int total = farmServiceImpl.getPageCount(parameter);
+			int xh = 0;
+			for (FarmBean farmBean : res) {	
+				xh+=1;
+				FarmFarmRowsBean farmFarmRowsBean = new FarmFarmRowsBean();
+				
+				farmFarmRowsBean.setCity(farmBean.getCity());
+				farmFarmRowsBean.setFarm(farmBean.getName());
+				//farmFarmRowsBean.setXh(farmBean.getCode());
+				farmFarmRowsBean.setXh(String.valueOf(xh));
+				farmFarmRowsBean.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+				// 猪只数量目前写死
+				//farmFarmRowsBean.setPignum(10000);
+				farmFarmRowsBeanList.add(farmFarmRowsBean);
+			}
+			// 创建表的列
+			List<FarmFarmColumnsBean> farmFarmColumnsBeanList = new ArrayList();
+			FarmFarmColumnsBean farmFarmColumnsBean = new FarmFarmColumnsBean();
+			farmFarmColumnsBean.setName("序号");
+			farmFarmColumnsBean.setId("xh");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean);
+
+			FarmFarmColumnsBean farmFarmColumnsBean1 = new FarmFarmColumnsBean();
+			farmFarmColumnsBean1.setName("猪场名称");
+			farmFarmColumnsBean1.setId("farm");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean1);
+
+			FarmFarmColumnsBean farmFarmColumnsBean2 = new FarmFarmColumnsBean();
+			farmFarmColumnsBean2.setName("地区");
+			farmFarmColumnsBean2.setId("city");
+			farmFarmColumnsBeanList.add(farmFarmColumnsBean2);
+
+//			FarmFarmColumnsBean farmFarmColumnsBean3 = new FarmFarmColumnsBean();
+//			farmFarmColumnsBean3.setName("猪头数");
+//			farmFarmColumnsBean3.setId("pignum");
+//			farmFarmColumnsBeanList.add(farmFarmColumnsBean3);
+
+			sdb.setData(new FarmDataSource<FarmFarmRowsBean>(farmFarmRowsBeanList, farmFarmColumnsBeanList));
+			sdb.getData().setTotal(total);
+			sdb.setMessage(0, "查询成功");
+
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+		return sdb;
+	}
+}

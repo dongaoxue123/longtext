@@ -1,0 +1,146 @@
+{
+  "menuList": [
+  	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Group Information Management",
+          "type": 1,
+          "url": "page/basedata/group.html",
+          "menuID":"1"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Swine Farm Information Management",
+          "type": 1,
+          "url": "page/basedata/farm.html",
+          "menuID":"2"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Pig House Information Management",
+          "type": 1,
+          "url": "page/basedata/house.html",
+          "menuID":"3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Data Collect device Management",
+          "type": 1,
+          "url": "page/basedata/device.html",
+          "menuID":"6"
+        }
+      ],
+      "name": "General Information Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "User Management",
+          "type": 1,
+          "url": "page/systemManage/user.html",
+          "menuID":"13"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Actor Management",
+          "type": 1,
+          "url": "page/systemManage/role.html",
+          "menuID":"14"
+        }
+      ],
+      "name": "System Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Body condition management",
+          "type": 1,
+          "url": "page/systemSetting/pigScore.html",
+          "menuID":"16"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Production Period Management",
+          "type": 1,
+          "url": "page/systemSetting/productionStage.html",
+          "menuID":"17"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Feeding standard Management",
+          "type": 1,
+          "url": "page/systemSetting/feedStandard.html",
+          "menuID":"18"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Standard Diagram Setting",
+          "type": 1,
+          "url": "page/systemSetting/scoreStandard.html",
+          "menuID":"19"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Dictionary Management",
+          "type": 1,
+          "url": "page/systemSetting/dictionary.html",
+          "menuID":"15"
+        }
+      ],
+      "name": "System Configuration",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Interface Monitor Management",
+          "type": 1,
+          "url": "page/systemSetting/interface.html",
+          "menuID":"20"
+        }
+      ],
+      "name": "Interface Management",
+      "type": 0,
+      "url": null
+    }
+  ],
+  "code": 0
+}

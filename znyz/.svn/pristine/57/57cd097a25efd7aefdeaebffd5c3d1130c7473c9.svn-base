@@ -1,0 +1,246 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label farmShow1" style="display: none">猪场名称</label>
+            <div class="layui-input-inline farmShow1" style="display: none">
+                <input type="text" id="farmName" name="farmName" class="layui-input" disabled>
+            </div>
+        	<label class="layui-form-label matingTimeShow1" style="display: none">配种日期</label>
+            <div class="layui-input-inline matingTimeShow2" style="display: none">
+                <input type="text" id="matingDate" name="matingDate" class="layui-input">
+            </div>
+            <label class="layui-form-label">配种栋舍</label>
+            <div class="layui-input-inline">
+                <input type="text" id="HouseId" name="HouseId" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">配种栏位</label>
+            <div class="layui-input-inline">
+                <input type="text" id="FieldId" name="FieldId" class="layui-input" disabled>
+            </div>
+            <label class="layui-form-label">母猪编号</label>
+            <div class="layui-input-inline">
+                <input type="text" id="pigNumbers" name="pigNumbers" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">配种公猪1</label>
+            <div class="layui-input-inline">
+            	<select id="parentPig1" name="parentPig1" style="height: 38px;border-color: #F0F0F0;">
+            		<option value="">配种公猪</option>
+	    	    </select>
+            </div>
+        	<label class="layui-form-label">配种公猪2</label>
+            <div class="layui-input-inline">
+            	<select id="parentPig2" name="parentPig2" style="height: 38px;border-color: #F0F0F0;">
+            		<option value="">配种公猪</option>
+	    	    </select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">配种公猪3</label>
+            <div class="layui-input-inline">
+            	<select id="parentPig3" name="parentPig3" style="height: 38px;border-color: #F0F0F0;">
+            		<option value="">配种公猪</option>
+	    	    </select>
+            </div>
+        	<label class="layui-form-label">备注</label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var farmId;
+	var authToken=localStorage.getItem("authToken");
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+      var form = layui.form;
+      var $ = layui.$;
+      var laydate = layui.laydate;
+			if(!checkToken()){
+	  		alert("登录超时，请重新登录！");
+	 			window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId; 
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#matingDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+			});
+		
+			var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+			//alert(userId);
+			var type = GetQueryString("type");//type=1为补录，type=2为编辑
+			//alert(type);
+			var page = 1;
+			var pageSize = 30;
+			var pigsType ='00034';
+        //获取配种公猪1下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page='+page+'&limit='+pageSize+'&pigs_type='+pigsType,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.data.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.data.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.data[i].pigs_archives_id+'">'+dataObj.data[i].pigs_number+'</option>';
+	            }
+	            $("#parentPig1").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            matingPig2();
+	    	  }
+	    }
+	    }); 
+	    //获取配种公猪2下拉列表
+	    function matingPig2(){
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page='+page+'&limit='+pageSize+'&pigs_type='+pigsType,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.data.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.data.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.data[i].pigs_archives_id+'">'+dataObj.data[i].pigs_number+'</option>';
+	            }
+	            $("#parentPig2").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            matingPig3();
+	    	  }
+	    }
+	    }); 
+	    }
+	    //获取配种公猪3下拉列表
+	    function matingPig3(){
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page='+page+'&limit='+pageSize+'&pigs_type='+pigsType,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.data.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.data.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.data[i].pigs_archives_id+'">'+dataObj.data[i].pigs_number+'</option>';
+	            }
+	            $("#parentPig3").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	    }
+	    }); 
+	    }
+	    
+		form.on('submit(submit)', function(res){
+   		$.ajax({  
+            type: 'POST',
+			url: commonIP + "api/pig/matingbusiness/makeup?authToken="+authToken,
+			contentType: 'application/json',
+			data: JSON.stringify({
+					"id":userId,
+					"parentPig1":res.field.parentPig1,
+					"parentPig2":res.field.parentPig2,
+					"parentPig3":res.field.parentPig3,
+					"remark":res.field.remark
+					
+				}) ,
+			async: false,
+			success: function(data) {
+				var dataObj = JSON.parse(data);
+				if (dataObj) {
+					if (dataObj.errcode == "200") {
+				     alert("修改成功！");
+                     layer.close(layer.index);  
+                     window.parent.location.reload();  
+					} else {
+					 alert("修改失败！");
+					}
+				}
+			}
+         }); 
+       });
+		
+        function BindUpdateList(){
+		    if(userId != null)//编辑
+		    {
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + "api/pig/matingbusiness/getListPage?authToken="+authToken+"&id="+userId+"&page=0&limit=0",
+				contentType: 'application/json',
+				success: function(data) {
+					if(type == 1){
+					  $(".farmShow1").css("display","block");
+                      $(".farmShow2").css("display","block");
+                    }
+					else if(type == 2)
+					{
+					  $(".matingTimeShow1").css("display","block");
+                      $(".matingTimeShow2").css("display","block");
+					}
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {
+						//赋值
+						$("#parentPig1").val(datas.data[0].parentPig1);
+						$("#parentPig2").val(datas.data[0].parentPig2);
+                        $("#parentPig3").val(datas.data[0].parentPig3);
+						form.render('select');
+						
+						$("#farmName").val(datas.data[0].farmName);
+						$("#matingDate").val(datas.data[0].matingDate);
+						$("#HouseId").val(datas.data[0].HouseId);
+						$("#FieldId").val(datas.data[0].FieldId);
+						$("#pigNumbers").val(datas.data[0].pigNumbers);
+						$("#remark").val(datas.data[0].remark);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		    }
+        }
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+<ul>
+	<li id="indexFooter" onclick="location='index.html'"><span class="iconfont icon-weibiaoti1"></span><h5>首页</h5></li>
+	<li id="weightFooter" onclick="location='fieldList.html'"><span class="iconfont icon-pig"></span><h5>测重</h5></li>
+	<li id="setFooter" onclick="location='set.html'"><span class="iconfont icon-shezhi"></span><h5>配置</h5></li>
+</ul>

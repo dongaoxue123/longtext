@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>种猪档案</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	<div class="layui-form-item" style="padding-right: 20px">
+    		<label class="layui-form-label">猪只类型:</label>
+				<div class="layui-input-inline">			
+	      <select id="type" name="type" style="height: 38px;border-color: #F0F0F0;">
+	        	<option value="">请选择猪只类型</option>
+	        	<option value="00032">种母猪</option>
+	        	<option value="00031">后备母猪</option>
+	        	<option value="00033">后备公猪</option>
+	        	<option value="00034">生产公猪</option>
+	    	</select>
+		    </div>
+		    <label class="layui-form-label">猪只编码:</label>
+		    <div class="layui-input-inline">
+		    	<input class="layui-input" id="code" name="code">   
+		    </div>
+		    <label class="layui-form-label">生产状态:</label>
+        <div class="layui-input-inline">
+          <select id="status" name="status" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">生产状态</option>
+		    	</select>
+		    </div>
+		    <label class="layui-form-label">栋舍列表:</label>
+        <div class="layui-input-inline">
+          <select id="houseId" name="houseId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择栋舍</option>
+		    	</select>
+		    </div>
+		    
+
+    	<button class="layui-btn" id="search">查询</button>
+    	
+    	 	<button class="layui-btn" id="reset">重置</button>
+    	
+    	<button type="button" class="layui-btn" id="upload"><i class="layui-icon">&#xe67c;</i>选择文件</button>
+    </div>
+    </div>
+<table class="layui-hide" id="pigInfo" lay-filter="pigInfo"></table>
+<script type="text/html" id="barDemo">
+  <!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>-->
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+	<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">猪只卡片</a>
+</script>
+<script>
+	var farmId;
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+
+	if(!checkToken()){
+  		alert("登录超时，请重新登录！");
+   		window.top.location.href = '../../login.html';
+	}
+	farmId = JSON.parse(user).farmId; 
+	groupId = JSON.parse(user).groupId; 
+
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		  //方法级渲染
+		table.render({
+		    elem: '#pigInfo'
+		    ,url: commonIP + "api/pig/info/getListPage?authToken="+authToken +'&farm_id='+ farmId //数据请求路径 
+		    ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			     	"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}		    
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'2%'}
+		      ,{field:'houseName', title:'栋舍名称',width:'6%'}
+		      ,{field:'code', title:'栏位编码',width:'6%'}
+		      ,{field:'pigTypeName', title:'猪只类别',width:'6%'}
+		      ,{field:'pigs_number', title:'猪只编号',width:'7%'}
+		      ,{field:'ear_num', title:'猪只耳缺号',width:'8%'}
+		      ,{field:'production_status_name', title:'生产状态',width:'8%'}
+		      ,{field:'status_start_time', title:'状态日期',width:'10%'}
+		      ,{field:'pigVarietyName', title:'品种',width:'5%'}
+		      ,{field:'strainName', title:'品系',width:'5%'}
+		      ,{field:'born_date', title:'出生日期',width:'10%'}
+		      ,{field:'enter_date', title:'入场日期',width:'10%'}
+		      ,{field:'parity', title:'猪只胎次',width:'6%'}
+		      ,{fixed: 'right',title: '操作', width:'11%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:10   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'
+		});
+		
+		//获取栋舍下拉列表
+   	$.ajax({
+        url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&page=0&limit=0&farmId='+ farmId,
+        success: function (res) {
+    	var dataObj = JSON.parse(res);
+	    if(dataObj!=null && dataObj.dataSource.list.length>0){
+            var groupOption;
+            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+            }
+            $("#houseId").append(groupOption);
+            form.render('select');//一定要加form.render();
+    	  }
+    }
+    }); 
+    //获取生产状态下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/pig/info/getStatusListSelect?authToken='+authToken+'&groupId='+groupId,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#status").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	    	  }
+	    }
+	    }); 
+	    
+		//监听工具条
+			table.on('tool(pigInfo)', function(obj){
+			    var data = obj.data;
+			    if(obj.event === 'detail'){
+			      		var index = layer.open({
+										    type: 2,
+										    content: "printPigInfo.html?id="+data.pigs_archives_id,
+										    area: ['800px', '650px'],
+										    maxmin: true
+										});  
+			    } else if(obj.event === 'del'){
+			        layer.confirm('确定删除此行数据吗', function(index){
+			      		  $.ajax({  
+					            url: commonIP + "api/pig/info/delete?authToken="+authToken,
+					            type: 'POST',
+											contentType: 'application/json',
+											data: JSON.stringify({"pigs_archives_id":data.pigs_archives_id}),
+			                success: function(text) {
+			                	var dataObj = JSON.parse(text);
+			                		if(dataObj.code == 0){
+					                		layer.msg(dataObj.msg, {icon: 6});
+											        obj.del();
+											        layer.close(index);  
+			                		}else{
+			                				layer.msg(dataObj.msg, {icon: 5});
+			                		}
+			                }
+				            });  
+			      		});
+			    } else if(obj.event === 'edit'){
+			      				    var index = layer.open({
+										    type: 2,
+										    content: "addPigInfo.html?id="+data.pigs_archives_id,
+										    area: ['800px', '600px'],
+										    maxmin: true
+										});  
+			    }
+		  });
+			  
+		  $('#add').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'addPigInfo.html',
+					    area: ['800px', '600px'],
+					    maxmin: true
+					});
+//					layer.full(index);
+		  });
+		  
+		  $('#upload').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'uploadPigInfo.html',
+					    area: ['450px', '200px'],
+					    maxmin: true
+					});
+		  });
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+	            	houseId: $("#houseId").val(),
+	            	pigs_number: $("#code").val(),
+	            	pigs_type: $("#type").val(),
+	            	production_status_id: $("#status").val()
+		        }
+		      });
+		    },
+		};
+
+    //创建时间 日期控件
+    laydate.render({
+		  	elem: '#createDate' //指定元素
+		  	,range: true //是否开启范围选择，即双控件
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+//		  	,mark: {'2018-5-14': '生日','2018-5-28': '纪念日'} //日期备注，如重要事件或活动标记
+		});
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		$('#reset').on('click', function(){
+			$('#houseId').val("");
+			$('#code').val("");
+			$('#type').val("");
+			$('#status').val("");
+			
+			     
+			/*$("#farmId option:first").prop("selected", 'selected');  */
+		});
+	});
+</script>
+
+</body>
+</html>

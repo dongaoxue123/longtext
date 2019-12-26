@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>详细</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<!-- echarts-->
+	<script src="../basedata/echarts/echarts.js"></script>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css">
+		.info-title {
+			font-size: 16px;
+			font-weight: 600;
+			margin: 12px 0;
+		}
+		
+		.weight-val {
+			font-size: 36px;
+			font-weight: 800;
+		}
+		#pigInfo > .info-row {
+			height:30px;
+			line-height:30px;
+			
+		}
+		.chart-btn {
+			margin-top: 30px;
+		}
+		.mt30 {
+			margin-top: 30px;
+		}
+	</style>
+
+	<body>
+		<div class='layui-container'>
+			<div class='layui-row'>
+					<section id='pigInfo'>
+						<div class='info-title'>基本信息</div>
+						<div class='info-row' ><span class="layui-col-xs6" style='line-height: 30px;' id="houseName"></span><span class="layui-col-xs6 " id="breeder">饲养员编号：003</span></div>
+						<div class='info-row' ><span class="layui-col-xs6 info-row" id="pigVarietyName"></span><span class="layui-col-xs6 info-row" id="ageDay"></span></div>
+						<div class='info-row' ><span class="layui-col-xs6 info-row" id="startTime"></span><span class="layui-col-xs6 info-row" id="endTime"></span></div>
+					</section>
+					<section id='alarmInfo'>
+						<div class='info-title'>报警信息</div>
+						<div class='info-row'><span class="layui-col-xs12" style='line-height: 30px;color:#ff0000'><span id='warn'></span></span></div>
+						<div class='info-row'><img id='img' src="../../statics/img/warn.jpg" width='600'/>
+						</div>
+					</section>
+					<section id='optInfo' class='mt30'>
+						<input id="suggestion" type="text" class="layui-input" placeholder="请输入处理意见" />
+						<button class="layui-btn mt30" style='float:right' onclick="submit()">处理</button>
+					</section>
+					
+				<!--<div class="layui-col-xs4">
+					<div class="info-title">当前均重</div>
+					<div class='weight-val'>85.6KG</div>
+					<div class='info-title'>当前状态：测重中</div>
+					<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+				</div>-->
+			</div>
+
+		</div>
+
+		<!--code-->
+		<script>
+			
+			/**
+			 * 获取当前时间
+			 */
+			function getDate() {
+				var myDate = new Date();
+				//获取当前年
+				var year = myDate.getFullYear();
+				//获取当前月
+				var month = myDate.getMonth() + 1;
+				//获取当前日
+				var date = myDate.getDate();
+				var now = year + '-' + p(month) + "-" + p(date);
+				return now;
+			}
+
+			function p(s) {
+				return s < 10 ? '0' + s : s;
+			}
+
+			var farmId;
+			var groupId;
+			var fieldId;
+			var id;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			var type = GetQueryString("type");
+			var xh = GetQueryString("id");
+			var clbj = GetQueryString("clbj");
+			setData()
+			
+			if(!checkToken()) {
+				i18next.t('')
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+//			groupId = JSON.parse(user).groupId;
+			fieldId = GetQueryString("fieldId"); //'0000000000000000ac1adf71c07476f9'
+//			var batchId = '0000000000000000a130b23569b8ac33'
+			id = GetQueryString("id");
+			layui.use(['form','laydate'], function(){
+		        var form = layui.form;
+		        var $ = layui.$;
+		        var laydate = layui.laydate;
+				if(!checkToken()){
+		  			alert("登录超时，请重新登录！");
+		 			window.top.location.href = '../../login.html';
+				}
+  			$.ajax({
+				url: commonIP + 'api/pig/pigbatchfield/getListPage?authToken='+authToken+'&page=1&limit=10&fieldId='+fieldId+'&farmId=' + farmId,
+				async: false,
+				success: function(res) {
+					var dataObj = JSON.parse(res);
+					if(dataObj != null) {
+						var datas = dataObj.dataSource.list;
+						document.getElementById('houseName').innerHTML = '栋舍名称：'+ datas[0].houseName;
+						document.getElementById('pigVarietyName').innerHTML = '品系：'+ datas[0].strainName + ' ' + datas[0].pigVarietyName;
+						document.getElementById('ageDay').innerHTML = '日龄：'+ datas[0].growingDays;
+						document.getElementById('startTime').innerHTML = '入栏：'+ datas[0].startTime;
+						document.getElementById('endTime').innerHTML = '出栏：'+ datas[0].endTime;
+					} 
+				}
+			});
+            });
+    
+            function submit(){	        
+	       		$.ajax({  
+	                type: 'POST',
+					url: commonIP + "api/pig/personbehavior/update?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify({
+							"id":id,
+							"suggestion":document.getElementById("suggestion").value
+						}) ,
+					async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+						     alert(dataObj.errmsg);
+	                         layer.close(layer.index);  
+	                         window.parent.location.reload();  
+							} else {
+							 alert(dataObj.errmsg);
+							}
+						}
+					}
+	             });
+	             return false;
+            }
+				
+			function setData(){
+				if(type==='1'){
+					document.getElementById('warn').innerHTML='2019-08-12 16:51 行为异常'
+					document.getElementById('img').src = '../../statics/img/warn/pig1.png'
+				}else{
+					document.getElementById('warn').innerHTML='2019/11/08 10:38  人员异常'
+					document.getElementById('img').src = '../../statics/img/warn/person2.png'
+				}
+				switch(xh){
+					case 1:
+						break;
+					case 2:
+						break;
+					case 3:
+						break;
+						
+				}
+			}
+		</script>
+	</body>
+
+</html>

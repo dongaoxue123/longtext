@@ -1,0 +1,310 @@
+<html>
+
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div class="layui-field-box">
+			<form class="layui-form">
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="[prepend]common.farmName">:</label>
+					<div class="layui-input-inline">
+						<select id="farmId" name="farmId" lay-filter="farmId" lay-verify="required|farmId" lay-search>
+						</select>
+					</div>
+					<label class="layui-form-label layui-required" data-i18n="common.pigType"></label>
+					<div class="layui-input-inline">
+						<select id="pigType" name="pigType" lay-verify="required|pigType">
+							<option value=""></option>
+							<option value="00031">后备母猪</option>
+							<option value="00032">种母猪</option>
+						</select>
+					</div>
+
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="pigScore.stepName"></label>
+					<div class="layui-input-inline">
+						<select id="stageId" name="stageId" lay-verify="required|stageId">
+						</select>
+					</div>
+					<label class="layui-form-label layui-required" data-i18n="pigScore.feedType"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="feedType" name="feedType" lay-verify="required|feedType" class="layui-input" data-i18n="[placeholder]pigScore.feedTypeText" autocomplete="off" maxlength="10" >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-required" data-i18n="pigScore.feedAmount"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="feedAmount" name="feedAmount" lay-verify="required|feedAmount" class="layui-input" data-i18n="[placeholder]pigScore.feedAmountText" autocomplete="off" maxlength="10" >
+					</div>
+					<label class="layui-form-label layui-required" data-i18n="pigScore.times"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="numberTimes" name="numberTimes" lay-verify="required|numberTimes" class="layui-input" data-i18n="[placeholder]pigScore.feedTimesText" autocomplete="off" maxlength="1" oninput="value=value.replace(/[^\d]/g,'')">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label " data-i18n="common.remark"></label>
+					<div class="layui-input-block">
+						<textarea type="text" id="remark" name="remark" class="layui-textarea" data-i18n="[placeholder]house.remarkPlaceholder" autocomplete="off" maxlength="100"></textarea>
+					</div>
+				</div>
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							<button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var authToken = localStorage.getItem("authToken");
+			//alert(authToken);
+			var user = localStorage.getItem("user");
+
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				layui.use(['form', 'laydate'], function() {
+					var form = layui.form;
+					var $ = layui.$;
+					var laydate = layui.laydate;
+					if(!checkToken()) {
+						alert(i18next.t("timeout"));
+						window.top.location.href = '../../login.html';
+					}
+
+					var id = GetQueryString("id"); //userId为空表示新增，否则是修改
+
+					$("#numberTimes").change(function() {
+						var numberTimes = $("#numberTimes").val();
+						if(numberTimes == 0) {
+							//alert(1);
+							var warnMessage = "请录入大于0的正整数";
+							alert(warnMessage);
+						}
+					});
+					getGroupList();
+					//获取猪场下拉列表
+					function getGroupList() {
+					$.ajax({
+						url: commonIP + 'api/system/farm/getListPage?authToken=' + authToken + '&page=0&limit=0',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						async: false,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if(dataObj != null && dataObj.dataSource.list.length > 0) {
+								var farmOption;
+								for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+									farmOption = farmOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+								}
+								$("#farmId").append(farmOption);
+								form.render('select'); //一定要加form.render();
+							}
+						}
+					});
+					
+					form.on('select(farmId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+							/**改变集团后先清空猪场下拉值*/
+							document.getElementById("stageId").options.length = 0;
+								$('#stageId').val("");
+								form.render('select');
+								selectStage();
+						});
+
+					}
+					function selectStage(){
+					//获取生产阶段下拉列表
+							var	farmId = $("#farmId").val();
+							// alert(farmId)
+							if(farmId==null){
+								farmId='';
+							}
+							
+							$.ajax({
+							url: commonIP + 'api/pig/productionstage/getListPage?authToken=' + authToken +'&farmId='+farmId+ '&page=0&limit=0',
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									var groupOption;
+									for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].stageName + '</option>';
+									}
+									$("#stageId").append(groupOption);
+									form.render('select'); //一定要加form.render();
+									BindPigTypeDropList();
+								}
+							}
+						});
+						
+					}
+
+					//获取猪只类别下拉列表
+					function BindPigTypeDropList() {
+						$.ajax({
+							url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken + '&type=pigType',
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									var groupOption;
+									for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+									}
+									// $("#pigType").append(groupOption);
+									form.render('select'); //一定要加form.render();
+								}
+							}
+						});
+					}
+
+					//监听提交
+					if(id == null) { //添加
+						form.on('submit(submit)', function(res) {
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/pig/feedstandard/create?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify(res.field),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									//					console.log(dataObj);
+									//					console.log(dataObj.errcode);
+									if(dataObj) {
+										if(dataObj.errcode == "200") {
+											alert(i18next.t("addSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(i18next.t("addFailed"));
+										}
+									}
+								}
+							});
+						});
+					} else { //编辑
+						BindUpdateList();
+						form.on('submit(submit)', function(res) {
+							//layer.msg(JSON.stringify(res.field));
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/pig/feedstandard/update?authToken=" + authToken,
+								contentType: 'application/json',
+								data: JSON.stringify({
+									"id": id,
+									"farmId": res.field.farmId,
+									"stageId": res.field.stageId,
+									"pigType": res.field.pigType,
+									"feedType": res.field.feedType,
+									"feedAmount": res.field.feedAmount,
+									"numberTimes": res.field.numberTimes,
+									"remark": res.field.remark
+								}),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									//					console.log(dataObj);
+									//					console.log(dataObj.errcode);
+									if(dataObj) {
+										if(dataObj.errcode == "200") {
+											alert(i18next.t("updateSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(i18next.t("updateFailed"));
+										}
+									}
+								}
+							});
+						});
+					}
+
+					function BindUpdateList() {
+						if(id != null) { //编辑
+							$.ajax({
+								type: "GET",
+								url: commonIP + 'api/pig/feedstandard/getFeedStandardList?authToken=' + authToken + '&page=0&limit=0&id=' + id,
+								parseData: function(res) { //res 即为原始返回的数据
+									return {
+										"code": res.code, //解析接口状态
+										"msg": res.msg, //解析提示文本
+										"count": res.count, //解析数据长度
+										"data": res.dataSource.list //解析数据列表
+									};
+								},
+								contentType: 'application/json',
+								async: false,
+								success: function(data) {
+									var datas = JSON.parse(data);
+									console.log(datas);
+									if(datas.errcode == 200) {
+										//赋值
+										$("#farmId").val(datas.dataSource.list[0].farmId);
+										$("#stageId").val(datas.dataSource.list[0].stageId);
+										$("#pigType").val(datas.dataSource.list[0].pigType);
+										form.render('select');
+										$("#feedType").val(datas.dataSource.list[0].feedType);
+										$("#feedAmount").val(datas.dataSource.list[0].feedAmount);
+										$("#numberTimes").val(datas.dataSource.list[0].numberTimes);
+										$("#remark").val(datas.dataSource.list[0].remark);
+
+									} else {
+										//alert(data.errmsg);
+										if(data.errcode == "10005") {
+											window.top.location.href = '../../login.html';
+										}
+									}
+								}
+							});
+						} else {
+							//新增
+						}
+					}
+				});
+			}
+		</script>
+	</body>
+
+</html>

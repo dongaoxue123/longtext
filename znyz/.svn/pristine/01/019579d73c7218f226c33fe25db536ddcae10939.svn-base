@@ -1,0 +1,193 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+       <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="delivery.deliveryDate"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="deliveryDate" name="deliveryDate" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="delivery.deliveryHouse"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="houseName" name="houseName" class="layui-input" disabled>
+            </div>
+        </div>
+         <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="delivery.deliveryField"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="fieldName" name="fieldName" class="layui-input" disabled>
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="common.pigNumber"></label>
+            <div class="layui-input-inline">
+            	<input type="text" id="pigNumbers" name="pigNumbers" class="layui-input" disabled>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="delivery.bornAlive"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="aliveNumber" name="aliveNumber" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="delivery.bornHealthy"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="healthyNumber" name="healthyNumber" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="delivery.bornWeak"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="weakNumber" name="weakNumber" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="delivery.deformities"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="deformities" name="deformities" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="delivery.stillbirth"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="stillbirths" name="stillbirths" class="layui-input">
+            </div>
+            <label class="layui-form-label" style="width: 120px" data-i18n="delivery.mummy"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="mummifiedFetuses" name="mummifiedFetuses" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="delivery.birthWeight"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="litterWeight" name="litterWeight" class="layui-input">
+            </div>
+        	<label class="layui-form-label" style="width: 120px" data-i18n="delivery.deliveryRemark"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="submit" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ i18n('../../locales', onLangReady) //国际化
+ function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+	  		alert(i18next.t("timeout"));
+	 			window.top.location.href = '../../login.html';
+		}
+		
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#deliveryDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+		
+		var page = 1;
+		var pageSize = 30;
+		var pigsType ='00034';
+	    
+	    form.on('submit(submit)', function(res){
+		   		$.ajax({  
+		            type: 'POST',           
+					url: commonIP + "api/pig/deliverybusiness/update?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify({
+				    "id":userId,
+					"deliveryDate":res.field.deliveryDate, 
+					"remark":res.field.remark,
+					"litterWeight":res.field.litterWeight,		
+					"aliveNumber":res.field.aliveNumber,				
+					"healthyNumber":res.field.healthyNumber,
+					"weakNumber":res.field.weakNumber,
+					"deformities":res.field.deformities,
+					"stillbirths":res.field.stillbirths,
+					"mummifiedFetuses":res.field.mummifiedFetuses
+				    }),
+				  async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+						     alert(i18next.t("updateSucc"));
+		                     layer.close(layer.index);  
+		                     window.parent.location.reload();  
+							} else {
+							 alert(i18next.t("updateFailed"));
+							}
+						}
+					}
+		      }); 
+        });
+
+    	$.ajax({
+		type: "GET",
+		url: commonIP + "api/pig/deliverybusiness/getListPage?authToken="+authToken+"&id="+userId+"&page=0&limit=0",
+		contentType: 'application/json',
+		success: function(data) {
+			var datas = JSON.parse(data);
+			console.log(datas);
+			if (datas.errcode == 200) {
+				//赋值
+				$("#deliveryDate").val(datas.dataSource.list[0].deliveryDate);
+				$("#houseName").val(datas.dataSource.list[0].houseName);
+                $("#fieldName").val(datas.dataSource.list[0].fieldName);		
+				$("#pigNumbers").val(datas.dataSource.list[0].pigNumbers);
+				$("#aliveNumber").val(datas.dataSource.list[0].aliveNumber);
+				$("#healthyNumber").val(datas.dataSource.list[0].healthyNumber);
+				$("#weakNumber").val(datas.dataSource.list[0].weakNumber);
+				$("#deformities").val(datas.dataSource.list[0].deformities);
+				$("#stillbirths").val(datas.dataSource.list[0].stillbirths);
+				$("#mummifiedFetuses").val(datas.dataSource.list[0].mummifiedFetuses);
+				$("#litterWeight").val(datas.dataSource.list[0].litterWeight);
+				$("#remark").val(datas.dataSource.list[0].remark);
+			} else {
+				alert(data.errmsg);
+				if(data.errcode=="10005"){
+						window.top.location.href = '../../login.html';
+				}
+			}
+		}
+	  });
+    });
+    }
+    function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+	
+</script>
+</body>
+</html>

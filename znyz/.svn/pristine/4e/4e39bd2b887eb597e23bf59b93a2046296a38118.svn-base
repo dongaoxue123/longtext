@@ -1,0 +1,75 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class MapFarmBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+	
+	//猪场名称
+	private String name;
+	//猪只数量（类型未确定）
+	private int value;
+	//显示猪只所在地
+	//private int[] tooltipValues;
+	private String[] tooltipValues;
+	//
+	private String url;
+	//城市坐标
+	private double[] coord;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+
+
+	public int getValue() {
+		return value;
+	}
+
+	public void setValue(int value) {
+		this.value = value;
+	}
+
+	public String[] getTooltipValues() {
+		return tooltipValues;
+	}
+
+	public void setTooltipValues(String[] tooltipValues) {
+		this.tooltipValues = tooltipValues;
+	}
+
+	public double[] getCoord() {
+		return coord;
+	}
+
+	public void setCoord(double[] coord) {
+		this.coord = coord;
+	}
+
+
+
+
+	
+}

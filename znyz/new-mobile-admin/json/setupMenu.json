@@ -1,0 +1,305 @@
+{
+  "menuList": [
+  	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "集团信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=1"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪场信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=2"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栋舍信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栏位信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=4"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "种猪档案管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=5"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "采集设备管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=6"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "设备自动化设置",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=7"
+        }
+      ],
+      "name": "基础数据管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-tachometer",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "配种信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=8"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "妊检信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=9"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "分娩信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=10"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "断奶信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=11"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "转舍信息管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=12"
+        }
+      ],
+      "name": "生产信息管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "用户管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=13"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "角色管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=14"
+        }
+      ],
+      "name": "系统管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "体况评分管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=16"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "生产阶段管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=17"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "饲喂标准管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=18"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "标准评分曲线设置",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=19"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "字典项管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=15"
+        }
+      ],
+      "name": "系统设置",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "接口监控管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=20"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "测重接口权限",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=21"
+        }
+      ],
+      "name": "接口管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "限饲计算",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=22"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "饲喂标准",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=23"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "设备管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=24"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "侧重校准",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=25"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "账号管理",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=26"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪舍信息",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=27"
+        }
+      ],
+      "name": "测重手机端",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "体况评分统计",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=28"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "后备母猪统计",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=29"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "膘情与评分",
+          "type": 1,
+          "url": "page/systemSetting/addMenu.html?menuID=30"
+        }
+      ],
+      "name": "测膘手机端",
+      "type": 0,
+      "url": null
+    }
+  ],
+  "code": 0
+}

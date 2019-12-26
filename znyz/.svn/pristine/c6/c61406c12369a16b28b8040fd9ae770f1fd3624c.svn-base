@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>批次管理</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+
+	<body>
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<!--
+	作者：717854567@qq.com
+	时间：2019-07-05
+	描述：
+-->
+				<label class="layui-form-label">栋舍类型:</label>
+				<div class="layui-input-inline">
+					<select id="type" name="type" style="height: 38px;border-color: #F0F0F0;">
+						<option value="">请选择类型</option>
+						<option value="00021">妊娠舍</option>
+						<option value="00022">后备舍</option>
+						<option value="00023">保育舍</option>
+						<option value="00024">配怀舍</option>
+						<option value="00059">育肥舍</option>
+						<option value="00060">公猪舍</option>
+					</select>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<button class="layui-btn" id="reset">重置</button>
+					<button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+				</div>
+			</div>
+			<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+			<script type="text/html" id="barDemo">
+				<!--  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">分布</a>-->
+				<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+			</script>
+			<script>
+				var farmId;
+				var groupId;
+				var authToken = localStorage.getItem("authToken");
+				//alert(authToken);
+				var user = localStorage.getItem("user");
+
+				if(!checkToken()) {
+					alert("登录超时，请重新登录！");
+					window.top.location.href = '../../login.html';
+				}
+				farmId = JSON.parse(user).farmId;
+				groupId = JSON.parse(user).groupId;
+				var pigSimulationUser = "000000000000000081c0e8c240064710";
+				layui.use(['form', 'table', 'laydate'], function() {
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					//方法级渲染
+					table.render({});
+
+					//监听工具条
+					table.on('tool(hogBatch)', function(obj) {
+						var data = obj.data;
+						if(obj.event === 'detail') {
+							var index = layer.open({
+								type: 2,
+								content: "printPigInfo.html?id=" + data.batchId,
+								area: ['800px', '650px'],
+								maxmin: true
+							});
+						} else if(obj.event === 'del') {
+							layer.confirm('确定删除此行数据吗', function(index) {
+								$.ajax({
+									url: commonIP + "api/pig/info/delete?authToken=" + authToken,
+									type: 'POST',
+									contentType: 'application/json',
+									data: JSON.stringify({
+										"batchId": data.batchId
+									}),
+									success: function(text) {
+										var dataObj = JSON.parse(text);
+										if(dataObj.code == 0) {
+											layer.msg(dataObj.msg, {
+												icon: 6
+											});
+											obj.del();
+											layer.close(index);
+										} else {
+											layer.msg(dataObj.msg, {
+												icon: 5
+											});
+										}
+									}
+								});
+							});
+						} else if(obj.event === 'edit') {
+							var index = layer.open({
+								type: 2,
+								content: "addHogBatch.html?batchId=" + data.batchId,
+								area: ['800px', '600px'],
+								maxmin: true
+							});
+						}
+					});
+
+					$('#add').on('click', function() {
+						var index = layer.open({
+							type: 2,
+							content: 'addHogBatch.html',
+							area: ['800px', '600px'],
+							maxmin: true
+						});
+						//					layer.full(index);
+					});
+
+					var active = {
+						reload: function() {
+
+							//alert($('#batchCodeaa').val());
+							//执行重载
+							table.reload('testReload', {
+								page: {
+									curr: 1 //重新从第 1 页开始
+								},
+								where: {
+
+									farmId: $("#farmId").val(),
+									pigVarietyId: $("#pigVarietyId").val(),
+									batchStatus: $("#batchStatus").val(),
+									strain: $("#strain").val(),
+									productionStatusId: $("#productionStatusId").val(),
+									batchQCode: $('#batchCodeaa').val()
+
+								}
+							});
+						},
+					};
+
+					form.on('submit(submit)', function(res) {
+//						alert(authToken);
+//						alert(farmId);
+//						alert($("#type").val());
+//						alert(pigSimulationUser);
+						//layer.msg(JSON.stringify(res.field));
+						$.ajax({
+							type: 'POST',
+							//	url: commonIP + "api/system/group/create?authToken=" + authToken,					
+							url: commonIP + "api/pig/pigsimulation/pigSimulationCreate?authToken=" + authToken + "&farmId=" + farmId + "&houseType=" + $("#type").val() + "&pigSimulationUser=" + pigSimulationUser,
+							contentType: 'application/json',
+							data: JSON.stringify(res.field),
+							async: false,
+							success: function(data) {
+								var dataObj = JSON.parse(data);
+								if(dataObj) {
+									if(dataObj.errcode == "200") {
+										alert("添加成功！");
+										//layer.close(layer.index);
+										//	window.parent.location.reload();
+									} else {
+										alert(dataObj.errmsg);
+									}
+								}
+							}
+						});
+						return false;
+					});
+
+					$('#search').on('click', function() {
+						active['reload'].call(this);
+					});
+
+					$('#reset').on('click', function() {
+
+						$('#pigVarietyId').val("");
+						$('#batchCodeaa').val("");
+						$('#strain').val("");
+						$('#productionStatusId').val("");
+						$('#batchStatus').val("");
+						/*$("#farmId option:first").prop("selected", 'selected');  */
+					});
+				});
+			</script>
+	</body>
+
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>layui</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<body>
+		<div style="margin-top: 10px;display: flex;justify-content: left;align-items: center;">
+			<div class="layui-form-item" id="button" style="margin-top: 10px;display: flex;justify-content: left;">
+				<form class="layui-form">
+					<label class="layui-form-label" data-i18n="[prepend]common.groupName">:</label>			
+					<div class="layui-input-inline">
+						<select id="groupId" name="groupId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+							<option value="" data-i18n="farm.groupValDefault"></option>
+						</select>
+				    </div>
+					<label class="layui-form-label" data-i18n="[prepend]common.groupCode">:</label>
+					<div class="layui-input-inline">
+						<input id="code" name="code"  oninput="value=value.replace(/[^\d]/g,'')" maxlength="5" class="layui-input" autocomplete="off"/>
+					</div>
+				</form>
+				<div class="but-line">
+					<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+					<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+					<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+				</div>
+			</div>
+		</div>
+		<table class="layui-hide" id="groupInfo" lay-filter="groupInfo"></table>
+<script type="text/html" id="barDemo">
+	<!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>-->
+	<a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" data-i18n="btnDel"></a>
+</script>
+<!--<script type="text/html" id="stateTpl">
+  if({d.state}==0){不可用}else if({d.state}==1){可用}
+</script> -->
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script src="../../js/index.js"></script>
+		<script>
+			var authToken = localStorage.getItem("authToken");
+			//alert(authToken);
+			var user = localStorage.getItem("user");
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				if (!checkToken()) {
+					alert(i18next.t('timeout'));
+					window.top.location.href = '../../login.html';
+				}
+
+				layui.use(['form', 'table', 'laydate'], function() {
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					//方法级渲染
+					table.render({
+						elem: '#groupInfo',
+						url: commonIP + "api/system/group/getListPage?authToken=" + authToken //数据请求路径
+							,
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+							};
+						},
+						cellMinWidth: 80,
+						cols: [
+							[{
+									type: 'numbers',
+									width: '5%'
+								}, {
+									field: 'name',
+									title: i18next.t("common.groupName"),
+									width: '15%'
+								}, {
+									field: 'code',
+									title: i18next.t("common.groupCode"),
+									width: '15%'
+								}, 
+								// {
+								// 	field: 'state',
+								// 	title: i18next.t("common.state"),
+								// 	width: '13%'
+								// },
+								{
+									field: 'remark',
+									title: i18next.t("common.remark"),
+									width: '25%'
+								}, 
+//								{
+//									field: 'createTime',
+//									title: i18next.t("common.createTime"),
+//									width: '15%'
+//								}, 
+								{
+									field: 'updateTime',
+									title: i18next.t("common.updateTime"),
+									width: '15%'
+								}, 
+								{
+									fixed: 'right',
+									title: i18next.t("opt"),
+									width: '10%',
+									align: 'center',
+									toolbar: '#barDemo'
+								} //一个工具栏  具体请查看layui官网
+							]
+						],
+						done: function(res, page, count) { //res 接口返回的信息
+							i18n('../../locales', function() {
+								$("[data-field = 'state']").children().each(function() {
+									if ($(this).text() == '1') {
+										$(this).text(i18next.t("group.usable"));
+									} else if ($(this).text() == '0') {
+										$(this).text(i18next.t("group.unusable"));
+									}
+								})
+							}) //国际化
+						},
+						even: true //开启隔行背景
+							,
+						page: true //开启分页
+							,
+						limit: 10 //默认十条数据一页
+							,
+						limits: [10, 20, 30, 50] //数据分页条
+							,
+						id: 'testReload'
+					});
+//获取集团下拉列表
+   	$.ajax({
+        url: commonIP + 'api/system/group/getListPage?authToken='+authToken+'&page=0&limit=0'
+        ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			}
+        ,success: function (res) {
+    		var dataObj = JSON.parse(res);
+	    	if(dataObj!=null && dataObj.dataSource.list.length>0){
+            var groupOption;
+            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+            }
+            $("#groupId").append(groupOption);
+            form.render('select');//一定要加form.render();
+    	  }
+    }
+    }); 
+					//监听工具条
+					table.on('tool(groupInfo)', function(obj) {
+						var data = obj.data;
+						if (obj.event === 'detail') {
+							//layer.msg('ID：'+ data.id + ' 的查看操作');
+
+						} else if (obj.event === 'del') {
+							layer.confirm(i18next.t("delConfirm"), function(index) {
+								$.ajax({
+									url: commonIP + "api/system/group/delete?authToken=" + authToken,
+									type: 'POST',
+									contentType: 'application/json',
+									data: JSON.stringify({
+										"id": data.id
+									}),
+									success: function(text) {
+										var dataObj = JSON.parse(text);
+										if (dataObj.code == 0) {
+											layer.msg(dataObj.msg, {
+												icon: 6
+											});
+											obj.del();
+											layer.close(index);
+											window.location.reload();  
+										} else {
+											layer.msg(dataObj.msg, {
+												icon: 5
+											});
+										}
+									}
+								});
+							});
+						} else if (obj.event === 'edit') {
+							var index = layer.open({
+								type: 2,
+								content: "addGroupInfo.html?id=" + data.id,
+								area: ['750px', '500px'],
+								maxmin: true
+							});
+						}
+					});
+
+					$('#add').on('click', function() {
+						var index = layer.open({
+							type: 2,
+							content: 'addGroupInfo.html',
+							area: ['750px', '500px'],
+							maxmin: true
+						});
+						//					layer.full(index);
+					});
+					var active = {
+						reload: function() {
+							//执行重载
+							table.reload('testReload', {
+								page: {
+									curr: 1 //重新从第 1 页开始
+								},
+								where: {
+									name: $("#name").val(),
+									code: $("#code").val(),
+									id: $("#groupId").val()
+									
+								}
+							});
+						},
+					};
+					laydate.render({
+							  	elem: '#createDate' //指定元素
+							  	,range: true //是否开启范围选择，即双控件
+							  	,theme: 'molv'
+							  	,calendar: true //重要节日
+					//		  	,mark: {'2018-5-14': '生日','2018-5-28': '纪念日'} //日期备注，如重要事件或活动标记
+							});
+
+					$('#search').on('click', function() {
+						active['reload'].call(this);
+					});
+					$('#reset').on('click', function() {
+						$('#groupId').val("");
+						$('#code').val("");
+						form.render("select");
+					});
+					
+					
+					
+					//		$('.layui-laypage-btn').value = i18next.t("btnAdd")
+				});
+			}
+		</script>
+
+	</body>
+</html>

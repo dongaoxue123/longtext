@@ -1,0 +1,38 @@
+package com.xlqx.znyz.screen.service.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xlqx.znyz.screen.bean.FieldHogWeightRowsBean;
+import com.xlqx.znyz.screen.dao.FieldHogWeightDao;
+import com.xlqx.znyz.screen.service.FieldHogWeightService;
+
+
+/**
+ * 栏位重量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+@Service("fieldHogWeightServiceImpl")
+public class FieldHogWeightServiceImpl implements FieldHogWeightService {
+	
+	private final Logger logger = LoggerFactory.getLogger(FieldHogWeightServiceImpl.class);
+	
+	@Autowired
+	private FieldHogWeightDao fieldHogWeightDao;
+	
+	@Override
+	public List<FieldHogWeightRowsBean> getList(Map<String, Object> parameter) {
+		logger.info("fieldHogWeightServiceImpl{}==>getList()");
+		return fieldHogWeightDao.getList(parameter);
+	}
+
+	
+}

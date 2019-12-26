@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="智能养殖">
+		<title>login</title>
+		<link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all" />
+		<link rel="stylesheet" type="text/css" href="statics/css/login.css">
+	</head>
+
+	<body>
+		<!-- head -->
+		<div class="width1800">
+			<img src="statics/img/logo.png">
+			<h1>生猪智能养殖管理系统</h1>
+			<div class="clear"></div>
+		</div>
+
+		<!-- 内容 -->
+		<div class="content">
+			<div class="login">
+				<div class="login_cont">
+					<h2>管理员登录</h2>
+					<form class="layui-form">
+						<div class="layui-form-item">
+							<input class="input01" type="text" id="username" name="username" lay-verify="required" lay-verType="tips" autocomplete="off" placeholder='请输入您的用户名'/>
+						</div>
+						<div class="layui-form-item">
+							<input class="input02" type="password" id="password" name="password" lay-verify="required" lay-verType="tips" autocomplete="off" placeholder='请输入您的密码'/>
+						</div>
+						<a href="#">
+							<div class="btn" lay-submit="" lay-filter="login">登录</div>
+						</a>
+					</form>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- 底部 -->
+		<div class="footer">
+			<p> ©2018 北京小龙潜行科技有限公司 版权所有 <span><img src="statics/img/icon_foot.png"></span>京公网安备 11010802026567号 京ICP备18031293号-1</p>
+		</div>
+		<script type="text/javascript" src="statics/plugins/layui/layui.js"></script>
+		<script type="text/javascript" src="js/login.js"></script>
+		<script type="text/javascript" src="js/common.js" charset="utf-8"></script>
+	</body>
+
+</html>

@@ -1,0 +1,201 @@
+
+<html>
+<head>
+    <title>添加标准评分设置</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+		<div class="layui-form-item">
+            <label class="layui-form-label">猪场</label>
+            <div class="layui-input-block">
+                <select id="farmId" name ="farmId" lay-verify="required|farmId">
+		        	<option value="">请选择猪场</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">天数</label>
+            <div class="layui-input-block">
+               <input type="text" id="date" name="date" lay-verify="required" class="layui-input" placeholder="天数">
+            </div>
+       </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">评分</label>
+            <div class="layui-input-block">
+               <input type="text" id="score" name="score" lay-verify="required" class="layui-input"placeholder="评分">
+		    </div>
+		</div>	
+        <div class="layui-form-item">
+        	<label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <textarea type="text" id="remark" name="remark" class="layui-textarea" placeholder="请输入内容"></textarea>
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		
+		if(!checkToken()){
+	  		alert("登录超时，请重新登录！");
+	 			window.top.location.href = '../../login.html';
+		}
+		
+		var id = GetQueryString("id");//userId为空表示新增，否则是修改
+	    
+	    //获取猪场下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/system/farm/getListPage?authToken='+authToken+'&page=0&limit=0',
+	        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+            success: function (res) {
+        	var dataObj = JSON.parse(res);
+        	if(dataObj!=null && dataObj.dataSource.list.length>0){
+                var farmOption;
+                for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	farmOption = farmOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+                }
+                $("#farmId").append(farmOption);
+                form.render('select');//一定要加form.render();
+                BindUpdateList();
+        	  }
+        }
+	    }); 
+       
+        //监听提交
+    if(id == null)//添加
+		{
+    	form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+            type: 'POST',
+						url: commonIP + "api/pig/scorestandard/create?authToken="+authToken,
+						contentType: 'application/json',
+						data: JSON.stringify(res.field),
+						async: false,
+						success: function(data) {
+							var dataObj = JSON.parse(data);
+		//					console.log(dataObj);
+		//					console.log(dataObj.errcode);
+							if (dataObj) {
+								if (dataObj.errcode == "200") {
+							    alert("添加成功！");
+                  layer.close(layer.index);  
+                  window.parent.location.reload();  
+								} else {
+								  alert("添加失败！");
+								}
+							}
+						}
+          }); 
+      });
+    }
+		else//编辑
+		{
+			form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/scorestandard/update?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"id":id,
+						"farmId":res.field.farmId,
+						"date":res.field.date,
+						"score":res.field.score,
+						"remark":res.field.remark
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+//					console.log(dataObj);
+//					console.log(dataObj.errcode);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert("修改成功！");
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert("修改失败！");
+						}
+					}
+				}
+             }); 
+           });
+		}
+        function BindUpdateList(){
+		    if(id != null)//编辑
+		    {
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/scorestandard/getScoreStandardList?authToken='+authToken+'&page=0&limit=0&id='+id,
+				parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			    },
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {
+						//赋值
+						$("#farmId").val(datas.dataSource.list[0].farmId);
+						form.render('select');
+	
+						$("#date").val(datas.dataSource.list[0].date);
+						$("#score").val(datas.dataSource.list[0].score);
+						$("#remark").val(datas.dataSource.list[0].remark);
+						
+					} else {
+						//alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		    }
+        }
+    });
+</script>
+</body>
+</html>

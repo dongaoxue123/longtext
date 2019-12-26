@@ -1,0 +1,285 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item">
+        	<label class="layui-form-label" >集团名称</label>
+            <div class="layui-input-inline">
+                <select id="groupId" name="groupId" lay-verify="required">
+		        	<option value="">请选择集团</option>
+		    	</select>
+            </div>
+            <label class="layui-form-label">猪场类型</label>
+            <div class="layui-input-inline">
+               	<select id="type" name="type" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择猪场类型</option>
+		        	<option value="0">A</option>
+		        	<option value="1">B</option>
+		        	<option value="2">C</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <!--<label class="layui-form-label">猪场代码</label>
+            <div class="layui-input-inline">
+                <input type="text" id="code" name="code" lay-verify="required|code" class="layui-input">
+            </div>-->
+            <label class="layui-form-label">猪场名称</label>
+            <div class="layui-input-inline">
+                <input type="text" id="name" name="name" lay-verify="required|name" class="layui-input" placeholder="猪场名称">
+            </div>
+            <label class="layui-form-label">猪场规模</label>
+            <div class="layui-input-inline">
+                <input type="text" id="scale" name="scale" class="layui-input" placeholder="大/中/小">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <!--<label class="layui-form-label">集团关联猪场ID</label>
+            <div class="layui-input-inline">
+                <input type="text" id="farmIdLink" name="farmIdLink" class="layui-input">
+            </div>-->
+            <label class="layui-form-label">猪场区域</label>
+            <div class="layui-input-inline">
+                <input type="text" id="area" name="area" class="layui-input" placeholder="区域">
+            </div>
+            <label class="layui-form-label">省</label>
+            <div class="layui-input-inline">
+                <input type="text" id="province" name="province" placeholder="省" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">市</label>
+            <div class="layui-input-inline">
+                <input type="text" id="city" name="city" placeholder="市" class="layui-input">
+            </div>
+            <label class="layui-form-label">区/县</label>
+            <div class="layui-input-inline">
+                <input type="text" id="county" name="county" placeholder="区/县" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">邮编</label>
+            <div class="layui-input-inline">
+                <input type="text" id="postcode" name="postcode" class="layui-input" placeholder="邮编">
+            </div>
+            <label class="layui-form-label">电话</label>
+            <div class="layui-input-inline">
+                <input type="text" id="phone" name="phone" class="layui-input" placeholder="电话">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">传真</label>
+            <div class="layui-input-inline">
+                <input type="text" id="fax" name="fax" class="layui-input" placeholder="传真">
+            </div>
+            <label class="layui-form-label">地理信息</label>
+            <div class="layui-input-inline">
+                <input type="text" id="geographicInfo" name="geographicInfo" class="layui-input" placeholder="地理信息">
+            </div>
+        </div>
+        <!--<div class="layui-form-item">
+            <label class="layui-form-label StateShow1">状态</label>
+            <div class="layui-input-inline StateShow2">
+                <select id="state" name="state" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="0">可用</option>
+		        	<option value="1">不可用</option>
+		    	</select>
+            </div>
+        </div>-->
+        <div class="layui-form-item">
+            <label class="layui-form-label">地址</label>
+            <div class="layui-input-block">
+                <input type="text" id="address" name="address" class="layui-input" placeholder="详细地址">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注信息</label>
+            <div class="layui-input-block">
+                <textarea id="remark" name="remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        
+		if(!checkToken()){
+  			alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+		}
+		
+		//获取集团下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/system/group/getListPage?authToken='+authToken+'&page=0&limit=0',
+	        parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    "code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			    "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#groupId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	    }
+	    }); 
+    
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+		
+		function BindUpdateList(){
+        if(userId != null){
+        	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/system/farm/getListPage?authToken='+authToken+'&page=0&limit=0&id='+userId,
+				parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    "code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			    "data": res.dataSource.list //解析数据列表
+			    };
+  			    },
+				contentType: 'application/json',
+				success: function(data) {
+//					$(".StateShow1").css("display","block");
+//                  $(".StateShow2").css("display","block");
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {	
+						$("#groupId").val(datas.dataSource.list[0].groupId);
+						$("#type").val(datas.dataSource.list[0].type);
+						form.render('select');
+						$("#name").val(datas.dataSource.list[0].name);
+						$("#code").val(datas.dataSource.list[0].code);
+						$("#farmIdLink").val(datas.dataSource.list[0].farmIdLink);
+						$("#area").val(datas.dataSource.list[0].area);
+						$("#scale").val(datas.dataSource.list[0].scale);
+						$("#province").val(datas.dataSource.list[0].province);
+						$("#city").val(datas.dataSource.list[0].city);
+						$("#county").val(datas.dataSource.list[0].county);
+						$("#address").val(datas.dataSource.list[0].address);
+						$("#postcode").val(datas.dataSource.list[0].postcode);
+						$("#phone").val(datas.dataSource.list[0].phone);
+						$("#fax").val(datas.dataSource.list[0].fax);
+						$("#geographicInfo").val(datas.dataSource.list[0].geographicInfo);
+						$("#remark").val(datas.dataSource.list[0].remark);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+			});
+        }
+        }
+        //监听提交
+        if(userId == null){//添加
+	        form.on('submit(submit)', function(res){
+		        //layer.msg(JSON.stringify(res.field));
+	       		$.ajax({  
+	                type: 'POST',
+					url: commonIP + "api/system/farm/create?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify(res.field),
+					async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+	//					console.log(dataObj);
+	//					console.log(dataObj.errcode);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+							    alert("添加成功！");
+		                        layer.close(layer.index);  
+		                        window.parent.location.reload();  
+							} else {
+							 	alert(dataObj.errmsg);
+							}
+						}
+					}
+	            }); 
+            	return false;
+           	});
+        }else{//编辑		
+			form.on('submit(submit)', function(res){
+		        //layer.msg(JSON.stringify(res.field));
+	       		$.ajax({  
+	                type: 'POST',
+					url: commonIP + "api/system/farm/update?authToken="+authToken,
+					contentType: 'application/json',
+					data: JSON.stringify({
+							"id":userId,
+							"name":res.field.name,
+							"code":res.field.code,
+							"groupId":res.field.groupId,
+							"type":res.field.type,
+							"farmIdLink":res.field.farmIdLink,
+							"area":res.field.area,
+							"scale":res.field.scale,
+							"province":res.field.province,
+							"city":res.field.city,
+							"county":res.field.county,
+							"address":res.field.address,
+							"postcode":res.field.postcode,
+							"phone":res.field.phone,
+							"fax":res.field.fax,
+							"geographicInfo":res.field.geographicInfo,
+							"remark":res.field.remark,
+						}) ,
+					async: false,
+					success: function(data) {
+						var dataObj = JSON.parse(data);
+						if (dataObj) {
+							if (dataObj.errcode == "200") {
+							    alert("修改成功！");
+		                        layer.close(layer.index);  
+		                        window.parent.location.reload();  
+							} else {
+							 	alert(dataObj.errmsg);
+							}
+						}
+					}
+	            }); 
+          		return false;
+	        });
+		}
+    });
+</script>
+</body>
+</html>

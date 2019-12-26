@@ -1,0 +1,95 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测重系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body  style="height:100%;background: #F8F8F8;">
+	
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="location='count.html'"></span>
+			<h1>统计</h1>
+		</header>
+		<main>
+			<div class="title">
+				多猪场平均增重对比
+			</div>
+			<div class="datemenu monthmenu">
+				<ul>
+					<li class="tab active">配种一月</li>
+					<li class="tab">配种二月</li>
+					<li class="tab">配种三月</li>
+					<li class="tab">配种四月</li>
+				</ul>
+				<div class="clear"></div>
+			</div>
+			
+			<div class="divCon">
+				
+				<div class="divImg">
+					<img src="style/count3.jpg"/>
+				</div>
+			</div>
+			
+			<div class="divCon" style="display: none;">
+				
+				<div class="divImg">
+					<img src="style/count31.jpg"/>
+				</div>
+				
+			</div>
+			
+			<div class="divCon" style="display: none;">
+				
+				<div class="divImg">
+					<img src="style/count3.jpg"/>
+				</div>
+				
+			</div>
+			
+			<div class="divCon" style="display: none;">
+			
+				<div class="divImg">
+					<img src="style/count31.jpg"/>
+				</div>
+				
+			</div>
+			
+			
+			<script type="text/javascript">
+				setInit();
+				$("#countFooter").addClass("active");
+				var tab = document.querySelectorAll('.tab');
+				var divCon = document.querySelectorAll('.divCon');
+				(function changeTab() {
+	                for(var i = 0, len = tab.length; i < len; i++) {
+	                    tab[i].onclick = switchKind;
+	                }
+	            })();
+				function switchKind(){
+					for (var i = 0; i < tab.length; i++) {
+							if (tab[i] == this) {
+								tab[i].classList.add('active')
+								divCon[i].style.display = 'block'
+							} else{
+								tab[i].classList.remove('active')
+								divCon[i].style.display = 'none'
+							}
+					}
+				}
+			</script>
+			
+		</main>
+</body>
+</html>

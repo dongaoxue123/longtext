@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>选择角色</title>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<link rel="stylesheet" type="text/css" href="style/common.css"/>
+</head>
+<body>
+		<div class="page_top">
+			<img src="style/logo.png" width="100" class="logo" style="margin-top: 15px;"/>
+		</div>
+		
+		<div class="login msg">
+	     	<ul class="weight_msg user_msg msg">
+	     		<li><img src="" id="headimgurl" style="width: 100px; height: 100px;margin-top: -50px;margin-left: 20px;"/></li>
+	        	<li>
+	          		<select name="factory" id="roleSelect" style="width:auto;text-indent: 0;padding: 0 5%;margin: 48px;"></select>
+	            </li>
+	     	</ul>
+		</div>
+		<div class="enter"><h3 onclick="login()">进入猪场</h3></div>
+		</div>   
+		<script>
+			$(document).ready(function () {
+				var authToken = localStorage.getItem('authToken');
+				var user = localStorage.getItem('user');
+				var userId = JSON.parse(user).id;
+				var wxUser = localStorage.getItem('wxUser');
+				$('#headimgurl').attr("src",JSON.parse(wxUser).headimgurl);
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/system/userrole/get',
+					data: 'authToken='+authToken+'&userId='+userId,
+					contentType: 'application/json',
+					dataType: 'json',
+					success: function(data) {
+						if (data.errcode == 200) {
+							for (var i=0;i<data.dataSource.total;i++) {
+								if(data.dataSource.list[i] != null 
+									&& data.dataSource.list[i].id != null){
+									$('#roleSelect').append('<option style="text-align:center;" value='+data.dataSource.list[i].roleId+'>角色：'+
+									data.dataSource.list[i].roleName+'</option>');
+								}
+			                } 
+						}else{
+							alert("该用户没有指定角色，请联系管理员！");
+						}
+					}
+				});
+			});
+			// 登录
+			function login() {
+				var roleId = $("#roleSelect").val();
+				if(roleId!=null && roleId!=''){
+					localStorage.setItem('roleId',roleId);
+					window.location.href = 'index.html';
+				}else{
+					alert("用户必须指定角色后才能登录！");
+				}
+			}	
+		</script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/echarts.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body  style="height:100%;background: #f8f8f8;">
+	
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="location='count.html'"></span>
+			<h1>统计</h1>
+		</header>
+		<main>
+			<div class="title">
+				母猪群体重情况分布图
+			</div>
+			<div class="title">
+				<span class="iconfont icon-time"></span>
+				<span id="logInfo" class=""></span>
+			</div>
+			<div class="divCon">
+				<!--<div class="content">
+					<div>
+						<span class="iconfont icon-time"></span>
+						<span id="logInfo" class=""></span>
+					</div>	
+				</div>-->
+				<div class="chart" id = "weightChart">
+					
+				</div>
+				<div class="msg siweilist bgwhite" id = 'countMsg'>
+					
+				</div>
+			</div>		
+		</main>
+		<script>
+			//母猪群体重分布(散点图)
+			option = {
+			    title : {
+			        text: '母猪群体重分布',
+			        subtext: ''
+			    },
+			    grid: {
+			        left: '3%',
+			        right: '7%',
+			        bottom: '3%',
+			        containLabel: true
+			    },
+			    color: ['#3398DB'],
+			    tooltip : {
+			        // trigger: 'axis',
+			        showDelay : 0,
+			        formatter : function (params) {
+			            if (params.value.length > 1) {
+			                return '配种天数 '+params.value[0] + '天 '
+			                + '<br/>'
+			                + '体重:'+params.value[1] + 'kg ';
+			            }
+			        },
+			        axisPointer:{
+			            show: true,
+			            type : 'cross',
+			            lineStyle: {
+			                type : 'dashed',
+			                width : 1
+			            }
+			        }
+			    },
+			    brush: {
+			    },
+			    legend: {
+			        data: ['体重'],
+			        left: 'center'
+			    },
+			    toolbox: {
+			        feature: {
+			            brush: {
+			                type: ['']
+			            }
+			        }
+			    },
+			    xAxis : [
+			        {
+			            type: 'value',
+			            min: 0,
+			            max: 120,
+			            splitNumber:4,
+			            axisLabel : {
+			                formatter: '{value} 天'
+			            },
+			            splitLine: {
+			                show: false
+			            }
+			        }
+			    ],
+			    yAxis : [
+			        {
+			            type : 'value',
+			            scale:true,
+			            axisLabel : {
+			                formatter: '{value} kg'
+			            },
+			            splitLine: {
+			                show: true
+			            }
+			        }
+			    ],
+			    series : [
+			        	{
+			            name:'体重',
+			            type:'scatter',
+			            symbolSize: 5,
+			            markArea: {
+			                silent: true,
+			                itemStyle: {
+			                    normal: {
+			                        color: 'transparent',
+			                        borderWidth: 1,
+			                        borderType: 'dashed'
+			                    }
+			                }
+			            },
+			            markPoint : {
+			            	symbolSize: 60, 
+			                data : [
+			                    {type : 'max', name: '最大值'}
+//			                    ,{type : 'min', name: '最小值'}
+			                ]
+			            },
+			            markLine : {
+			                lineStyle: {
+			                    normal: {
+			                        type: 'solid'
+			                    }
+			                },
+			                data : [
+			                    {type : 'average', name: '平均值'},
+			                    { xAxis: 170 }
+			                ]
+			            }
+			        }
+			    ]
+			};
+			var authToken;
+			var user;
+			var chart;
+			$(document).ready(function() {
+				// 取得authToken
+				authToken = localStorage.getItem('authToken');
+				setInit();
+				$("#countFooter").addClass("active");
+				setInterval("setCurDate()", 1000);
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				user = localStorage.getItem('user');
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				initCountInfo();
+			});
+			
+			function initCountInfo(){
+				chart = echarts.init(document.getElementById('weightChart'));
+				chart.setOption(option);
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/count/getPigWeightCount',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&house_id=0000000000000000b827e469e7280773',
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data);
+						if (data.errcode == 200) {
+							$('#countMsg').empty();
+							// 重量集合
+							var dataArry = data.dataSource.list[0].pigWeightCount;//栋舍内猪只重量集合：[[妊娠日龄1,猪重1],[妊娠日龄2,猪重2],[妊娠日龄3,猪重3]]
+							var houseId = data.dataSource.list[0].houseId;//栋舍ID
+							var houseName = data.dataSource.list[0].houseName;//栋舍名称
+							var pigTotal = data.dataSource.list[0].pigTotal;//栋舍内猪只总数
+							var total30 = data.dataSource.list[0].total30;//日龄30天猪只总头数
+							var weightHigh30 = data.dataSource.list[0].weightHigh30;//日龄30天体重过高头数
+							var weightLow30 = data.dataSource.list[0].weightLow30;//日龄30天体重过低头数
+							var total60 = data.dataSource.list[0].total60;//日龄60天猪只总头数
+							var weightHigh60 = data.dataSource.list[0].weightHigh60;//日龄60天体重过高头数
+							var weightLow60 = data.dataSource.list[0].weightLow60;//日龄60天体重过低头数
+//							var dataArry = [[30, 150],[30, 151],[30, 152],[30, 153],[30, 154],
+//			            	   [30, 150],[30, 161],[30, 162],[30, 163],[30, 174],
+//					           [30, 155],[30, 156],[30, 158],[30, 159],[31, 150],
+//					           [31, 151],[31, 152],[31, 163],[31, 154],[31, 155],
+//					           [31, 156],[30, 158],[31, 159],[32, 152],[32, 153],
+//					           [32, 159],[30, 150],[32, 156],[32, 157],[32, 160],
+//					           [27, 153],[27, 154],[27, 156],[29, 157],[29, 160],
+//					           [50, 150],[50, 151],[50, 152],[50, 153],[60, 154],
+//			            	   [60, 160],[60, 161],[60, 162],[60, 163],[60, 164],
+//					           [60, 155],[60, 156],[60, 158],[60, 159],[61, 150],
+//					           [51, 151],[51, 152],[61, 163],[61, 154],[61, 175],
+//					           [61, 150],[60, 158],[61, 169],[62, 162],[62, 163],
+//					           [62, 153],[60, 154],[62, 176],[62, 167],[62, 160],
+//					           [59, 153],[59, 154],[59, 156],[59, 157],[59, 160],
+//					           [90, 150],[90, 151],[90, 152],[90, 153],[90, 154],
+//			            	   [90, 160],[90, 161],[90, 162],[90, 163],[90, 164],
+//					           [90, 165],[90, 166],[90, 168],[90, 169],[91, 160],
+//					           [91, 171],[91, 162],[91, 153],[91, 164],[91, 176],
+//					           [91, 170],[90, 158],[91, 159],[92, 162],[92, 173],
+//					           [92, 163],[90, 164],[92, 166],[92, 167],[92, 169],
+//					           [86, 163],[86, 159],[89, 156],[89, 157],[89, 160],
+//					           [114, 160],[114, 161],[114, 162],[114, 163],[114, 164],
+//			            	   [114, 160],[114, 171],[114, 162],[114, 163],[114, 164],
+//					           [114, 165],[114, 176],[114, 168],[114, 169],[114, 160],
+//					           [115, 161],[115, 172],[115, 163],[114, 164],[115, 176],
+//					           [115, 170],[115, 178],[115, 169],[116, 172],[116, 163],
+//					           [116, 179],[116, 174],[116, 176],[116, 177],[116, 160],
+//					           [113, 173],[113, 164],[113, 166],[113, 157],[113, 160]];
+							// 填入数据
+							chart.setOption({
+								series: [{
+									// 根据名字对应到相应的系列
+									name: '体重',
+									data: dataArry
+								}]
+							});
+							
+							var result = '<ul><li>'+houseName+'：共 '+pigTotal+'头</li>'+
+									'<li>配种天数 30天 '+total30+'头 体重过高：'+weightHigh30+'头 偏低：'+weightLow30+'头  </li>'+
+									'<li>配种天数 60天 '+total60+'头 体重过高：'+weightHigh60+'头 偏低：'+weightLow60+'头  </li></ul>';
+							$('#countMsg').append(result);
+						} else {
+							if (data.errcode == "10005") {
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					},
+					error: function(err) {
+			
+					}
+				})				
+			}
+			function setCurDate() {
+				var ndate = getCurDate();
+				var divT = document.getElementById("logInfo");
+				divT.innerHTML = ndate;
+			}
+		</script>
+</body>
+</html>

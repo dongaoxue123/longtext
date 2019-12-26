@@ -1,0 +1,817 @@
+<html style="height: 100%;color:#333333;background: #fff;">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+		<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+		<meta name="format-detection" content="telephone=no" />
+		<!--告诉设备忽略将页面中的数字识别为电话号码-->
+		<meta content="false" name="twcClient" id="twcClient" />
+		<!--判断页面是否在本地Native（本地APP）环境中-->
+		<title>测重系统</title>
+		<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/dist/dropload.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/masklayer.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="style/common.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+		<link rel="stylesheet" type="text/css" href="script/dist/dropload.css">
+		<link rel="stylesheet" href="style/drawer.min.css">
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+		<style type="text/css">
+			.ovfHiden {
+				overflow: hidden;
+				height: 100%;
+			}
+			
+			.choose_Btn {
+				background: #25B4F5;
+				color: #fff
+			}
+		</style>
+		<script>
+			var ids = "";
+			$(document).ready(function() {
+				//展示筛选窗口
+				$("#showQuery").click(function() {
+					$('html,body').addClass('ovfHiden');
+					$("#query").css('display', 'block');
+					//局部遮罩层
+
+					$("#allDom").jqLoading({
+						type: 1
+					});
+				})
+
+				//按钮样式切换
+				$('.matingStage').click(function() {
+					var nodeId = $(this).attr("id");
+					if($(this).is(".choose_Btn")) {
+						$(this).removeClass("choose_Btn");
+					} else {
+						if(nodeId.indexOf("stage") != -1) {
+							$(this).parent().children().removeClass("choose_Btn");
+						}
+
+						$(this).addClass("choose_Btn");
+					}
+					//alert($(this).attr("id"))
+				});
+				//取消查询按钮
+				$(".cancel").click(function() {
+					$("#query").css('display', 'none');
+					//关闭遮罩层
+					$("#allDom").jqLoading("destroy");
+					$('html,body').removeClass('ovfHiden');
+				});
+				//确定查询按钮
+				$("#confirm").click(function() {
+					parityNumStart = $.trim($("#parityNumStart").val());
+					parityNumEnd = $.trim($("#parityNumEnd").val()); //胎次结束条件查询 
+					weightNumStart = $.trim($("#weightNumStart").val()); //体重起始条件查询
+					weightNumEnd = $.trim($("#weightNumEnd").val()); //体重结束条件查询 
+					$("#query").css('display', 'none');
+					var str = ''; //显示已选条件列表串
+					$(".choose_Btn").each(function() {
+						var nodeId = $(this).attr("id");
+						if(nodeId == 'followStatus') {
+							followStatus = "1"; //关注条件查询
+							str += '<span><span>已关注</span></span>';
+						}
+						if(nodeId.indexOf("stage") != "-1") {
+							var num = nodeId.substring("stage".length);
+							matingDateStart = $("#matingDateStart" + num).val(); //配种起始条件查询
+							matingDateEnd = $("#matingDateEnd" + num).val(); //配种结束条件查询
+							str += '<span><span>配种' + matingDateStart + '~' + matingDateEnd + '天</span></span>'
+						}
+
+					});
+					$("#queryList").html(str)
+					getFieldList();
+					//关闭遮罩层
+					//关闭遮罩层
+					$("#allDom").jqLoading("destroy");
+					$('html,body').removeClass('ovfHiden');
+					if($("#queryList").html().length == 0) {
+						$("#queryList").hide();
+					} else {
+						$("#queryList").show();
+					}
+
+				});
+			});
+		</script>
+	</head>
+
+	<body style="height:100%;">
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="location='houseList.html'"></span>
+			<h1 id="h1_houseName"></h1>
+		</header>
+		<main id="allDom">
+			<div class="main pd20">
+				<select name="data" id="houseId" onchange="changeHouse()">
+				</select>
+				<div class="button btn_blue fr">
+					<span class="iconfont icon-saoyisao" id='qrcode'></span><span id='qrcode2'>扫码测重</span>
+				</div>
+			</div>
+
+			<div class="choose_tit flex">
+				<span id="fieldInfo"></span>
+				<div class="relative" onclick="sort(event)" id="parity" style='display: none;'>
+					<span>胎次</span>
+					<div id="paritySort">
+						<span class="iconfont icon-arrow-top"></span>
+						<span class="iconfont icon-arrow-bottom"></span>
+					</div>
+				</div>
+				<div class="relative" onclick="sort(event)" id="dayAge" style='display: none;'>
+					<span>日龄</span>
+					<div id="dayAgeSort">
+						<span class="iconfont icon-arrow-top"></span>
+						<span class="iconfont icon-arrow-bottom"></span>
+					</div>
+				</div>
+				<div class="relative" onclick="sort(event)" id="increaseWeight" style='display: none;'>
+					<span>增重</span>
+					<div id="increaseWeightSort">
+						<span class="iconfont icon-arrow-top"></span>
+						<span class="iconfont icon-arrow-bottom"></span>
+					</div>
+				</div>
+
+				<span><a style='display: none;' class="border bd_blue" id="showQuery">筛选</a></span>
+			</div>
+
+			<div class="main choose_nav" id="queryList" style="display: none">
+				<!--
+			<span>
+				<span>已关注</span><span class="iconfont icon-close1"></span>
+			</span>
+			<span>
+				<span>配种0~35天</span><span class="iconfont icon-close1"></span>
+			</span>
+			-->
+			</div>
+			<div id="content">
+				<div id="lists"></div>
+			</div>
+			<div class="choose_box" style="display: none;" id="query">
+				<ul>
+					<li>
+						<h4>筛选</h4>
+						<span id="followStatus" class="matingStage">已关注
+						
+					</span>
+					</li>
+					<li>
+						<h4>妊娠阶段</h4>
+						<span id="stage1" class="matingStage">配种0-35天
+						<input type="hidden" name="matingDateStart1" value="0" id="matingDateStart1"/>
+						<input type="hidden" name="matingDateEnd1" value="35" id="matingDateEnd1"/>
+					</span>
+						<span id="stage2" class="matingStage">配种36-85天
+						<input type="hidden" name="matingDateStart2" value="36" id="matingDateStart2"/>
+						<input type="hidden" name="matingDateEnd2" value="85" id="matingDateEnd2"/>
+					</span>
+						<span id="stage3" class="matingStage">配种86-112天
+						<input type="hidden" name="matingDateStart3" value="86" id="matingDateStart3"/>
+						<input type="hidden" name="matingDateEnd3" value="112" id="matingDateEnd3"/>
+					</span>
+					</li>
+					<li>
+						<h4>胎次</h4>
+						<input type="text" name="parityNumStart" id="parityNumStart" value="" /><i>-</i>
+						<input type="text" name="parityNumEnd" id="parityNumEnd" value="" /> 胎
+					</li>
+					<li>
+						<h4>体重</h4>
+						<input type="text" name="weightNumStart" id="weightNumStart" value="" /><i>-</i>
+						<input type="text" name="weightNumEnd" id="weightNumEnd" value="" /> KG
+					</li>
+				</ul>
+				<div class="main box_btn">
+					<a class="cancel">取消</a>
+					<a id="confirm">确定</a>
+				</div>
+
+			</div>
+			<div class="footer">
+				<ul>
+					<li id="indexFooter" onclick="location='index.html'"><span class="iconfont icon-weibiaoti1"></span>
+						<h5>首页</h5></li>
+					<li id="weightFooter" onclick="location='fieldList.html'" class="active"><span class="iconfont icon-pig"></span>
+						<h5>测重</h5></li>
+					<li id="setFooter" onclick="location='set.html'"><span class="iconfont icon-shezhi"></span>
+						<h5>配置</h5></li>
+				</ul>
+			</div>
+		</main>
+	</body>
+	<script>
+		var authToken = localStorage.getItem('authToken');
+		var page = 0;
+		var size = 20; // 每页展示10个
+		var currDate;
+		var houseId = '';
+		var paritySort = 0; //胎次排序  0不排序  1正序  2倒叙
+		var dayAgeSort = 0; //日龄排序  0不排序  1正序  2倒叙
+		var increaseWeightSort = 0; //增重排序  0不排序  1正序  2倒叙
+		var followStatus = "0" //关注条件查询
+		var matingDateStart = ''; //配种起始条件查询
+		var matingDateEnd = ''; //配种结束条件查询
+		var parityNumStart = ''; //胎次起始条件查询
+		var parityNumEnd = ''; //胎次结束条件查询 
+		var weightNumStart = ''; //体重起始条件查询
+		var weightNumEnd = ''; //体重结束条件查询 
+		var uid = '';
+		$(document).ready(function() {
+			// 取得authToken
+			if(authToken.length = 0) {
+				alert("请重新登录");
+				window.top.location.href = 'wxlogin.html';
+				return false;
+			}
+			currDate = getDate();
+			var user = localStorage.getItem('user');
+			uid = JSON.parse(user).id;
+			getHouseList();
+			initQrcode(); //微信扫码
+
+			$('.drawer').drawer();
+			$('.border bd_blue').click(function() {
+				$('.drawer').drawer("open");
+			});
+		});
+		function changeHouse() {
+//			initDom()
+			getFieldList()
+		}
+		function initDom(){
+			switch($('#houseId option:selected').attr('data-type')) {
+				case '00021':
+				case '00024':
+				//妊娠猪舍
+					$('#showQuery').show()
+					break;
+				case '00022':
+				case '00023':
+				case '00059':
+				//肥猪舍
+					$('#showQuery').hide()
+					break;
+			}
+		}
+		function getHouseList() {
+			var user = localStorage.getItem('user');
+			var groupId = JSON.parse(user).groupId;
+			var farmId = JSON.parse(user).farmId;
+			$.ajax({
+				type: "GET",
+				url: commonIP + '/api/system/house/getHouseListPage',
+				contentType: 'application/json',
+				data: 'authToken=' + authToken + '&groupId=' + groupId + '&farmId=' + farmId + '&pageNum=0&pageSize=0',
+				dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					console.log(data)
+					if(data) {
+						if(data.errcode == 200) {
+							var html = '';
+							for(var key in data.dataSource.list) {
+								if(data.dataSource.list[key].type == '00060'){continue;}
+								if(html == '') {
+									html = html + '<option value="' + data.dataSource.list[key].id + '" data-type="' + data.dataSource.list[key].type + '" selected="selected">' + data.dataSource.list[key].name + '</option>';
+								} else {
+									html = html + '<option value="' + data.dataSource.list[key].id + '" data-type="' + data.dataSource.list[key].type + '">' + data.dataSource.list[key].name + '</option>';
+								}
+							}
+							$("#houseId").html(html);
+							getFieldListInfo(); //查询栏位信息
+						} else {
+							alert(data.errmsg);
+							if(data.errcode == "10005") {
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				}
+			});
+		}
+
+		function getFieldList() {
+			page = 0;
+			getFieldListInfo();
+			followStatus = "0" //关注条件查询
+			matingDateStart = ''; //配种起始条件查询
+			matingDateEnd = ''; //配种结束条件查询
+			parityNumStart = ''; //胎次起始条件查询
+			parityNumEnd = ''; //胎次结束条件查询 
+			weightNumStart = ''; //体重起始条件查询
+			weightNumEnd = ''; //体重结束条件查询 
+		}
+
+		function getQueryData() {
+			var queryData = '';
+			if(followStatus != null && followStatus != '') {
+				queryData += "&followStatus=" + followStatus;
+			}
+			if(matingDateStart != null && matingDateStart != '') {
+				queryData += "&matingDateStart=" + matingDateStart;
+			}
+			if(matingDateEnd != null && matingDateEnd != '') {
+				queryData += "&matingDateEnd=" + matingDateEnd;
+			}
+			if(parityNumStart != null && parityNumStart != '') {
+				queryData += "&parityNumStart=" + parityNumStart;
+			}
+			if(parityNumEnd != null && parityNumEnd != '') {
+				queryData += "&parityNumEnd=" + parityNumEnd;
+			}
+			if(weightNumStart != null && weightNumStart != '') {
+				queryData += "&weightNumStart=" + weightNumStart;
+			}
+			if(weightNumEnd != null && weightNumEnd != '') {
+				queryData += "&weightNumEnd=" + weightNumEnd;
+			}
+			return queryData
+		}
+
+		function getCount() {
+			houseId = $("#houseId").val();
+			let queryData = getQueryData()
+			$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/weight/getFieldCount',
+				contentType: 'application/json',
+				data: 'authToken=' + authToken + '&house_id=' + houseId + "&uid=" + uid + queryData,
+				dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					if(data) {
+						var res = '';
+						if(data.errcode == 200) {
+							switch($('#houseId option:selected').attr('data-type')) {
+								case '00021':
+								case '00024':
+									res = res + '<span style="margin-left: 15px;">共' + data.dataSource.list[0].field_count + '栏  ' + data.dataSource.list[0].pig_count + '头母猪</span>';
+//									$('#parity').show()
+//									$('#dayAge').hide()
+									break;
+								case '00022':
+								case '00023':
+								case '00059':
+									res = res + '<span style="margin-left: 15px;">共' + data.dataSource.list[0].field_count + '栏  ' + data.dataSource.list[0].pig_count + '头猪</span>';
+//									$('#parity').hide()
+//									$('#dayAge').show()
+									break;
+							}
+						} else {
+							if(data.errcode == 10005) {
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+						if(res.length > 0) {
+							$('#fieldInfo').html(res);
+						}
+					}
+				}
+			});
+		}
+		function getAjaxUrl(){
+			switch($('#houseId option:selected').attr('data-type')) {
+				case '00021':
+				case '00024':
+					return commonIP + 'api/pig/weight/getFieldPigInfoList'
+					break;
+				case '00022':
+				case '00023':
+				case '00059':
+					return commonIP + 'api/pig/hogbatch/getHogBatchWeightPage'
+					break;
+			}
+		}
+		function getAjaxData(queryData){
+			switch($('#houseId option:selected').attr('data-type')) {
+				case '00021':
+				case '00024':
+					return 'authToken=' + authToken + '&house_id=' + houseId + '&pageNum=' + page + '&pageSize=' + size + '&uid=' + uid + '&paritySort=' + paritySort + '&increaseWeightSort=' + increaseWeightSort + queryData
+					break;
+				case '00022':
+				case '00023':
+				case '00059':
+					return 'authToken=' + authToken + '&houseId=' + houseId + '&pageNum=' + page + '&pageSize=' + size + '&farmId=' + JSON.parse(localStorage.getItem('user')).farmId;//+ '&uid=' + uid + '&paritySort=' + paritySort + '&increaseWeightSort=' + increaseWeightSort + queryData
+					break;
+			}
+		}
+		// 取得栏位信息
+		function getFieldListInfo() {
+			let queryData = getQueryData()
+			$('#lists').empty();
+			houseId = $("#houseId").val();
+			let type = $('#houseId option:selected').attr('data-type')
+			if(type === '00021' || type === '00024'){
+				getCount()
+			}
+			
+			// dropload
+			$(".dropload-down").remove();
+			$("#content").unbind();
+			$('#content').dropload({
+				scrollArea: window,
+				domDown: {
+					domNoData: '<div class="dropload-noData"></div>'
+				},
+				loadUpFn: function(me) {
+					//          	location.reload(); 
+					page = 1;
+					$.ajax({
+						type: "GET",
+						url: getAjaxUrl(),
+						contentType: 'application/json',
+						data: getAjaxData(queryData),
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+							console.log(data);
+							if(data && data.errcode == 200) {
+								console.log(200)
+								$(".dropload-load").show();
+								setHtml(data.dataSource.list)
+								me.resetload();
+							} else {
+								if(data.errcode == 10015) {
+									alert(data.errmsg);
+									window.top.location.href = 'wxlogin.html';
+								}
+								me.lock();
+								me.noData(); // 无数据
+								me.resetload();
+							}
+						},
+						error: function(xhr, type) {
+							me.resetload(); // 即使加载出错，也得重置
+						}
+					});
+
+				},
+				loadDownFn: function(me) {
+					page++;
+					// 拼接HTML
+					//		        var user = localStorage.getItem('user');
+					//		        var uid = JSON.parse(user).id
+					$.ajax({
+						type: "GET",
+						url: getAjaxUrl(),
+						contentType: 'application/json',
+						data: getAjaxData(queryData),
+						dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+						success: function(data) {
+							console.log(data);
+							if(data && data.errcode == 200) {
+								$(".dropload-load").show();
+								setHtml(data.dataSource.list)
+								me.resetload();
+
+							} else {
+								if(data.errcode == 10015) {
+									alert(data.errmsg);
+									window.top.location.href = 'wxlogin.html';
+								}
+								me.lock();
+								me.noData(); // 无数据
+								me.resetload();
+							}
+						},
+						error: function(xhr, type) {
+							me.resetload(); // 即使加载出错，也得重置
+						}
+					});
+				}
+			});
+		}
+
+		function setHtml(data) {
+			var result = '';
+			switch($('#houseId option:selected').attr('data-type')) {
+				case '00021':
+				case '00024':
+					for(var key in data) {
+						var pigWeight = 0;
+						var increaseWeight = 0.00; //周增重
+						if(data[key].weight_data != null &&	data[key].weight_data != '') {
+							pigWeight = data[key].weight_data;
+						}
+						if(data[key].increaseWeight != null && data[key].increaseWeight != '') {
+							increaseWeight = data[key].increaseWeight;
+						}
+						result = result + '<div class="weight_list flex" onclick="weightInfo(event)" style="position:relative;">' +
+							'<input type="text" id="fieldId" style="display:none" value="' + data[key].field_id + '">' +
+							'<ul class="basic_msg mr20">' +
+							'<h1><h2 class="fieldCode">' + data[key].code + '</h2></h1>';
+						if(increaseWeight >= 0) {
+							result = result + '<li><span class="border bd_red">+' + increaseWeight + 'kg</span></li></ul>';
+						} else {
+							result = result + '<li><span class="border bd_green">' + increaseWeight + 'kg</span></li></ul>';
+						}
+						if(data[key].pigs_archives_id != null && data[key].pigs_archives_id != '') {
+							var pigsArchivesId = data[key].pigs_archives_id;
+							result = result + '<input type="text" id="pigs_archives_id" style="display:none" value="' + data[key].pigs_archives_id + '">' +
+								'<ul class="basic_msg"><li><h3 class="pigsNumber">' + data[key].pigs_number + '</h3></li>' +
+								'<li class="tmp">' + data[key].pigVarietyName + '/' +
+								data[key].production_status_name + '/' +
+								data[key].parity + '胎/';
+							var weightCreateDate = data[key].weightCreateDate;
+							if(currDate == weightCreateDate) {
+								result = result + '<a class="weightTmp" style="font-size:20px;color:#EE7700;">' + pigWeight + 'kg</a>';
+							} else {
+								result = result + '<a class="weightTmp" style="font-size:20px;color:0000BB;">' + pigWeight + 'kg</a>';
+							}
+							if(data[key].attention_id != null && data[key].attention_id != "") {
+								result = result + '</li></ul>' +
+									'<div class="btn_corner btn_follow"><a id="' + pigsArchivesId + '" class="rec" onclick="gz(event)">' +
+									'<input type="text" id="gz_pigid" style="display:none" value="' + pigsArchivesId +
+									'">已关注</a></div>';
+							} else {
+								result = result + '</li></ul>' +
+									'<div class="btn_corner btn_follow btn_unfollow"><a id="' + pigsArchivesId + '" class="rec" onclick="gz(event)">' +
+									'<input type="text" id="gz_pigid" style="display:none" value="' + pigsArchivesId +
+									'">关注</a></div>';
+							}
+						} else {
+							result = result + '<input type="text" id="pigs_archives_id" style="display:none" value="">' +
+								'<ul class="basic_msg"><li><h3 class="pigsNumber">&nbsp</h3></li>' +
+								'<li class="tmp">无猪只信息</li></ul>';
+						}
+						result = result + '</div>';
+					}
+					break;
+				case '00022':
+				case '00023':
+				case '00059':
+//					$('#parity').hide()
+//					$('#dayAge').show()
+				 	let totalHtml = '<span style="margin-left: 15px;">共' + data[0].hogBatchWeightBeanList.length + '栏  ' + data[0].totalNumber + '头猪</span>';
+					$('#fieldInfo').html(totalHtml);
+							
+					data =  data[0].hogBatchWeightBeanList
+					for(var key in data) {
+						var pigWeight = 0;
+						var differWeight = 0.00; //日增重
+						if(data[key].weightData != null &&	data[key].weightData != '') {
+							pigWeight = data[key].weightData;
+						}
+						if(data[key].differWeight != null && data[key].differWeight != '') {
+							differWeight = data[key].differWeight;
+						}
+						result = result + '<div class="weight_list flex" onclick="weightInfo(event)" style="position:relative;"' 
+							+ 'data-batchid="' + data[key].batchId + '" data-farmid="' + data[key].farmId + '" data-fieldid="' + data[key].fieldId + '" data-pigage="' +  data[key].pigAge + '">' +
+//							'<input type="text" id="fieldId" style="display:none" value="' + data[key].fieldId + '">' +
+							'<ul class="basic_msg mr20">' +
+							'<h1><h2 class="fieldCode">' + data[key].code + '</h2></h1>';
+						if(differWeight >= 0) {
+							result = result + '<li><span class="border bd_red">+' + differWeight + 'kg</span></li></ul>';
+						} else {
+							result = result + '<li><span class="border bd_green">' + differWeight + 'kg</span></li></ul>';
+						}
+						if(data[key].batchId != null && data[key].batchId != '') {
+							var batchId = data[key].batchId;
+							result = result + '<input type="text" id="batchId" style="display:none" value="' + data[key].batchId + '">' +
+								'<ul class="basic_msg"><li><h3 class="pigsNumber">' + data[key].batchCode + '</h3></li>' +
+								'<li class="tmp">' + data[key].pigVarietyName + '/' +	data[key].pigAge + '天/' + data[key].totalNumber + '头/';
+							var weightCreateDate = data[key].weightCreateDate;
+							if(currDate == weightCreateDate) {
+								result = result + '<a class="weightTmp" style="font-size:20px;color:#EE7700;">' + pigWeight + 'kg</a>';
+							} else {
+								result = result + '<a class="weightTmp" style="font-size:20px;color:0000BB;">' + pigWeight + 'kg</a>';
+							}
+//							if(data[key].attention_id != null && data[key].attention_id != "") {
+//								result = result + '</li></ul>' +
+//									'<div class="btn_corner btn_follow"><a id="' + pigsArchivesId + '" class="rec" onclick="gz(event)">' +
+//									'<input type="text" id="gz_pigid" style="display:none" value="' + pigsArchivesId +
+//									'">已关注</a></div>';
+//							} else {
+//								result = result + '</li></ul>' +
+//									'<div class="btn_corner btn_follow btn_unfollow"><a id="' + pigsArchivesId + '" class="rec" onclick="gz(event)">' +
+//									'<input type="text" id="gz_pigid" style="display:none" value="' + pigsArchivesId +
+//									'">关注</a></div>';
+//							}
+						} else {
+							result = result + '<input type="text" id="batchId" style="display:none" value="">' +
+								'<ul class="basic_msg"><li><h3 class="pigsNumber">&nbsp</h3></li>' +
+								'<li class="tmp">无猪只信息</li></ul>';
+						}
+						result = result + '</div>';
+					}		
+					break;
+			}
+			if(page==1){
+				$('#lists').html(result);
+			}else{
+				$('#lists').append(result);
+			}
+			
+		} //排序
+		function sort(e) {
+			var targetId = e.currentTarget.id;
+
+			switch(targetId) {
+				case 'parity': //胎次排序  0不排序  1正序  2倒叙
+					$("#paritySort").empty();
+					if(paritySort == 0) { //胎次排序  0不排序  1正序  2倒叙
+						paritySort = 1;
+						$("#paritySort").append('<span class="iconfont icon-arrow-top blue"></span><span class="iconfont icon-arrow-bottom"></span>')
+					} else if(paritySort == 1) {
+						paritySort = 2;
+						$("#paritySort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom blue"></span>')
+					} else {
+						paritySort = 0;
+						$("#paritySort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom"></span>')
+					}
+					break;
+				case 'increaseWeight': //增重排序  0不排序  1正序  2倒叙
+					$("#increaseWeightSort").empty();
+					if(increaseWeightSort == 0) {
+						increaseWeightSort = 1;
+						$("#increaseWeightSort").append('<span class="iconfont icon-arrow-top blue"></span><span class="iconfont icon-arrow-bottom"></span>')
+					} else if(increaseWeightSort == 1) {
+						increaseWeightSort = 2;
+						$("#increaseWeightSort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom blue"></span>')
+					} else {
+						increaseWeightSort = 0;
+						$("#increaseWeightSort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom"></span>')
+					}
+					break;
+				case 'dayAge': //日龄排序  0不排序  1正序  2倒叙
+					$("#dayAgeSort").empty();
+					if(dayAgeSort == 0) { //胎次排序  0不排序  1正序  2倒叙
+						dayAgeSort = 1;
+						$("#dayAgeSort").append('<span class="iconfont icon-arrow-top blue"></span><span class="iconfont icon-arrow-bottom"></span>')
+					} else if(dayAgeSort == 1) {
+						dayAgeSort = 2;
+						$("#dayAgeSort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom blue"></span>')
+					} else {
+						dayAgeSort = 0;
+						$("#dayAgeSort").append('<span class="iconfont icon-arrow-top"></span><span class="iconfont icon-arrow-bottom"></span>')
+					}
+					break;
+			}
+			getFieldList(); //切换排序后重新查询
+		}
+		//查看详情页
+		function weightInfo(e) {
+			switch($('#houseId option:selected').attr('data-type')) {
+				case '00021':
+				case '00024':
+					var pigsArchivesId = '';
+					var targetClass = $(e.target).attr("class");
+					var houseName = $("#houseId").find("option:selected").text();
+					if(targetClass == 'weight_list flex') {
+						pigsArchivesId = $(e.target).find("#pigs_archives_id").val();
+					} else if(targetClass == 'fieldCode' || targetClass == 'pigsNumber' || targetClass == 'weightTmp' ||
+						targetClass == 'border bd_red' || targetClass == 'border bd_green') {
+						pigsArchivesId = $(e.target).parent().parent().parent().find("#pigs_archives_id").val();
+					} else if(targetClass == 'tmp') {
+						pigsArchivesId = $(e.target).parent().parent().find("#pigs_archives_id").val();
+					}
+					if(pigsArchivesId != null && pigsArchivesId != '') {
+						// 跳转页面并传输参数
+						window.location.href = 'weight.html?pigsArchivesId=' + pigsArchivesId + '&houseName=' + houseName;
+					}
+					break;
+				case '00022':
+				case '00023':
+				case '00059':
+					let target = getParentNode(e.target, 'DIV')
+					let batchId = $(target).attr('data-batchid')
+					let farmId = $(target).attr('data-farmid')
+					let fieldId = $(target).attr('data-fieldid')
+					let pigAge = $(target).attr('data-pigage')
+//					var batchId = '';
+//					var targetClass = $(e.target).attr("class");
+////					var houseName = $("#houseId").find("option:selected").text();
+//					if(targetClass == 'weight_list flex') {
+//						batchId = $(e.target).find("#pigs_archives_id").val();
+//					} else if(targetClass == 'fieldCode' || targetClass == 'pigsNumber' || targetClass == 'weightTmp' ||
+//						targetClass == 'border bd_red' || targetClass == 'border bd_green') {
+//						batchId = $(e.target).parent().parent().parent().find("#pigs_archives_id").val();
+//					} else if(targetClass == 'tmp') {
+//						batchId = $(e.target).parent().parent().find("#pigs_archives_id").val();
+//					}
+					if(batchId != null && batchId != '') {
+						// 跳转页面并传输参数
+						window.location.href = 'fatWeight.html?batchid=' + batchId + '&farmid=' + farmId + '&fieldid=' + fieldId + '&pigage=' + pigAge;
+					}
+					break;
+			}
+		}
+
+		/*gz 关注*/
+		function gz(e) {
+			var pigsArchivesId = $(e.target).find("#gz_pigid").val();
+			var authToken = localStorage.getItem('authToken');
+			var user = localStorage.getItem('user');
+			var groupId = JSON.parse(user).groupId;
+			var farmId = JSON.parse(user).farmId;
+			$.ajax({
+				type: "POST",
+				url: commonIP + "api/pig/field/attention?authToken=" + authToken,
+				data: JSON.stringify({
+					"pigs_archives_id": pigsArchivesId,
+					"group_id": groupId,
+					"farm_id": farmId
+				}),
+				contentType: 'application/json',
+				success: function(data) {
+					var data = JSON.parse(data);
+					console.log(data)
+					if(data.errcode == 200) {
+						alert(data.errmsg);
+						//					window.location.reload();
+						getFieldList();
+					} else {
+						alert(data.errmsg);
+					}
+				}
+			});
+		}
+
+		function initQrcode() { // 根据实际填写接口的配置地点     // 这里的接口地址是基于node-weixin配置的。    
+			// 当前的网页请求地址
+			var weixinUrl = location.href.split('#')[0];
+			$.ajax({
+				type: "POST",
+				url: commonIP + "api/system/wxserver/getjsConfig?authToken=" + authToken,
+				data: JSON.stringify({
+					"url": weixinUrl
+				}),
+				contentType: 'application/json',
+				success: function(data) {
+					console.log(data)
+					var data = JSON.parse(data);
+					if(data.errcode == 200) {
+						wx.config({
+							//							    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+							appId: data.dataSource.list[0].appId, // 必填，公众号的唯一标识
+							timestamp: data.dataSource.list[0].timestamp, // 必填，生成签名的时间戳
+							nonceStr: data.dataSource.list[0].nonceStr, // 必填，生成签名的随机串
+							signature: data.dataSource.list[0].signature, // 必填，签名，见附录1
+							jsApiList: ['checkJsApi', 'scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+						});
+					}
+				}
+			});
+			wx.ready(function() {
+				$('#qrcode').click(function() {
+					wx.scanQRCode({ // 默认为0，扫描效果由微信处理，1则直接返回扫描结果，       
+						needResult: 1, // 可以指定扫二维码还是一维码，默认二者都有       
+						scanType: ["qrCode", "barCode"],
+						success: function(res) { // 当needResult 为 1 时，扫码返回的结果        
+							var pigsArchivesId = res.resultStr;
+							// 跳转页面并传输参数
+							window.location.href = 'weight.html?pigsArchivesId=' + pigsArchivesId;
+						}
+					});
+				});
+				$('#qrcode2').click(function() {
+					wx.scanQRCode({ // 默认为0，扫描效果由微信处理，1则直接返回扫描结果，       
+						needResult: 1, // 可以指定扫二维码还是一维码，默认二者都有       
+						scanType: ["qrCode", "barCode"],
+						success: function(res) { // 当needResult 为 1 时，扫码返回的结果        
+							var pigsArchivesId = res.resultStr;
+							// 跳转页面并传输参数
+							window.location.href = 'weight.html?pigsArchivesId=' + pigsArchivesId;
+						}
+					});
+				});
+			});
+
+		}
+
+		/**
+		 * 获取当前时间
+		 */
+		function getDate() {
+			var myDate = new Date();
+			//获取当前年
+			var year = myDate.getFullYear();
+			//获取当前月
+			var month = myDate.getMonth() + 1;
+			//获取当前日
+			var date = myDate.getDate();
+			var now = year + '-' + p(month) + "-" + p(date);
+			return now;
+		}
+
+		function p(s) {
+			return s < 10 ? '0' + s : s;
+		}
+	</script>
+
+</html>

@@ -1,0 +1,111 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form" action="">
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">所属猪场</label>
+            <div class="layui-input-block">
+    	 		<select id="farmId" name="farmId" lay-verify="required|farmId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择猪场</option>
+		    	</select>
+		    </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+		    <label class="layui-form-label">猪只编号</label>
+            <div class="layui-input-block">
+    	 		<select id="pigId" name="pigId" lay-verify="required|pigId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择猪只</option>
+		    	</select>
+		    </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">文件路径</label>
+            <div class="layui-input-block">
+                <input type="text" name="filePath" lay-verify="required|filePath" placeholder="请输入路径" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" class="layui-textarea" lay-verify="remark" name="remark"></textarea>
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use(['form','jquery'], function(){
+        var form = layui.form;
+        var $ = layui.jquery;
+        //获取猪场下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/farm/getFarmSelect',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var farmOption;
+	                for (var i = 0; i < data.length; i++) {
+            			farmOption = farmOption+'<option value="'+data[i].farmId+'">'+data[i].farmName+'</option>';
+	                }
+	                $("#farmId").append(farmOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    });  
+	    //获取猪只下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/piginfo/getPigInfoSelect',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var pigOption;
+	                for (var i = 0; i < data.length; i++) {
+            			pigOption = pigOption+'<option value="'+data[i].pigId+'">'+data[i].pigsNumber+'</option>';
+	                }
+	                $("#pigId").append(pigOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    });  
+        //监听提交
+        form.on('submit(submit)', function(res){
+       		$.ajax({  
+	            url: commonIP + 'testdata/filepath/create',
+                data: res.field,
+                success: function(data) {
+                	console.log('ajaxSuccess 请求成功');
+                	$t.closeWindow();//关闭当前弹窗
+            		window.parent.location.reload();//刷新父页面
+                },
+                error: function () {//请求失败处理函数
+                	console.log('ajaxError! 请求失败');
+	                $t.closeWindow();//关闭当前弹窗
+//          		Msg.success("添加成功");
+            		window.parent.location.reload();//刷新父页面
+	            }
+            });  
+        });
+		
+    });
+</script>
+</body>
+</html>

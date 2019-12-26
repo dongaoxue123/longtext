@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+
+<!--    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+    </div>
+	 -->
+	
+	<div class="layui-form-item" id="button" style="margin-top: 10px;">
+		<form class="layui-form">
+		<label class="layui-form-label" data-i18n="[prepend]common.groupName">:</label>
+		<div class="layui-input-inline">
+		  <select id="groupId" name="groupId" lay-filter="groupId" style="height: 38px;border-color: #F0F0F0;" lay-search>
+		        	<option value="" ></option>
+		    	</select>
+		    </div>		
+			 <label class="layui-form-label" data-i18n="[prepend]role.roleName">:</label>
+			  <div class="layui-input-inline">
+			      <input class="layui-input" id="name" name="name" autocomplete="off" >
+			  </div>
+			  
+			  <label class="layui-form-label" data-i18n="[prepend]role.roleCode">:</label>
+			   <div class="layui-input-inline">
+			       <input class="layui-input" id="code" name="code" autocomplete="off"  >
+			   </div>
+			 
+		</form>
+		<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+		
+		<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+		
+		<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+	</div>
+<table class="layui-hide" id="roleInfo" lay-filter="roleInfo"></table>
+<script type="text/html" id="barDemo">
+  <!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>-->
+  	<a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" data-i18n="btnDel"></a>
+  	<a class="layui-btn layui-btn-xs" lay-event="setPermissions" data-i18n="role.setPermissions"></a>
+  	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="associatedUsers" data-i18n="role.associatedUsers"></a>
+</script>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	var user =localStorage.getItem("user");
+
+i18n('../../locales', onLangReady) //国际化
+		function onLangReady() {
+	if(!checkToken()){
+  		alert(i18next.t("timeout"));
+ 			window.top.location.href = '../../login.html';
+	}
+	groupId = JSON.parse(user).groupId; 
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		//获取集团下拉列表
+		$.ajax({
+		    url: commonIP + 'api/system/group/getListPage?authToken='+authToken+'&page=0&limit=0',
+		    parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+				"msg": res.msg, //解析提示文本
+				"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+			},
+		    success: function (res) {
+			var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+		        var groupOption;
+		        for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+		        	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+		        }
+		        $("#groupId").append(groupOption);
+		        form.render('select');//一定要加form.render();
+		        BindUpdateList();
+			  }
+		}
+		}); 
+		  //方法级渲染
+		table.render({
+		    elem: '#roleInfo'
+//		    ,url: commonIP + 'api/system/role/get?authToken='+authToken+'&groupId='+groupId  //数据请求路径
+				,url: commonIP + 'api/system/role/get?authToken='+authToken
+				,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'5%'}
+		      ,{field:'groupName', title: i18next.t("common.groupName"),width:'12%',sort: true}
+		      ,{field:'name', title:i18next.t("role.roleName"),width:'12%'}
+		      ,{field:'code', title: i18next.t("role.roleCode"),width:'10%'}
+		      ,{field:'users', title: i18next.t("role.associatedUsers"),width:'20%'}
+		      ,{field:'remark', title: i18next.t("common.remark"),width:'15%'}
+		      ,{fixed: 'right',title: i18next.t("opt"), width:'20%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:20   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'
+		    ,done:function(){
+			    	i18n('../../locales') //国际化
+			    }
+		});
+		//监听工具条
+		table.on('tool(roleInfo)', function(obj){
+		    var data = obj.data;
+		    if(obj.event === 'detail'){
+		      //layer.msg('ID：'+ data.id + ' 的查看操作');
+  
+			  } else if(obj.event === 'del'){
+		        layer.confirm( i18next.t("role.delRoleConfirm"), function(index){
+		      		$.ajax({  
+			            url: commonIP + "api/system/role/delete?authToken="+authToken,
+			            type: 'POST',
+						contentType: 'application/json',
+						data: JSON.stringify({"id":data.id}),
+		                success: function(text) {
+		                	var dataObj = JSON.parse(text);
+		                		if(dataObj.code == 0){
+				                		layer.msg(dataObj.msg, {icon: 6});
+										        obj.del();
+										        layer.close(index);  
+		                		}else{
+		                				layer.msg(dataObj.msg, {icon: 5});
+		                		}
+		                }
+		            });  
+	      		});
+		    } else if(obj.event === 'edit'){
+	    		  var index = layer.open({
+								    type: 2,
+								    content: "addRole.html?id="+data.id,
+								    area: ['450px', '450px'],
+								    maxmin: true
+								});  
+		    } else if(obj.event === 'setPermissions'){
+	    			var index = layer.open({
+								    type: 2,
+								    content: "setPermissions.html?id="+data.id,
+								    area: ['1200px', '650px'],
+								    maxmin: true
+								});  
+		    } else if(obj.event === 'associatedUsers'){
+	    			var index = layer.open({
+								    type: 2,
+								    content: "associatedUsers.html?id="+data.id+"&groupId="+data.groupId,
+								    area: ['1200px', '650px'],
+								    maxmin: true,
+								}); 
+		    }
+	  	});
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+		        	 groupId: $('#groupId').val(),
+					 name:$('#name').val(),
+					 code:$('#code').val()
+		        }
+		      });
+		    },
+		};
+		
+		$('#reset').on('click', function(){
+			$('#groupId').val(""),
+			$('#name').val(""),
+			$('#code').val("")
+			form.render("select");
+			/*$("#farmId option:first").prop("selected", 'selected');  */
+		});
+		
+		
+	  	$('#add').on('click', function(){
+	   		var index = layer.open({
+				    type: 2,
+				    content: 'addRole.html',
+				    area: ['450px', '450px'],
+				    maxmin: true
+				});
+//					layer.full(index);
+	  	});
+	});
+}
+</script>
+
+</body>
+</html>

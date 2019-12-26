@@ -1,0 +1,144 @@
+//var commonIP='http://www.pingguoxiaozhen.com/';
+//var commonIP='http://game.yuyuejingdian.com/';
+var commonIP = "http://192.168.0.175/"; //liuchao
+//var commonIP="http://192.168.0.173/";//伟鹏
+//var commonIP="http://192.168.0.172/";//云东
+//var commonIP="http://192.168.0.107/";//apple本地
+
+
+//检测当前登录的authToken是否过期，判断登录按钮的显示与隐藏
+(function checkState() {
+	var url = commonIP + 'api/apple/user/getApplePlayerPCBean?json=';
+	var data = skyest.jsonData()
+	$.ajax({
+		type: "get",
+		url: url+JSON.stringify(data),
+		async: true,
+		contentType: "application/json",
+		success: function(data) {
+			var data = JSON.parse(data)
+			if(data.head.errcode == 200) {
+				//存储登录状态type
+				localStorage.setItem('type', true);
+			} else if(data.head.errcode == 10005) {
+				localStorage.setItem('type', false);
+			} else {
+				localStorage.setItem('type', true);
+			}
+		},
+		error: function(data) {
+			//alert(data.head.errmsg)
+		}
+	});
+})()
+
+window.onload = function() {
+	//登录状态type判断按钮的显示
+	var type = localStorage.getItem('type');
+	if(type == 'true') {
+		document.querySelector('.login_type').style.display = 'none'
+		document.querySelector('.logout_type').style.display = 'block'
+	} else {
+		document.querySelector('.login_type').style.display = 'block'
+		document.querySelector('.logout_type').style.display = 'none'
+	}
+}
+//退出登录
+function quit() {
+	var url = commonIP + 'api/users/logout?authToken=' + localStorage.getItem('authToken');
+
+	skyest.ajax(url, function(data) {
+		if(data.head.errcode == 200) {
+			localStorage.setItem('type', false);
+			window.location.href = 'index.html'
+		} else {
+			alert(data.head.errmsg)
+		}
+	}, url)
+}
+
+//滚动改变header
+$(window).scroll(function() {
+	"use strict";
+	var scroll = $(window).scrollTop();
+	if(scroll > 60) {
+		$(".header").addClass("sticky");
+
+	} else {
+		$(".header").removeClass("sticky");
+	}
+});
+
+if('ontouchstart' in window) {
+	$("#switch").bind("touchstart", toggle);
+} else {
+	$("#switch").bind("click", toggle);
+}
+
+function toggle() {
+	if($('#menu').hasClass('menu-show')) {
+		$('#menu').removeClass('menu-show slideInDown animated');
+		$('#switch').removeClass('switch-show');
+	} else {
+		$('#menu').addClass('menu-show slideInDown animated');
+		$('#switch').addClass('switch-show');
+	}
+}
+
+$(window).resize(function() {
+	if($(window).width() < 768) {
+		$("#menu").removeClass('menu-show fadeInDown animated');
+	}
+});
+
+//封装的ajax
+var diag = false;
+skyest.ajax = function(ajaxurl, callback, post) { //后续增加更多变量
+	//添加DIV阻止操作
+	if($get.q('.bar')) {
+		loadtype('0', '数据连接中')
+	}
+	var xhr = new XMLHttpRequest();
+	xhr.int = 10;
+	xhr.onload = function() {
+		var data = xhr.responseText;
+		data = JSON.parse(xhr.responseText);
+		if(!data.head) { //验证器
+			alert('返回格式错误')
+			return false;
+		} else if(data.head.errcode == 10005) {
+			console.log(data.head.errmsg)
+			if(diag) {} else {
+				diag = true;
+				sessionStorage.setItem('type', false)
+				alert(data.head.errmsg)
+				window.location.href = "login.html";
+			}
+			return false;
+		}
+		if(data.main == null) {
+			callback(data);
+		} else {
+			callback(data);
+		}
+	}
+	xhr.onprogress = function(event) {
+		console.log(event.loaded + "of" + event.total)
+	}
+	xhr.onerror = function() {
+		alert("数据访问出现异常错误: status code is " + xhr.status + "网址为" + ajaxurl);
+	}
+
+	if(!post) {
+		xhr.open("GET", ajaxurl, true);
+	} else {
+		xhr.open("POST", ajaxurl, true);
+	}
+	xhr.setRequestHeader("Content-Type", "application/json");
+	if(!post) {
+		xhr.send();
+	} else {
+		xhr.send(post);
+
+	}
+}

@@ -1,0 +1,44 @@
+@charset "utf-8";
+/* CSS Document */
+/*===============css基本===================*/
+* { margin: 0px auto; padding: 0px; }
+body {margin: 0px auto; padding: 0px; font-size:14px;  line-height:150%;}
+div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td { margin: 0; padding: 0; }
+table { border-collapse: collapse; border-spacing: 0px; }
+abbr, acronym, fieldset, img { border: 0px; }
+address, caption, cite, code, dfn, em, strong, th, var { font-style: normal; font-weight: normal; }
+h1, h2, h3, h4, h5, h6 { font-size: 100%; font-weight: bold; }
+ol, ul { list-style: none; }
+li { list-style: none; }
+caption, th { text-align: left; }
+q:before, q:after { content: ''; }
+.clear { clear: both; height:0; font-size: 1px; line-height: 0px; }
+input { vertical-align: middle; }
+.clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.clearfix { display: inline-block; clear: both; }
+*html .clearfix { height: 1%; }
+.clearfix { display: block; }
+
+/*双语切换*/
+.language {position: absolute;right:10px;top:50px;}
+.language a {padding:5px}
+.language a.active{color:#b01f24}
+
+.width1800{margin:0px auto; padding:30px 0px;width:1800px;}
+.width1800 img{float: left;vertical-align: middle;}
+.width1800 h1{font-size:36px; float:left;line-height:50px;}
+
+.content{background: url(../img/login_bg.png) no-repeat center;width: 100%;height:680px;padding-top:120px;}
+.login{background:#fff; width:480px;height:550px;border-radius: 5px;float: right;  margin-right:240px;}
+.login a {text-decoration:none; outline: 0 none;}
+.btn{background: #b01f24; width:280px;height:50px;border-radius:25px;color: #fff;text-align: center;line-height:50px;font-size:20px;margin:0px auto; margin-top:40px;}
+
+.login_cont h2{font-size:28px;line-height:50px;text-align: center;}
+.login_cont{width:380px;margin:100px auto;}
+.login_cont input{width:320px; height:50px; border:1px solid #b01f24; font-size:16px;color:#a7aeb8;line-height:50px; padding-left:60px;outline:none;border-radius:25px;margin-top:40px;}
+.login_cont input placeholder{color:#ccc;}
+.input01{background: url(../img/user.png) no-repeat;}
+.input02{background: url(../img/clock.png) no-repeat;}
+.footer{width:100%;text-align:center; padding:40px 0px;}
+.footer img{ vertical-align:middle;}
+.footer p{color:#313131;padding-top:20px;}

@@ -1,0 +1,27 @@
+package com.xlqx.znyz.screen.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xlqx.znyz.screen.bean.FieldDeviceMessageBean;
+
+/**
+ * 栏位设备Service
+ * 
+ * @author wangshoujian
+ *
+ */
+public interface FieldDeviceService {
+
+	/**
+	 * 根据设备Id查询具体的数据信息 其他接口都需要查询的
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月15日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public List<FieldDeviceMessageBean> getFieldDeviceMessagePage(Map<String, Object> parameter);
+
+}

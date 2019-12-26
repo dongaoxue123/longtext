@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>饲喂标准</title>
+    <script src="js/flexible.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+   
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+	
+	<div class="main" style="overflow-x: auto; overflow-y: auto; height:700px;width:500px;">
+		<!--<h3 class="p_standard">2018年3月开始执行</h3>-->
+		
+		<table border="1" cellspacing="0" cellpadding="0" class="standard_table" id="feedStandard">
+			<tr><th colspan="2" style="width: 30%;">生产阶段</th><th style="width: 10%;">料型</th><th style="width: 15%;">料量</th><th style="width: 10%;">次数</th><th style="width: 35%;">备注</th></tr>
+			<!--<tr><td rowspan="2">断奶配种</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>添加葡萄糖</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种1-35天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种36-90天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种91-112天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>配种91-112天</td><td></td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>-->
+		</table>
+		
+	</div>
+	
+</body>
+<script>
+	var authToken = '';
+	var pigsNumber=''
+	var farmId = '';
+	$(document).ready(function() {
+		// 取得authToken
+		authToken = localStorage.getItem('authToken');
+		var user = localStorage.getItem('user');
+		farmId = JSON.parse(user).farmId;
+		if (authToken.length = 0) {
+			alert("请重新登录");
+			window.top.location.href = 'wxlogin.html';
+			return false;
+		}
+		getFeedStandardList();
+	});
+	function getFeedStandardList(){
+		$.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/feedstandard/getFeedStandardList',
+			contentType: 'application/json',
+			data: 'authToken=' + authToken + '&farmId='+farmId,
+			dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			success: function(data) {
+				console.log(data)
+				if (data) {
+					if (data.errcode == 200) {
+						var result = "";
+						for(var key in data.dataSource.list){
+							var stageId = data.dataSource.list[key].stageId;//生产阶段ID
+							var stageName = data.dataSource.list[key].stageName;//配种阶段名称
+							var pigTypeName = data.dataSource.list[key].pigTypeName;//猪只类型
+							var feedType = data.dataSource.list[key].feedType;//饲料类型
+							var feedAmount = data.dataSource.list[key].feedAmount;//料量
+							var numberTimes = data.dataSource.list[key].numberTimes;//次数
+							var remark = data.dataSource.list[key].remark;//备注
+							result = result + '<tr><td rowspan="">'+stageName+'</td><td>'+pigTypeName+'</td><td>'+feedType+'</td><td>'+feedAmount+'KG</td><td>'+numberTimes+'次</td><td>'+remark+'</td></tr>';
+						}
+						$('#feedStandard').append(result);
+					} else if (data.errcode == "10005") {
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			},
+			error: function(err) {
+	
+			}
+		})
+	}
+</script>
+</html>

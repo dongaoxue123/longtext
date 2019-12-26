@@ -1,0 +1,75 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图首页猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FarmFarmColumnsBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 显示表头（序号、猪场名称等列名）
+	private String name;
+	// 绑定的字段名
+	private String id;
+	// 单位
+	private String unit;
+	// 列中蚊子对齐方式
+	private String textAlign;
+	// 表头颜色
+	private String headerBgColor;
+	// 是否自动换行
+	private Boolean autoWrap;	
+	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getUnit() {
+		return unit;
+	}
+	public void setUnit(String unit) {
+		this.unit = unit;
+	}
+	public String getTextAlign() {
+		return textAlign;
+	}
+	public void setTextAlign(String textAlign) {
+		this.textAlign = textAlign;
+	}
+	public String getHeaderBgColor() {
+		return headerBgColor;
+	}
+	public void setHeaderBgColor(String headerBgColor) {
+		this.headerBgColor = headerBgColor;
+	}
+	public Boolean getAutoWrap() {
+		return autoWrap;
+	}
+	public void setAutoWrap(Boolean autoWrap) {
+		this.autoWrap = autoWrap;
+	}
+	public String getWidth() {
+		return width;
+	}
+	public void setWidth(String width) {
+		this.width = width;
+	}
+	// 列宽度
+	private String width;	
+	
+	
+
+}

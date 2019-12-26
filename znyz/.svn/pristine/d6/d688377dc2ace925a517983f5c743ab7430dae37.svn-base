@@ -1,0 +1,234 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+	<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="common.houseName"></label>
+            <div class="layui-input-inline">
+                <select id="house_id" name="house_id" style="height: 38px;border-color: #F0F0F0;" lay-verify="required|house_id">
+		        	<option value="" data-i18n="field.houseOptionDefault"></option>
+		    	</select>
+            </div>
+            <label class="layui-form-label layui-required" data-i18n="common.fieldType"></label>
+            <div class="layui-input-inline">
+                <select id="type" name="type" style="height: 38px;border-color: #F0F0F0;" lay-verify="required|type">
+		        	<option value="" data-i18n="field.typeOptionDefault"></option>
+		        	<option value="00026" data-i18n="field.typeOptionBig"></option>
+		        	<option value="00027" data-i18n="field.typeOptionSmall"></option>
+		        	<option value="00028" data-i18n="field.typeOptionLimit"></option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required"   data-i18n="common.fieldCode"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="code" autocomplete="off"  name="code"  data-i18n="[placeholder]common.numberText"  maxlength="5" oninput = "value=value.replace(/[^\d]/g,'')" lay-verify="required|code" class="layui-input">
+            </div>
+        </div>
+        <div>
+        	<label class="layui-form-label" data-i18n="common.remark"></label>
+            <div class="layui-input-block" style="width: 490px">
+                <textarea id="remark" name="remark" autocomplete="off"  data-i18n="[placeholder]common.remarkText" class="layui-textarea" maxlength="100"></textarea>
+            </div>	
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var farmId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 	var groupId;
+    var farmId;
+    groupId = JSON.parse(user).groupId;
+    farmId = JSON.parse(user).farmId;
+    i18n('../../locales', onLangReady) //国际化
+    function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+
+		if(!checkToken()){
+  			alert(i18next.t("timeout"));
+ 			window.top.location.href = '../../login.html';
+		}
+		farmId = JSON.parse(user).farmId; 
+		
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#bornDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#enterDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+        
+        //获取栋舍下拉列表
+	   	$.ajax({
+	        url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&page=0&limit=0&farmId='+ farmId,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+	            }
+	            $("#house_id").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	    }
+	    }); 
+	    
+        //监听提交
+        if(userId == null)//添加
+		{
+	        form.on('submit(submit)', function(res){
+			
+			if(confirm("请您确认信息无误？")){		
+				var code = res.field.code;
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+         type: 'POST',
+				url: commonIP + "api/pig/field/create?authToken="+authToken+"&groupid="+ groupId +"&farmid=" + farmId+"&Qcode=" + code,
+				contentType: 'application/json',
+				data: JSON.stringify(res.field),
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("addSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(dataObj.errmsg);
+						}
+					}
+				}
+             });
+			 }
+             return false;
+           });
+        }
+		else//编辑
+		{
+			form.on('submit(submit)', function(res){
+				console.log(res);
+					console.log(res.field);
+				//alert(res.Field.id);
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/field/update?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"id":userId,
+						"group_id":groupId,
+						"farm_id":farmId,
+						"house_id":res.field.house_id,
+						"code":res.field.code,
+						"type":res.field.type,
+						"remark":res.field.remark
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("updateSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(dataObj.errmsg);
+						}
+					}
+				}
+             });
+             return false;
+           });
+		}
+        function BindUpdateList(){
+		    if(userId != null)//编辑
+		    {
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/field/getFieldListPage?authToken='+authToken+'&page=0&limit=0&id='+userId,
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					console.log(datas);
+					if (datas.errcode == 200) {
+						//赋值
+                        $("#house_id").val(datas.dataSource.list[0].house_id);
+                        $("#type").val(datas.dataSource.list[0].type);
+						form.render('select');
+
+						$("#code").val(datas.dataSource.list[0].code);
+						$("#remark").val(datas.dataSource.list[0].remark);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		    }
+        }
+    });
+    
+	}
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+	/**
+	 * 编辑功能赋值
+	 */
+	function BindData(userId) {
+
+	}
+
+</script>
+</body>
+</html>

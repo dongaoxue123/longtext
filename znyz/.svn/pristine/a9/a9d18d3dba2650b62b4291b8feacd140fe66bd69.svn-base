@@ -1,0 +1,36 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 猪场数量调用Bean再赋值给传回的固定格式
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FieldHogPigWeightBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 日期
+	private String date;
+	// 商品猪重量
+	private double weight;
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public double getWeight() {
+		return weight;
+	}
+
+	public void setWeight(double weight) {
+		this.weight = weight;
+	}
+
+}

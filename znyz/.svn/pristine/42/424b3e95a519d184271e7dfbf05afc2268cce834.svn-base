@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>商品猪体况详情</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+
+	</head>
+
+	<style>
+		.linkFontColor{
+			color: #0088CC!important;
+		}
+	</style>
+
+	<body>
+		<!-- <a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a> -->
+		<table class="layui-hide" id="pigInfoa" lay-filter="pigInfoa">
+			
+		</table>
+		<script type="text/html" id="tableWeightData">
+			 <a href='javascript:void(0)'>{{d.weightData}}</a>
+			 
+		</script>
+
+		<table class="layui-hide" id="pigInfo" lay-filter="pigInfo"></table>
+		<script type="text/html" id="tableWeightData">
+			<a href='javascript:void(0)'>{{d.weightData}}</a>
+		</script>
+
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<!-- echarts-->
+		<script src="../basedata/echarts/echarts.js"></script>
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<!--code-->
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			
+			var pigsArchivesId = GetQueryString("pigsArchivesId");
+			
+			//猪只类型
+			var pigTypeName = GetQueryString("pigTypeName");
+			//生产状态
+			var productionStatusName = GetQueryString("productionStatusName");
+			//猪只编号
+			var pigsNumber = GetQueryString("pigsNumber");
+			//胎次
+			var parity = GetQueryString("parity");
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				//alert(pigsArchivesId);
+				if (!checkToken()) {
+					alert(i18next.t("timeout"));
+					window.top.location.href = '../../login.html';
+				}
+				farmId = JSON.parse(user).farmId;
+				groupId = JSON.parse(user).groupId;
+
+				layui.use(['form', 'table', 'laydate'], function() {
+					var table = layui.table;
+					var form = layui.form;
+					var laydate = layui.laydate;
+					var $ = layui.$;
+					console.log(commonIP + "api/pig/production/getListPage?authToken=" + authToken + "&farmId=" + farmId)					
+					//方法级渲染
+					table.render({
+						elem: '#pigInfo',
+						url: commonIP + "api/pig/production/getListPage?authToken=" + authToken +
+							"&pigs_archives_id=00000000000000008cbce1ac3574e66d&pageNum=1&pageSize=10" //+ '&page=0&limit=0' //数据请求路径 
+							,
+						parseData: function(res) { //res 即为原始返回的数据
+							//console.log(res)
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+							};
+						},
+						cellMinWidth: 80,
+						cols: [
+							[{
+									// field: 'houseName',
+									type: 'numbers',
+									width: '2%'
+								}, {
+									field: 'cycles_tatus',
+									title: i18next.t("周期状态"), // '周期状态',
+									width: '7%',
+									templet: "<div>{{d.cycles_tatus}}</div>"
+								}, {
+									field: 'production_status_name',
+									title: i18next.t("生产状态"), //'生产状态',
+									width: '7%',									
+									templet: "<div>{{d.production_status_name}}</div>"
+								}, {
+									field: 'start_time',
+									title: i18next.t("状态日期"), //'状态日期',
+									width: '7%',
+									templet: "<div>{{d.start_time}}</div>"
+								}, {
+									field: 'mating_date',
+									title: i18next.t("配种日期"), //'配种日期',
+									width: '7%',
+									templet: "<div>{{d.mating_date}}</div>"
+								}, {
+									field: 'pigFartherName1',
+									title: i18next.t("配种公猪1"), //'配种公猪',
+									width: '7%',
+									templet: "<div>{{d.pigFartherName1}}</div>"
+									
+								}, {
+									field: 'pigFartherName2',
+									title: i18next.t("配种公猪2"), //'配种公猪',
+									width: '7%',
+									templet: "<div>{{d.pigFartherName2}}</div>"
+								}, {
+									field: 'pigFartherName3',
+									title: i18next.t("配种公猪3"), //'配种公猪',
+									width: '7%',
+									templet: "<div>{{d.pigFartherName3}}</div>"
+
+
+								}, {
+									field: 'alive_number',
+									title: i18next.t("活仔"), //'活仔',
+									width: '7%',
+									templet: "<div>{{d.alive_number}}</div>"
+
+
+								}, {
+									field: 'healthy_number',
+									title: i18next.t("健仔"), //'健仔数量',
+									width: '7%',
+									templet: "<div>{{d.healthy_number}}</div>"
+
+
+								}, {
+									field: 'weak_number',
+									title: i18next.t("弱仔"), //'弱仔数量',
+									width: '7%',
+									templet: "<div>{{d.weak_number}}</div>"
+
+
+								}, {
+									field: 'deformities',
+									title: i18next.t("畸形"), //'畸形数量',
+									width: '7%',
+									templet: "<div>{{d.deformities}}</div>"
+
+
+								}, {
+									field: 'stillbirths',
+									title: i18next.t("死胎"), //死胎数量
+									width: '7%',
+									align: 'center',
+									templet: "<div>{{d.stillbirths}}</div>"
+
+								}, {
+									field: 'mummified_fetuses',
+									title: i18next.t("木乃伊"), //'木乃伊数量',
+									width: '7%',
+									templet: "<div>{{d.mummified_fetuses}}</div>"
+								}, {
+									field: 'weaning_date',
+									title: i18next.t("断奶日期"), //'断奶日期',
+									width: '7%',
+									templet: "<div>{{d.weaning_date}}</div>"
+								}
+
+							]
+						],
+						even: true //开启隔行背景
+							,
+						page: true //开启分页
+							,
+						limit: 10 //默认十条数据一页
+							,
+						limits: [10, 20, 30, 50] //数据分页条
+							,
+						id: 'testReload',
+						done: function(res) {
+							//console.log(res)
+						}
+
+					});
+					
+					table.render({
+						elem: '#pigInfoa',
+						url: commonIP + "api/pig/bodyinformation/getListPage?authToken=" + authToken + "&farmId=" + farmId //+ '&page=0&limit=0' //数据请求路径 
+							,
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+							};
+						},
+						cellMinWidth: 80,
+						cols: [
+							[ {
+								field: 'pigTypeName',
+								title: i18next.t("common.pigType"),
+								templet: "<div>{{d.pigTypeName}}</div>",//'猪只类别',
+								width: '7%'
+							}, {
+								field: 'pigsNumber',
+								title: i18next.t("common.pigNumber"),
+								templet: "<div>{{pigsNumber}}</div>",//'猪只编号',
+								width: '7%'
+							}, {
+								field: 'parity',
+								title: i18next.t("common.fetalTimes"),
+								 templet: "<div>{{parity}}</div>",//'猪只胎次',
+								width: '7%'
+							}, {
+								field: 'productionStatusName',
+								title: i18next.t("common.pregnancyState"),
+								templet: "<div>{{d.productionStatusName}}</div>",//'生产状态',
+								width: '7%'
+							}]
+						],
+						even: true //开启隔行背景
+							,
+						page: false //开启分页
+							,
+						limit: 1//默认十条数据一页
+							,
+						limits: [10, 20, 30, 50] //数据分页条
+							,
+						id: 'testReload',
+						done:function(res){
+							console.log(res)
+						}
+						
+					});
+
+
+
+				
+
+					//监听工具条
+					table.on('tool(pigInfo)', function(obj) {
+						var data = obj.data;
+						if (obj.event === 'showChart') {
+							var index = layer.open({
+								type: 2,
+								content: "pigCharts.html?id=" + data.pigsArchivesId + "&houseId=" + data.houseId + "&pigsNumber=" + data.pigsNumber,
+								area: ['1200px', '680px'],
+								maxmin: false
+							});
+						} else if (obj.event === 'showOestrus') {
+							if (data.isOestrus) {
+								var oestrus = layer.open({
+									type: 2,
+									content: "pigOestrus.html?isOestrus=" + (data.isOestrus === '未发情' ? 0 : 1),
+									area: ['800px', '650px'],
+									maxmin: false
+								});
+							}
+						} else if (obj.event === 'showFeedAmount') {
+							var index = layer.open({
+								type: 2,
+								content: "feedAmount.html?id=" + data.pigsArchivesId + '&val=' + data.feedingCapacity,
+								area: ['800px', '650px'],
+								maxmin: false
+							});
+						} else if (obj.event === 'showFeedDetail') {
+							var index = layer.open({
+								type: 2,
+								content: "pigFeedDetail.html?id=" + data.pigsArchivesId + '&weight=' + data.weightData + '&parity=' +
+									data.parity,
+								area: ['1200px', '680px'],
+								maxmin: false
+							});
+						} else if (obj.event === 'edit') {
+							var index = layer.open({
+								type: 2,
+								content: "addHouseInfo.html?id=" + data.id,
+								area: ['800px', '600px'],
+								maxmin: true
+							});
+						}
+						if (obj.event === 'feedDetaila') {
+							let paramWeight = data.weightData || '50.0'
+							var index = layer.open({
+								type: 2,
+								content: "pigsFeedDetail.html?id=" + data.pigsArchivesId + '&weight=' + paramWeight + '&fieldId=' + data.fieldId,
+								area: ['1200px', '680px'],
+								maxmin: true
+							});
+						}
+
+					});
+					
+
+
+
+					var active = {
+						reload: function() {
+							//执行重载
+							table.reload('testReload', {
+								page: {
+									curr: 1 //重新从第 1 页开始
+								},
+								where: {
+									houseId: $("#houseId").val(),
+									pigsNumber: $("#code").val(),
+									isOestrus: $("#oestrus").val(),
+									productionStatusId: $("#status").val()
+								}
+							});
+						},
+					};
+
+					$('#search').on('click', function() {
+						active['reload'].call(this);
+					});
+					$('#reset').on('click', function() {
+						$('#houseId').val("");
+						$('#code').val("");
+					});
+				});
+			}
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/common.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body  style="height:100%;">
+	
+		<main>
+			<div id="wxUser" class="weight_list bg_lightblue flex">
+				<div class="msg_corner">
+					<a href="#">账号信息</a>
+				</div>
+			</div>
+			
+			<div class="main weight_list">
+				<ul class="set_list">
+					<li><a href="#"><span class="iconfont icon-jiantou1"></span>数据导入扫码登录</a></li>
+					<li><a href="#"><span class="iconfont icon-jiantou1"></span>客服支持</a></li>
+					<li><a href="#"><span class="iconfont icon-jiantou1"></span>帮助文档</a></li>
+					<li><a onclick="location='userSet.html'"><span class="iconfont icon-jiantou1"></span>个人设置</a></li>
+				</ul>
+			</div>
+			<div class="footer">
+				<ul>
+					<li id="backfatFooter" onclick="location='fieldList.html'"><span class="iconfont icon-weibiaoti1"></span><h5>测膘</h5></li>
+					<li id="countFooter" onclick="location='count.html'"><span class="iconfont icon-pig"></span><h5>统计</h5></li>
+					<li id="setFooter" onclick="location='set.html'" class="active"><span class="iconfont icon-shezhi"></span><h5>配置</h5></li>
+				</ul>
+			</div>
+		</main>
+		<script language="javascript">
+			$(document).ready(function () {
+				var authToken = localStorage.getItem('authToken');// 取得authToken
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				var user = localStorage.getItem('user');
+				var userName = JSON.parse(user).name;
+				var farmId = JSON.parse(user).farmId;
+				var farmName = JSON.parse(user).farmName;
+	        	var wxUser = localStorage.getItem('wxUser');
+	        	var roleName = localStorage.getItem('roleName');
+				var province = '';
+				var city = '';
+				var imgUrl = '';
+				if(wxUser!=null){
+					province = JSON.parse(wxUser).province;
+					city = JSON.parse(wxUser).city;
+					imgUrl = JSON.parse(wxUser).headimgurl;
+				}
+				var count = 0;
+				// 取得user信息
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/weight/getPigCountByStatus',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&farm_id=' + farmId,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data.errcode == 200) {
+							for (var key in data.dataSource.list) {
+								count = count + data.dataSource.list[key].count;
+							}
+				        	var result ='<ul class="weight_msg user_msg msg">'+
+				        					'<li><img src="'+imgUrl+'"/></li>'+
+				        					'<li><h4>'+userName+'</br><span>'+roleName+'</span></h4></li>'+
+				        				'</ul>'+
+				        				'<ul class="weight_msg">'+
+				        					'<li>'+farmName+'</li>'+
+				        					'<li>地址：'+province+' '+city+'</li>'+
+				        					'<li>母猪存栏：'+count+'头</li>'+
+				        				'</ul>';
+				        	$("#wxUser").append(result);
+						} else {
+							alert(data.errmsg);
+							if (data.errcode == "10005") {
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				});
+				
+	        });
+			function setCurDate(){
+				var ndate = getCurDate();					
+				var divT=document.getElementById("logInfo");
+				divT.innerHTML= ndate;
+			}
+//			setInterval("setCurDate()",1000);
+		</script>
+</body>
+</html>

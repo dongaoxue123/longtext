@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="keywords" content="智能养殖">
+<title>login</title>
+ <link rel="stylesheet" href="statics/plugins/layui/css/layui.css" media="all" />
+<!-- <link rel="stylesheet" type="text/css" href="statics/css/login.css"> -->
+<link rel="stylesheet" type="text/css" href="statics/css/style.css">
+</head>
+<body>
+<!--<video class="video-player" preload="auto" autoplay="autoplay" loop="loop" data-height="1080" data-width="1920" height="1080" width="1920">
+    <source src="statics/login/login.mp4" type="video/mp4"></video>
+<div class="video_mask"></div>-->
+ <!-- head -->
+<!-- <div class="width1800">
+      <img  src="statics/img/logo.png"><h1 data-i18n="login.systemName"></h1>
+      <div class="clear"></div>
+</div> -->
+
+ <!-- 内容 -->
+<div class="bg">
+	<img src="statics/img/bg.jpg" width="100%" />
+	<div class="logo">
+		<img src="statics/img/logo_03.png" width="100%" />
+	</div>
+	<div class="log_in">
+        <div class="log_title">登录</div>
+           
+           
+            	<div class="log_input">
+					<div class="mark"><img src="statics/img/shanghao_03.png" /></div>
+					<div class="input"><input type="text" id="username" name="username"  lay-verify="required"  lay-verType="tips" autocomplete="off" data-i18n="[placeholder]login.username" placeholder="请输入您的用户名" /> </div>
+	        		
+		        </div>
+        		<div class="log_input">
+					<div class="mark"><img src="statics/img/mima_03.png" /></div>
+					<div class="input"><input type="password" id="password" name="password" value="" lay-verify="required"  lay-verType="tips" autocomplete="off" 
+	                        data-i18n="[placeholder]login.password" placeholder="请输入您的密码" /> </div>
+		        	
+			    </div>
+			    <div class="log_input">
+					<div class="mark"><img src="statics/img/xiala_03.png" /></div>
+					<div class="input">
+	    	 		<select id="roleID" name="roleID" lay-verify="required|roleID" style="">
+			        	<option value=""  data-i18n="login.selectRole"></option>
+			    	</select>
+					</div>
+			 	</div>
+			    <a href="javascript:void(0)"><div class="btn" lay-submit="" lay-filter="login" data-i18n="login.btn"></div></a>
+		    
+        
+	</div>
+</div>
+
+ <!-- 底部 -->
+ <div class="footer">
+	 <p><span data-i18n="login.footerCom"></span><span><img src="statics/img/icon_foot.png"></span><span data-i18n="login.footerRecord"></span></p>
+ </div>
+ <script type="text/javascript" src="statics/plugins/layui/layui.js"></script>
+<script type="text/javascript" src="js/login.js"></script>
+<script type="text/javascript" src="js/common.js"  charset="utf-8"></script>
+<!-- 国际化        -->
+<script src="statics/plugins/i18n/i18next.min.js"></script> 
+<script src="statics/plugins/i18n/i18nextXHRBackend.min.js"></script> 
+<script src='statics/plugins/i18n/loc-i18next.min.js'></script>
+</body>
+</html>

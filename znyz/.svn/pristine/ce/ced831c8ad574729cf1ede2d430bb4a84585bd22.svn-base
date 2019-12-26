@@ -1,0 +1,4 @@
+<!--index.wxml-->
+<view class="container">
+  <web-view src="https://zzx.yooojooo.com/workspace-phone/wxlogin.html"></web-view>
+</view>

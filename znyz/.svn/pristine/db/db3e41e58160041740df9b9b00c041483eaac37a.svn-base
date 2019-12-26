@@ -1,0 +1,28 @@
+package com.xlqx.znyz.screen.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xlqx.znyz.screen.bean.FieldHogWeightRowsBean;
+
+/**
+ * 栏位重量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+public interface FieldHogWeightDao {
+
+
+	/**
+	 * 查询栏位重量
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月12日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public List<FieldHogWeightRowsBean> getList(Map<String, Object> parameter);
+
+}

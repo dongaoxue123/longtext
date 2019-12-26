@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xlqx.znyz.screen.mapper.ScreenNumberMapper">
+
+	<!-- 根据日期查询测重记录 -->
+	<select id="getList" parameterType="map"
+		resultType="com.xlqx.znyz.screen.bean.ScreenNumberBean">
+			SELECT
+				date,
+				pig_number AS pigNumber,
+				hog_number AS hogNumber,
+				device_number AS deviceNumber
+			FROM
+				t_screen_number
+	</select>
+	
+</mapper>

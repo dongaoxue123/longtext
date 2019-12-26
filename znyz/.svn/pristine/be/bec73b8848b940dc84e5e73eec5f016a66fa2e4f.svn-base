@@ -1,0 +1,516 @@
+<html>
+
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script language="JavaScript" type="text/javascript">
+			function clearNoNum(obj) {
+				//修复第一个字符是小数点 的情况.
+				if(obj.value != '' && obj.value.substr(0, 1) == '.') {
+					obj.value = "";
+				}
+				obj.value = obj.value.replace(/^0*(0\.|[1-9])/, '$1'); //解决 粘贴不生效
+				obj.value = obj.value.replace(/[^\d.]/g, ""); //清除“数字”和“.”以外的字符
+				obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的     
+				obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+				obj.value = obj.value.replace(/^(\-)*(\d+)\.(\d).*$/, '$1$2.$3'); //只能输入一个小数     
+				if(obj.value.indexOf(".") < 0 && obj.value != "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+					if(obj.value.substr(0, 1) == '0' && obj.value.length == 2) {
+						obj.value = obj.value.substr(1, obj.value.length);
+						0
+					}
+				}
+			}
+		</script>
+	</head>
+
+	<body>
+		<div class="layui-field-box">
+			<form class="layui-form">
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="common.houseName">栋舍名称</label>
+					<div class="layui-input-inline">
+						<select id="houseId" name="houseId" lay-verify="required|houseId" lay-filter="houseId" style="height: 38px;border-color: #F0F0F0;">
+						</select>
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="common.fieldCode">栏位编号</label>
+					<div class="layui-input-inline">
+						<select id="code" name="code" lay-verify="required|code" lay-filter="code" style="height: 38px;border-color: #F0F0F0;">
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="changeField.pigBatchCode">商品猪批次编号</label>
+					<div class="layui-input-inline">
+						<input type="text" id="oldHogBatchCode" autocomplete="off" name="oldHogBatchCode" class="layui-input" disabled>
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="转栏日期"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="changeBatchFieldTime" autocomplete="off" data-i18n="[placeholder]转栏日期" name="changeBatchFieldTime" lay-verify="required|changeBatchFieldTime" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="批次正常猪只数量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="oldQualifiedNumber" autocomplete="off" name="oldQualifiedNumber" data-i18n="[placeholder]changeField.batchQualifiedNumber" class="layui-input" disabled>
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="批次异常猪只数量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="oldDefectiveNumber" autocomplete="off" name="oldDefectiveNumber" data-i18n="[placeholder]changeField.batchDefectiveNumber" class="layui-input" disabled>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="changeField.changeToHouse"></label>
+					<div class="layui-input-inline">
+						<select id="newHouseId" name="newHouseId" lay-verify="required|newHouseId" lay-filter="newHouseId" style="height: 38px;border-color: #F0F0F0;">
+						</select>
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="changeField.changeToField"></label>
+					<div class="layui-input-inline">
+						<select id="newFieldId" name="newFieldId" lay-verify="required|newFieldId" lay-filter="newFieldId" style="height: 38px;border-color: #F0F0F0;">
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="changeField.changeToBatchCode"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="newHogBatchCode" autocomplete="off" name="newHogBatchCode" data-i18n="[placeholder]changeField.changeToBatchCode" lay-verify="required|newHogBatchCode" class="layui-input" disabled>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="转入正常猪只数量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="qualifiedNumber" maxlength='3' oninput="value=value.replace(/[^\d]/g,'')" autocomplete="off" name="qualifiedNumber" data-i18n="[placeholder]填写数字,最大长度3位" lay-verify="required|qualifiedNumber" class="layui-input">
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="转入异常猪只数量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="defectiveNumber" maxlength='3' oninput="value=value.replace(/[^\d]/g,'')" autocomplete="off" name="defectiveNumber" data-i18n="[placeholder]填写数字,最大长度3位" lay-verify="required|defectiveNumber" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="批次正常猪只重量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="qualifiedWeight" autocomplete="off " maxlength='5' lay-verify="required|qualifiedWeight" name="qualifiedWeight" onkeyup="clearNoNum(this)" data-i18n="[placeholder]转出猪总重,小数一位,长度5" class="layui-input">
+					</div>
+					<label class="layui-form-label layui-required" style="width: 110px;" data-i18n="批次异常猪只重量"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="defectiveWeight" autocomplete="off" maxlength='5' lay-verify="required|defectiveWeight" name="defectiveWeight" onkeyup="clearNoNum(this)" data-i18n="[placeholder]转出猪总重,小数一位,长度5" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label" style="width: 110px;" data-i18n="common.remark"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="remark" autocomplete="off" name="remark" data-i18n="[placeholder]common.remarkText" class="layui-input" maxlength="100">
+					</div>
+				</div>
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							<button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				//alert(authToken);
+				var user = localStorage.getItem("user");
+				var userId = "";
+				var farmId = "";
+				var batchCode = "";
+				var OutBatchUid = "";
+				var OutBatchId = "";
+				var InBatchUid = "";
+				var InBatchId = "";
+				var ingoodNumber = "";
+				var inbadNumber = "";
+				layui.use(['form', 'laydate'], function() {
+					var form = layui.form;
+					var $ = layui.$;
+					var laydate = layui.laydate;
+
+					//				
+					//				//校验数值
+					//				$("#qualifiedWeight").change(function() {
+					//					var minBack = $("#qualifiedWeight").val();
+					//					if(minBack <= 0) {
+					//						//alert(1);
+					//						var warnMessage = "请录入大于0的数，小数点最大一位";
+					//						alert(warnMessage);
+					//					} else {
+					//						if(/^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,1})?$/.test(minBack)) {
+					//							return true;
+					//						} else {
+					//							var warnMessage = "请录入大于0的数，小数点最大一位";
+					//							alert(warnMessage);
+					//						}
+					//				
+					//					}
+					//				});
+
+					//校验数值
+					//				$("#defectiveWeight").change(function() {
+					//					var minBack = $("#defectiveWeight").val();
+					//					if(minBack <= 0) {
+					//						//alert(1);
+					//						var warnMessage = "请录入大于0的数，小数点最大一位";
+					//						alert(warnMessage);
+					//					} else {
+					//						if(/^(?!0+(?:\.0+)?$)(?:[1-9]\d*|0)(?:\.\d{1,1})?$/.test(minBack)) {
+					//							return true;
+					//						} else {
+					//							var warnMessage = "请录入大于0的数，小数点最大一位";
+					//							alert(warnMessage);
+					//						}
+					//				
+					//					}
+					//				});
+
+					if(!checkToken()) {
+						alert(i18next.t("timeout"));
+						window.top.location.href = '../../login.html';
+					}
+					groupId = JSON.parse(user).groupId;
+					farmId = JSON.parse(user).farmId;
+					userId = JSON.parse(user).userId;
+
+					$("#qualifiedNumber").change(function() {
+						var qualifiedNumber = $("#qualifiedNumber").val();
+						var oldQualifiedNumber = $("#oldQualifiedNumber").val();
+						if(parseInt(qualifiedNumber) > parseInt(oldQualifiedNumber)) {
+							alert("必须小于等于批次正常猪只数量");
+						}
+					});
+
+					$("#defectiveNumber").change(function() {
+						var defectiveNumber = $("#defectiveNumber").val();
+						var oldDefectiveNumber = $("#oldDefectiveNumber").val();
+						if(parseInt(defectiveNumber) > parseInt(oldDefectiveNumber)) {
+							alert("必须小于等于批次异常猪只数量");
+						}
+					});
+
+					//创建时间 日期控件
+					laydate.render({
+						elem: '#changeBatchFieldTime' //指定元素
+							,
+						theme: 'molv',
+						calendar: true //重要节日
+					});
+
+					var id = GetQueryString("id"); //userId为空表示新增，否则是修改
+					if(id != null && id != '') {
+						$.ajax({
+							type: "GET",
+							url: commonIP + 'api/pig/changebatchfield/getListPage?authToken=' + authToken + '&id=' + id,
+							async: false,
+							contentType: 'application/json',
+							success: function(data) {
+								var datas = JSON.parse(data);
+								console.log(datas);
+								if(datas.errcode == 200) {
+									//赋值
+									groupId = datas.dataSource.list[0].groupId;
+								} else {
+									alert(data.errmsg);
+									if(data.errcode == "10005") {
+										window.top.location.href = '../../login.html';
+									}
+								}
+							}
+						});
+					}
+
+					//转出
+					//绑定栋舍
+					$.ajax({
+						url: commonIP + 'api/system/house/getHouseListPage?authToken=' + authToken + "&farmId=" + farmId + "&type=00059",
+						async: false,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if(dataObj != null && dataObj.dataSource.list.length > 0) {
+								var groupOption;
+								for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+									groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+								}
+								$("#houseId").append(groupOption);
+								form.render('select'); //一定要加form.render();
+								BindCode();
+							}
+						}
+					});
+					form.on('select(houseId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						/**改变集团后先清空猪场下拉值*/
+						document.getElementById("code").options.length = 0;
+						BindCode();
+					});
+					//绑定栏位编码
+					function BindCode() {
+						var houseId = $('#houseId').val();
+						//alert(houseId);
+						$.ajax({
+							url: commonIP + 'api/pig/field/getFieldListPage?type=00026&authToken=' + authToken + "&house_id=" + houseId + "&isHogUse=1",
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								console.log(dataObj)
+								if (dataObj.errcode == 10016) {
+									return
+								} else {
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									var groupOption;
+									for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].code + '</option>';
+									}
+									$("#code").append(groupOption);
+									form.render('select'); //一定要加form.render();
+									BindHogBatch();
+								}}
+							}
+						});
+					}
+
+					form.on('select(code)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						BindHogBatch();
+					});
+
+					//绑定批次
+					function BindHogBatch() {
+						var fieldId = $('#code').val();
+						$.ajax({
+							url: commonIP + 'api/pig/pigbatchfield/getListPage?authToken=' + authToken + '&page=0&limit=0&farmId=' + farmId + '&fieldId=' + fieldId,
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									$("#oldHogBatchCode").val(dataObj.dataSource.list[0].batchCode);
+									$("#oldQualifiedNumber").val(dataObj.dataSource.list[0].goodCapacity);
+									$("#oldDefectiveNumber").val(dataObj.dataSource.list[0].badCapacity);
+									OutBatchId = dataObj.dataSource.list[0].batchId;
+									OutBatchUid = dataObj.dataSource.list[0].uid;
+								}
+							}
+						});
+					}
+
+					//转入
+					//绑定栋舍
+					$.ajax({
+						url: commonIP + 'api/system/house/getHouseListPage?authToken=' + authToken + "&farmId=" + farmId + "&type=00059",
+						async: false,
+						success: function(res) {
+							var dataObj = JSON.parse(res);
+							if(dataObj != null && dataObj.dataSource.list.length > 0) {
+								var groupOption;
+								for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+									groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].name + '</option>';
+								}
+								$("#newHouseId").append(groupOption);
+								form.render('select'); //一定要加form.render();
+								BindInCode();
+							}
+						}
+					});
+					form.on('select(newHouseId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						/**改变集团后先清空猪场下拉值*/
+						document.getElementById("newFieldId").options.length = 0;
+						BindInCode();
+					});
+					//绑定栏位编码
+					function BindInCode() {
+						var newHouseId = $('#newHouseId').val();
+						$.ajax({
+							url: commonIP + 'api/pig/field/getFieldListPage?type=00026&authToken=' + authToken + "&house_id=" + newHouseId + "&isHogUse=1",
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if (dataObj.errcode == 10016) {
+									return
+								} else {
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									var groupOption;
+									for(var i = 0; i < dataObj.dataSource.list.length; i++) {
+										groupOption = groupOption + '<option value="' + dataObj.dataSource.list[i].id + '">' + dataObj.dataSource.list[i].code + '</option>';
+									}
+									$("#newFieldId").append(groupOption);
+									form.render('select'); //一定要加form.render();
+									BindInHogBatch();
+								}}
+							}
+						});
+					}
+					form.on('select(newFieldId)', function(data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+						BindInHogBatch();
+
+					});
+
+					//绑定批次
+					function BindInHogBatch() {
+						var newFieldId = $('#newFieldId').val();
+						$.ajax({
+							url: commonIP + 'api/pig/pigbatchfield/getListPage?authToken=' + authToken + '&page=0&limit=0&farmId=' + farmId + '&fieldId=' + newFieldId,
+							async: false,
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								if(dataObj != null && dataObj.dataSource.list.length > 0) {
+									$("#newHogBatchCode").val(dataObj.dataSource.list[0].batchCode);
+									InBatchId = dataObj.dataSource.list[0].batchId;
+									InBatchUid = dataObj.dataSource.list[0].uid;
+									ingoodNumber = dataObj.dataSource.list[0].goodCapacity;
+									inbadNumber = dataObj.dataSource.list[0].badCapacity;
+									//alert(ingoodNumber);
+									//alert(inbadNumber);
+								}
+							}
+						});
+					}
+
+					//监听提交
+					if(id == null) //添加
+					{
+
+						form.on('submit(submit)', function(res) {
+							var qualifiedNumber = $("#qualifiedNumber").val();
+							var oldQualifiedNumber = $("#oldQualifiedNumber").val();
+							//	alert(qualifiedNumber);
+							//	alert(oldQualifiedNumber);
+
+							if(parseInt(qualifiedNumber) > parseInt(oldQualifiedNumber)) {
+								alert("必须小于等于批次正常猪只数量");
+								return false;
+							}
+							var defectiveNumber = $("#defectiveNumber").val();
+							var oldDefectiveNumber = $("#oldDefectiveNumber").val();
+
+							if(parseInt(defectiveNumber) > parseInt(oldDefectiveNumber)) {
+								alert("必须小于等于批次异常猪只数量");
+								return false;
+							}
+							var a = $("#code").val();
+							var b = $("#newFieldId").val();
+							if(a == b) {
+								alert("相同的栏位不能进行商品猪转栏操作！");
+								return false;
+							}
+
+							if(confirm("请您确认信息无误？")) {
+
+								//layer.msg(JSON.stringify(res.field));
+								//转出栏位剩余数量
+								var goodNumber = parseInt(res.field.oldQualifiedNumber) - parseInt(res.field.qualifiedNumber);
+								var badNumber = parseInt(res.field.oldDefectiveNumber) - parseInt(res.field.defectiveNumber);
+								//转入栏位后剩余数量
+								var newgoodNumber = parseInt(ingoodNumber) + parseInt(res.field.qualifiedNumber);
+								var newbadNumber = parseInt(inbadNumber) + parseInt(res.field.defectiveNumber);
+
+								var houseId = $('#houseId').val();
+								$.ajax({
+									type: 'POST',
+									url: commonIP + "api/pig/changebatchfield/create?authToken=" + authToken + '&InBatchUid=' + InBatchUid + '&OutBatchUid=' + OutBatchUid + '&goodNumber=' + goodNumber + '&badNumber=' + badNumber + '&ingoodNumber=' + newgoodNumber + '&inbadNumber=' + newbadNumber,
+									async: false,
+									contentType: 'application/json',
+									data: JSON.stringify({
+										"groupId": groupId,
+										"farmId": farmId,
+										"oldHouseId": res.field.houseId,
+										"oldFieldId": res.field.code,
+										"oldHogBatchId": OutBatchId,
+										"newHouseId": res.field.newHouseId,
+										"newFieldId": res.field.newFieldId,
+										"newHogBatchId": InBatchId,
+										"changeBatchFieldTime": res.field.changeBatchFieldTime,
+										"qualifiedNumber": res.field.qualifiedNumber,
+										"defectiveNumber": res.field.defectiveNumber,
+										"qualifiedWeight": res.field.qualifiedWeight,
+										"defectiveWeight": res.field.defectiveWeight,
+										"operatorId": userId,
+										"createUser": userId,
+										"remark": res.field.remark
+									}),
+									async: false,
+									success: function(data) {
+										var dataObj = JSON.parse(data);
+										if(dataObj) {
+											if(dataObj.errcode == "200") {
+												alert(i18next.t("addSucc"));
+												layer.close(layer.index);
+												window.parent.location.reload();
+											} else {
+												alert(i18next.t("addFailed"));
+											}
+										}
+									}
+								});
+
+							}
+							return false;
+						});
+					} else //编辑
+					{
+						form.on('submit(submit)', function(res) {
+							var houseId = $('#houseId').val();
+							$.ajax({
+								type: 'POST',
+								url: commonIP + "api/pig/pigbatchfield/updatePigBatchField?authToken=" + authToken,
+								async: false,
+								contentType: 'application/json',
+								data: JSON.stringify({
+									"uid": id,
+									"houseId": houseId,
+									"batchId": res.field.batchId,
+									//"batchStatus": res.field.batchStatus,
+									"fieldId": res.field.rfId,
+									"badCapacity": res.field.badCapacity,
+									"startTime": res.field.startTime,
+									"endTime": res.field.endTime,
+									"goodCapacity": res.field.goodCapacity,
+									"remark": res.field.remark,
+									"userid": userId
+								}),
+								async: false,
+								success: function(data) {
+									var dataObj = JSON.parse(data);
+									if(dataObj) {
+										if(dataObj.errcode == "200") {
+											alert(i18next.t("updateSucc"));
+											layer.close(layer.index);
+											window.parent.location.reload();
+										} else {
+											alert(i18next.t("updateFailed"));
+										}
+									}
+								}
+							});
+						});
+					}
+				});
+			}
+
+			function GetQueryString(name) {
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+				var r = window.location.search.substr(1).match(reg);
+				if(r != null) return unescape(r[2]);
+				return null;
+			}
+		</script>
+	</body>
+
+</html>

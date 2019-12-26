@@ -1,0 +1,54 @@
+package com.xlqx.znyz.screen.dao.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.github.pagehelper.PageHelper;
+import com.xlqx.znyz.core.constant.PaginationContext;
+import com.xlqx.znyz.core.dao.BaseDaoImpl;
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+import com.xlqx.znyz.screen.dao.ScreenNumberDao;
+
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+@Service("screenNumberDaoImpl")
+public class ScreenNumberDaoImpl extends BaseDaoImpl<ScreenNumberBean> implements ScreenNumberDao  {
+	
+	private final Logger logger = LoggerFactory.getLogger(ScreenNumberDaoImpl.class);
+	
+	private final String namespace = "com.xlqx.znyz.screen.mapper.ScreenNumberMapper.";
+
+	private String sqlId(String method) {
+		return namespace + method;
+	}
+	
+	/**
+	 * 查询猪只数量列表（分页）
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月10日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+
+	@Override
+	public List<ScreenNumberBean> getList(Map<String, Object> paramMap) {
+		logger.info("screenNumberDaoImpl ==> getList()");
+		if (PaginationContext.getPageNum() != 0 && PaginationContext.getPageSize() != 0) {
+			PageHelper.startPage(PaginationContext.getPageNum(), PaginationContext.getPageSize());
+		}
+		return getWriteSession().selectList(sqlId("getList"), paramMap);
+	}
+	
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+     http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+     http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd
+     http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+	<context:property-placeholder
+		location="classpath:dubbo.properties,classpath:massage.properties" />
+		<!-- 应用配置，用于配置当前应用信息，不管该应用是提供者还是消费 -->
+	<dubbo:application name="dubbo_pig"></dubbo:application>
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+	<dubbo:registry address="${zookeeper.url}"></dubbo:registry>
+	<!-- 用dubbo协议在20890端口暴露服务 -->
+	<dubbo:protocol name="dubbo" charset="UTF-8" serialization="java" port="${service.dubbo.port}" />
+	<!-- 超时时间 -->
+	<dubbo:consumer timeout="60000" retries="0" />
+
+	<!-- 要引用的服务 -->
+	<dubbo:reference interface="com.xlqx.znyz.system.service.HouseService" id="houseServiceImpl" check="false" url="${sys.dubbo.url}"></dubbo:reference>
+	<dubbo:reference interface="com.xlqx.znyz.system.service.FarmService" id="farmServiceImpl" check="false" url="${sys.dubbo.url}"></dubbo:reference>
+	<dubbo:reference interface="com.xlqx.znyz.pig.service.FieldService" id="fieldServiceImpl" check="false" url="${pig.dubbo.url}"></dubbo:reference>
+	<dubbo:reference interface="com.xlqx.znyz.pig.service.WeightService" id="weightServiceImpl" check="false" url="${pig.dubbo.url}"></dubbo:reference>
+	<dubbo:reference interface="com.xlqx.znyz.pig.service.HogBatchService" id="hogBatchServiceImpl" check="false" url="${pig.dubbo.url}"></dubbo:reference>
+
+	<dubbo:reference interface="com.xlqx.znyz.pig.service.HogWeightDayService" id="hogWeightDayServiceImpl" check="false" url="${pig.dubbo.url}"></dubbo:reference>
+
+	<!-- 根据注解将需要管理的bean自动扫描到ioc中，将切面类也加上相应的注解 -->
+   <!-- <context:component-scan base-package="com.xlqx.znyz.pig.service.impl"></context:component-scan> -->
+    <!-- 开启基于注解的aop功能 -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	
+</beans>

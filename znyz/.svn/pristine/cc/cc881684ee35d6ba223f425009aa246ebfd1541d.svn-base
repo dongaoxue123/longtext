@@ -1,0 +1,125 @@
+<!doctype html>
+<html style="height: 100%;color:#333333;background: #fff;">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+		<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+		<meta name="format-detection" content="telephone=no" />
+		<!--告诉设备忽略将页面中的数字识别为电话号码-->
+		<meta content="false" name="twcClient" id="twcClient" />
+		<!--判断页面是否在本地Native（本地APP）环境中-->
+		<title>查看用户信息</title>
+		<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+	</head>
+
+	<body style="height:100%;">
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="location='user.html'"></span>
+		</header>
+		<main>
+
+			<div class="addlist">
+				<ul>
+					<li>
+						<span id = "farmId">猪场</span>
+					</li>
+					<li>
+						<span>用户名</span>
+						<input type="text" name="name" id="name" value="" placeholder="用户名" readonly="readonly"/>
+					</li>
+					<li>
+						<span>登录名</span>
+						<input type="text" name="loginName" id="loginName" value="" placeholder="登录名" readonly="readonly"/>
+					</li>
+					<li>
+						<span>电话号码</span>
+						<input type="number" name="phone" id="phone" value="" placeholder="电话号码" readonly="readonly"/>
+					</li>
+					<li>
+						<span>邮箱</span>
+						<input type="text" name="mail" id="mail" value="" placeholder="邮箱" readonly="readonly"/>
+					</li>
+				</ul>
+			</div>
+			<div class="btn">
+				<input type="submit" name="save" id="save" onclick="goBack()" value="返回" />
+			</div>
+		</main>
+		<script type="text/javascript">
+			var authToken;
+			var user;
+			var id;
+			$(document).ready(function() {
+				// 取得authToken
+				authToken = localStorage.getItem('authToken');
+				setInit();
+				$("#setFooter").addClass("active");
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				user = localStorage.getItem('user');
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				$.ajax({
+					type: "GET",
+					url: commonIP + "/api/system/farm/getListPage?authToken="+authToken+'&id='+farmId+'&page=0&limit=0',
+					contentType: 'application/json',
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					async:true,
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {
+								$('#farmId').html(data.dataSource.list[0].name);
+							}
+						}
+					}
+				});
+				id = getUrlParam("id");
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/system/user/get?authToken='+authToken+'&id='+id+'&page=0&limit=0',
+					contentType: 'application/json',
+					success: function(data) {
+						var data = JSON.parse(data);
+						if (data.errcode == 200) {
+							//赋值
+							$('#groupId').val(data.dataSource.list[0].groupId);
+							$('#farmId').val(data.dataSource.list[0].farmId);
+							$('#name').val(data.dataSource.list[0].name);
+							$('#loginName').val(data.dataSource.list[0].loginName);
+//								$('#passWord').val(data.dataSource.list[0].password);//密码不带出，直接修改为新密码
+							$('#phone').val(data.dataSource.list[0].phone);
+							$('#mail').val(data.dataSource.list[0].mail);
+						} else {
+							alert(data.errmsg);
+							if(data.errcode=="10005"){
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				});
+			});
+			function clear(){
+				$('#name').val(null);
+				$('#loginName').val(null);
+				$('#passWord').val(null);
+				$('#phone').val(null);
+				$('#mail').val(null);
+			}
+		</script>
+	</body>
+
+</html>

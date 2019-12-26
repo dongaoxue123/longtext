@@ -1,0 +1,31 @@
+{
+	"menuList": [
+		{
+			"children": null,
+			"icon": "fa fa-table",
+			"list": [
+				{
+					"children": null,
+					"icon": "fa fa-table",
+					"list": null,
+					"name": "种猪数据仿真模块管理",
+					"type": 1,
+					"url": "page/dataSimulation/pigSimulation.html",
+					"menuID": "1"
+				} , {
+					"children": null,
+					"icon": "fa fa-table",
+					"list": null,
+					"name": "商品猪猪数据仿真模块管理",
+					"type": 1,
+					"url": "page/dataSimulation/hogBatchSimulation.html",
+					"menuID": "2"
+				}
+			],
+			"name": "数据仿真模块管理",
+			"type": 0,
+			"url": null
+		}
+	],
+	"code": 0
+}

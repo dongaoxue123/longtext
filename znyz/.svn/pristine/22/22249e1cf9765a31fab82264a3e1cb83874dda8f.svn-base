@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>守望者设备详细信息</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		  <link href="http://vjs.zencdn.net/5.5.3/video-js.css" rel="stylesheet">  
+		  <script src="http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js"></script>
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../js/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../js//ezuikit.js"></script>
+	<body>
+	    <div style="margin-left: 10px;font-size: 18px;margin-top: 5px;">
+			<tr>
+				<td id="code" style="font-size: 18px;">
+					设备编号：
+					<label id="lbl1" ></label>
+				</td>
+			</tr>
+		</div>
+		<button class="layui-btn" title='切换模式' id="change" style='height:88px;float: left;;margin: 10px 20px 0;'>手动模式</button>
+		<div id="butClick" style='margin:10px;display: none;'>	
+			<button  class="layui-btn" title='向前采集' id="foreward">向前</button>
+			<button   class="layui-btn" title='暂停采集' id="pause">暂停</button>
+			<button   class="layui-btn" title='向后采集' id="backward">向后</button>
+		</div>
+		<div id="noneClick" style='margin:10px;'>	
+			<div style="background: #d6d9de;" class="layui-btn" title='向前采集' id="foreward1">向前</div>
+			<div style="background: #d6d9de;" class="layui-btn" title='暂停采集' id="pause1">暂停</div>
+			<div style="background: #d6d9de;" class="layui-btn" title='向后采集' id="backward1">向后</div>
+		</div>
+		<button class="layui-btn" title='切换模式' id="changeAuto" style='height:88px;float:right;margin: -50px 15px 0;'>自动模式</button>
+
+		<div id="goClick"  style='margin-left:10px; display: none;'>
+		<button  class="layui-btn " title='前进不采集' id="go">前进</button>
+		<button  class="layui-btn" title='停止行进' id="stop">停止</button>
+		<button class="layui-btn" title='后退不采集' id="back">后退</button>
+		</div>
+		<div id="doneClick"  style='margin-left:10px;'>
+			<div style="background: #d6d9de;" class="layui-btn " title='前进不采集' id="go1">前进</div>
+			<div style="background: #d6d9de;" class="layui-btn" title='停止行进' id="stop1">停止</div>
+			<div style="background: #d6d9de;" class="layui-btn" title='后退不采集' id="back1">后退</div>
+		</div>
+		
+		<!--<div style="margin: 10px;">
+		  <button class="layui-btn" id="openDeepCamera">开启深度摄像头直播</button>
+		  <button class="layui-btn" id="closeDeepCamera">关闭深度摄像头直播</button>
+		</div>-->
+	
+		<!--<div style="margin: 10px;">
+		  <button class="layui-btn" id="startUploadPicture">开始上传图片</button>
+		  <button class="layui-btn" id="endUploadPicture">停止上传图片</button>
+		</div>-->
+		<table class="layui-hide" id="deviceInfo" lay-filter="deviceInfo"></table>
+		<div id="video-box" style='margin:10px;'>
+		    <!-- <video class="video-js" controls preload="auto" width="770" height="330" data-setup="{}">  
+			    <source src="">
+			 </video>  
+			 <script src="http://vjs.zencdn.net/5.5.3/video.js"></script> -->
+			 <video id="myPlayer" autoplay src="" width="770px" height="330px" controls playsInline webkit-playsinline>
+			</video>
+       </div>
+       <!--<div id="video-box" style='margin:10px;'>
+        <video id="myPlayer" src="" width="750" height="400" poster="[这里可以填入封面图片URL]" controls playsInline webkit-playsinline [autoplay]>
+        	<source src="" type="" />
+		</video>
+		</div>-->
+		<div style="margin: 10px; float: left;">
+			<button class="layui-btn" id="open">开启直播</button>
+			<button class="layui-btn" id="close">关闭直播</button>
+		  </div>
+		<button style="float: right;margin-right: 20px;margin-top: 10px;" class="layui-btn"  id="canel">返回</button>
+		<script>
+			//var player = new EZUIPlayer('myPlayer');
+			var videoUrlArray = new Array(); 
+		    var myDiv = document.getElementById("butClick");
+			$(document).ready(function() {
+			 selectRetInfo();
+		     //setInterval("selectRetInfo()", 1000*5);//5秒查询一次设备状态
+		     initVideo();
+			//  initDisabled(true)
+	       });
+		//    function initDisabled(val){
+		// 	    $('#foreward').attr('disabled',val)
+		// 		$('#pause').attr('disabled',val)
+		// 		$('#backward').attr('disabled',val)
+		// 		$('#go').attr('disabled',val)
+		// 		$('#stop').attr('disabled',val)
+		// 		$('#back').attr('disabled',val)
+				
+		// 		$('#foreward').css('background-color',val?'#f5f5f5':'#009688')
+		// 		$('#foreward').css('color',val?'#aca899':'#fff')
+		// 		$('#pause').css('background-color',val?'#f5f5f5':'#009688')
+		// 		$('#backward').css('background-color',val?'#f5f5f5':'#009688')
+		// 		$('#go').css('background-color',val?'#f5f5f5':'#4682B4')
+		// 		$('#stop').css('background-color',val?'#f5f5f5':'#4682B4')
+		// 		$('#back').css('background-color',val?'#f5f5f5':'#4682B4')
+		// 		$('#pause').css('color',val?'#aca899':'#fff')
+		// 		$('#backward').css('color',val?'#aca899':'#fff')
+		// 		$('#go').css('color',val?'#aca899':'#fff')
+		// 		$('#stop').css('color',val?'#aca899':'#fff')
+		// 		$('#back').css('color',val?'#aca899':'#fff')
+				
+		// 		$('#foreward').css('cursor',val?'no-drop':'pointer')
+		// 		$('#pause').css('cursor',val?'no-drop':'pointer')
+		// 		$('#backward').css('cursor',val?'no-drop':'pointer')
+		// 		$('#go').css('cursor',val?'no-drop':'pointer')
+		// 		$('#stop').css('cursor',val?'no-drop':'pointer')
+		// 		$('#back').css('cursor',val?'no-drop':'pointer')
+		//    }
+	        function selectRetInfo() { 	
+				$("#lbl1").text(GetQueryString("code"));
+				$('#butClick').css('display','none')
+				$('#goClick').css('display','none')
+			}
+	        
+	        function initVideo(){
+	        	var code = GetQueryString("code");
+	
+                $.ajax({
+					type: "GET",
+					url: commonIP + 'api/screen/video/getVideoUrl?deviceCode='+code,
+					contentType: 'application/json',
+					data: 'authToken=' + authToken,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					async:false,
+					success: function(data) {
+                       var src = data.dataSource.list[0].deviceVideoUrl;
+                       console.log(data.dataSource.list)
+					    //src = 'rtmp://121.36.138.160:1935/live/' + code;
+						//src = 'rtmp://rtmp01open.ys7.com/openlive/9cee8ceb58154c6386d74401df21678b'
+					p=0;
+					for (a = 0; a < data.dataSource.list; a++) {
+						var videoYAdress = res.data[a].videoYAdress;
+						if (videoYAdress != null & videoYAdress != '') {
+							//p让数组从0开始装值
+							videoUrlArray[p++] = videoYAdress;
+						}
+					}
+					console.log("结果:" +videoUrlArray.length);
+					
+					//构建直播的切换按钮以及点击事件
+					setVideoUrl()
+					//     sourceDom = $("<source src=\""+ src +"\"> ");
+					// $("#video-box video").append(sourceDom);
+					// $("#video-box").show();
+				   
+					// var playPromise = $("#video-box video")[0].play()
+					// if (playPromise) {
+					// playPromise.then(() => {
+					//     // 加载成功
+					//     // 播放需要耗时
+					//     setTimeout(() => {
+					//         // 后续操作
+					//         console.log("done.");
+					//     }, audio.duration * 1000); // audio.duration 为音频的时长单位为秒
+					// }).catch((e) => {
+					//     // 加载失败
+					//        });
+	                // }
+                    //document.getElementById("myPlayer").autoplay="autoplay";
+
+					}
+				});
+			}
+			var urlButton = '';
+			//设置直播视频以及切换的按钮
+			function setVideoUrl() {
+				
+				for (c = 0; c < videoUrlArray.length; c++) {
+					var videoUrl = videoUrlArray[c];
+					// 	alert(videoUrl);
+					if (videoUrl != null && videoUrl != '') {
+						// alert(videoUrl);
+						urlButton = urlButton + "<button class='layui-btn'  onClick='onClickVideo(" + c + ")' >" + (c+1) + "</button>";
+					}
+				}
+				//初始化直播,获取第一个直播地址,开始直播
+				var initUrl = videoUrlArray[0];
+				$('#myPlayer').attr("src", initUrl);
+				player = new EZUIKit.EZUIPlayer('myPlayer');
+				// 播放
+				player.play();
+
+				$("#videoButton").html(urlButton);
+			}
+			//按钮的点击事件
+			onClickVideo = function(c) {
+				var url = videoUrlArray[c];
+				switchVideo(url, c)
+			}
+			//切换直播的的方法
+			function switchVideo(url, c) {
+				//初始化判断
+				var src = $('#myPlayer').attr("src");
+				if (src != 'undefined') {
+					//videoLabel
+					player.stop();
+					//重新构建直播的html
+					var htmlVideo = '<video id="' + c +'" autoplay src="" width="770px"	height="330px"	controls	playsInline 	webkit-playsinline  >  </video>'
+					$('#videoLabel').html(htmlVideo)
+					//给新构建的直播html设置直播地址
+					$('#' + c).attr("src", url);
+					player = new EZUIKit.EZUIPlayer("" + c);
+					// temp = c;
+				}
+
+			}
+		</script>
+		<script type="text/javascript">
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			
+
+			
+			if(!checkToken()) {
+				alert("登录超时，请重新登录！");
+				window.top.location.href = '../../login.html';
+			}
+
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+
+				var player; //直播对象
+				//定时刷新表格
+				/*timer = setInterval(function(){tableReload()}, 6000)
+				function tableReload(){
+					table.reload("testReload")
+				}*/
+				
+				//表格列转换
+				function parseCol(data){
+					let aDatas = new Array()
+					for(let key in data){
+						aDatas.push({name: key, value: data[key]})
+					}
+					return aDatas;
+				}
+				
+				//发送命令
+				function sendOrder(control, collection) {
+		
+					let param = getOrderParam(control, collection)
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="' +  param + '"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					});
+				}
+				// $('#foreward').attr('disabled',val)
+
+				//发送手动切换命令
+				function sendChange() {
+					$('#butClick').css('display','block')
+					$('#noneClick').css('display','none')
+					$('#goClick').css('display','block')
+					$('#doneClick').css('display','none')
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="change"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					})
+				}
+				//发送自动切换命令
+				function sendChangeAuto() {
+					$('#butClick').css('display','none')
+					$('#noneClick').css('display','block')
+					$('#goClick').css('display','none')
+					$('#doneClick').css('display','block')
+	
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="changeAuto"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					})
+				}
+				//发送开启直播
+				function sendOpen() {
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="open"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					});
+				}
+				//发送关闭直播
+				function sendClose() {
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="close"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					});
+				}
+				//发送上传命令
+				function sendUploadOrder(control) {
+					$.ajax({
+						url: commonIP + 'api/xlqx/fanout/fanoutSendMsg?msg="' +  control + '"&code="'+ GetQueryString("code") +'"',
+						parseData: function(res) { //res 即为原始返回的数据
+							return {
+								"code": res.code, //解析接口状态
+								"msg": res.msg, //解析提示文本
+								"count": res.count, //解析数据长度
+								"data": res.dataSource.list //解析数据列表
+							};
+						},
+						success: function(res) {
+						}
+					});
+				}
+				
+				function getOrderParam(control, collection){
+					return 'code:' + GetQueryString("code") + ',control:' + control + ',collection:' + collection;
+				}
+				// 返回
+				$('#canel').on('click', function() {
+					// var canel = $('#butClick').css('display','none')
+			        if(myDiv.style.display =='block'){
+						alert("返回时请设置为自动模式");
+					} else {
+						console.log(1230)
+						layer.close(layer.index);  
+		                        window.parent.location.reload(); 
+					}
+				});
+				//向前
+				$('#foreward').on('click', function() {
+					console.log(12343534543)
+					let YN = confirm('是否发送向前采集指令？')
+					if(YN){
+						sendOrder(0, 1);
+					}
+				});
+				//暂停
+				$('#pause').on('click', function() {
+					let YN = confirm('是否发送暂停采集指令？')
+					if(YN){
+						sendOrder(2, 1);
+					}
+				});
+				//向后
+				$('#backward').on('click', function() {
+					let YN = confirm('是否发送向后采集指令？')
+					if(YN){
+						sendOrder(1, 1);
+					}
+				});
+				//切换模式
+				$('#change').on('click', function() {
+					let YN = confirm('是否发送切换手动模式指令？')
+					if(YN){
+						sendChange();
+					}
+				});
+				$('#changeAuto').on('click', function() {
+					let YN = confirm('是否发送切换自动模式指令？')
+					if(YN){
+						sendChangeAuto();
+					}
+				});
+				//前进
+				$('#go').on('click', function() {
+					let YN = confirm('是否发送前进指令？')
+					if(YN){
+						sendOrder(0, 0);
+					}
+				});
+				//停止
+				$('#stop').on('click', function() {
+					let YN = confirm('是否发送停止指令？')
+					if(YN){
+						sendOrder(2, 0);
+					}
+				});
+				//后退
+				$('#back').on('click', function() {
+					let YN = confirm('是否发送后退指令？')
+					if(YN){
+						sendOrder(1, 0);
+					}
+				});
+				//开始上传图片
+				$('#startUploadPicture').on('click', function() {
+					let YN = confirm('是否开始上传指令？')
+					if(YN){
+						sendUploadOrder("start");
+					}
+				});
+				//停止上传图片
+				$('#endUploadPicture').on('click', function() {
+					let YN = confirm('是否结束上传指令？')
+					if(YN){
+						sendUploadOrder("end");
+					}
+				});
+				//开启直播
+				$('#open').on('click', function() {
+					let YN = confirm('是否发送开启直播指令？')
+					if(YN){
+						sendOpen();
+					}
+				});
+				//关闭直播
+				$('#close').on('click', function() {
+					let YN = confirm('是否发送关闭直播指令？')
+					if(YN){
+						sendClose();
+					}
+				});
+			})
+		</script>
+		
+	</body>
+
+</html>

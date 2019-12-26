@@ -1,0 +1,148 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.xlqx.znyz.core.screendatasourcebean.FarmSourceDataBean;
+import com.xlqx.znyz.core.screendatasourcebean.MapDataSource;
+import com.xlqx.znyz.core.screendatasourcebean.MapSourceDataBean;
+import com.xlqx.znyz.screen.bean.FarmFarmRowsBean;
+import com.xlqx.znyz.screen.bean.MapFarmBean;
+import com.xlqx.znyz.system.bean.FarmBean;
+import com.xlqx.znyz.system.service.FarmService;
+
+/**
+ * 猪场Controller
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/mapfarm")
+public class MapFarmController {
+	private final Logger logger = LoggerFactory.getLogger(MapFarmController.class);
+
+	@Autowired
+	private FarmService farmServiceImpl;
+
+	@RequestMapping(value = "/getListPage", method = RequestMethod.POST)
+	public MapSourceDataBean<MapFarmBean> getListPage() {
+		logger.info("MapFarmController==>getListPage()");
+		MapSourceDataBean<MapFarmBean> sdb = new MapSourceDataBean<MapFarmBean>();
+		Map<String, Object> parameter = new HashMap<String, Object>();
+
+		List<FarmBean> farmBeanRes = farmServiceImpl.getFarmListPage(parameter, "0", "0");
+		List<FarmFarmRowsBean> farmFarmRowsBeanList = new ArrayList();
+
+		List<MapFarmBean> res = new ArrayList();
+		// 循环结果 坐标
+		if (farmBeanRes.size() > 0) {
+			for (FarmBean farmBean : farmBeanRes) {
+				MapFarmBean mapFarmBean = new MapFarmBean();
+				mapFarmBean.setName(farmBean.getName());
+				mapFarmBean.setValue(6920);
+				mapFarmBean.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+				String[] aa = new String[] { farmBean.getCity() };
+				mapFarmBean.setTooltipValues(aa);
+				String check = farmBean.getLongitude();
+				if (check == "" || check == null || check.equals("") || check.equals(null)) {
+				} else {
+					double[] coordinate = new double[] { Double.valueOf(farmBean.getLongitude()),
+							Double.valueOf(farmBean.getLatitude()), };
+					mapFarmBean.setCoord(coordinate);
+					res.add(mapFarmBean);
+				}
+
+			}
+		}
+
+//		MapFarmBean MapFarmBean1 = new MapFarmBean();
+//		String[] aa = new String[] { "北京" };
+//		MapFarmBean1.setName("丰宁猪场");
+//		MapFarmBean1.setValue(6920);
+//		MapFarmBean1.setTooltipValues(aa);
+//		MapFarmBean1.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean1.setCoord(new double[] { 116.41989, 40.189913 });
+//		res.add(MapFarmBean1);
+//
+//		MapFarmBean MapFarmBean2 = new MapFarmBean();
+//		MapFarmBean2.setName("丰源猪场");
+//		MapFarmBean2.setValue(2);
+//		MapFarmBean2.setTooltipValues(new String[] { "广东" });
+//		MapFarmBean2.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean2.setCoord(new double[] { 113.429877, 23.334664 });
+//		res.add(MapFarmBean2);
+//
+//		MapFarmBean MapFarmBean3 = new MapFarmBean();
+//		MapFarmBean3.setName("全部猪场");
+//		MapFarmBean3.setValue(2);
+//		MapFarmBean3.setTooltipValues(new String[] { "全部" });
+//		MapFarmBean3.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean3.setCoord(new double[] { 113.429877, 22.334664 });
+//		res.add(MapFarmBean3);
+//
+//		MapFarmBean MapFarmBean4 = new MapFarmBean();
+//		MapFarmBean4.setName("山东曹县牧原六分场");
+//		MapFarmBean4.setValue(2);
+//		MapFarmBean4.setTooltipValues(new String[] { "曹县" });
+//		MapFarmBean4.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//
+//		MapFarmBean4.setCoord(new double[] { 34.98, 115.28 });
+//		res.add(MapFarmBean4);
+//
+//		MapFarmBean MapFarmBean5 = new MapFarmBean();
+//		MapFarmBean5.setName("江园原种猪场");
+//		MapFarmBean5.setValue(2);
+//		MapFarmBean5.setTooltipValues(new String[] { "南阳市" });
+//		MapFarmBean5.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean5.setCoord(new double[] { 33.04, 111.94 });
+//		res.add(MapFarmBean5);
+//
+//		MapFarmBean MapFarmBean6 = new MapFarmBean();
+//		MapFarmBean6.setName("石龙坪种猪场");
+//		MapFarmBean6.setValue(2);
+//		MapFarmBean6.setTooltipValues(new String[] { "重庆市" });
+//		MapFarmBean6.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean6.setCoord(new double[] { 31.118, 109.969 });
+//		res.add(MapFarmBean6);
+//
+//		MapFarmBean MapFarmBean7 = new MapFarmBean();
+//		MapFarmBean7.setName("佳和东湖塘种猪场");
+//		MapFarmBean7.setValue(2);
+//		MapFarmBean7.setTooltipValues(new String[] { "setUrl" });
+//		MapFarmBean7.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean7.setCoord(new double[] { 28.072, 112.601 });
+//		res.add(MapFarmBean7);
+//
+//		MapFarmBean MapFarmBean8 = new MapFarmBean();
+//		MapFarmBean8.setName("清远佳和宏光种猪场");
+//		MapFarmBean8.setValue(2);
+//		MapFarmBean8.setTooltipValues(new String[] { "清远市" });
+//		MapFarmBean8.setUrl("https://sugar.baidubce.com/dashboard/0c2d8ff61f0095c5152f4e90d41dbb47");
+//		MapFarmBean8.setCoord(new double[] { 23.745, 113.133 });
+//		res.add(MapFarmBean8);
+
+		if (res != null && res.size() > 0) {
+			sdb.setData(new MapDataSource<MapFarmBean>(res));
+			sdb.getData().setValueName("头数");
+			String[] bb = new String[] { "所在地" };
+			sdb.getData().setTooltipNames(bb);
+			sdb.setMessage(0, "查询成功");
+
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+
+		return sdb;
+
+	}
+}

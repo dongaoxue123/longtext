@@ -1,0 +1,388 @@
+<html>
+	<head>
+		<title>猪场设备监测</title>
+	</head>
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+
+		li {
+			list-style: none;
+		}
+
+		.clear {
+			clear: both;
+		}
+
+		.box-msg {
+			width: 100%;
+			margin-bottom: 10px;
+			display: block;
+		}
+
+		.box-msg-tit {
+			width: 100%;
+			line-height: 12px;
+			padding: 10px 0;
+		}
+
+		.box-msg-tit span {
+			display: inline-block;
+			width: 3px;
+			height: 12px;
+			background: #5db2ff;
+			margin-right: 4px;
+			border-radius: 40%;
+		}
+
+		.box-msg-tit h6 {
+			display: inline-block;
+			font-size: 12px;
+			font-weight: 600;
+			color: #5db2ff;
+			vertical-align: top;
+		}
+
+		.box-msg-con {
+			width: 100%;
+		}
+
+		.box-msg-list {
+			position: relative;
+			float: left;
+			width: 260px;
+			height: 90px;
+			padding: 20px 0;
+			background: #eff7ff;
+			border-radius: 6px;
+			box-shadow: 5px 5px 10px rgba(50, 50, 50, .09);
+			margin: 10px 26px 10px 0;
+		}
+
+		.box-msg-list .warn {
+			position: absolute;
+			right: 18px;
+			top: 15px;
+			display: none;
+		}
+
+		.box-msg-list h5 {
+			display: inline-block;
+			font-size: 16px;
+			font-weight: 400;
+			color: #1691cf;
+			width: 84px;
+			text-align: center;
+			line-height: 26px;
+		}
+
+		.box-msg-list li h5:first-of-type {
+			color: #d7361a;
+		}
+
+		.box-msg-list li h5:last-of-type {
+			color: #FFA500;
+		}
+
+		.box-msg-list p {
+			font-size: 14px;
+			text-indent: 16px;
+			margin-bottom: 26px;
+		}
+
+		.bg_red .box-msg-tit span {
+			background: #fb6e52;
+		}
+
+		.bg_red .box-msg-tit h6 {
+			color: #fb6e52;
+		}
+
+		.bg_red .box-msg-list {
+			background: #ffefec;
+		}
+
+		.bg_green .box-msg-tit span {
+			background: #a0d468;
+		}
+
+		.bg_green .box-msg-tit h6 {
+			color: #a0d468;
+		}
+
+		.bg_green .box-msg-list {
+			background: #f7ffef;
+		}
+
+		.bg_yellow .box-msg-tit span {
+			background: #ff8400;
+		}
+
+		.bg_yellow .box-msg-tit h6 {
+			color: #ffce55;
+		}
+
+		.bg_yellow .box-msg-list {
+			background: #fffbf0;
+		}
+	</style>
+	<meta name="description" content="设备监测" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
+	<!--Basic Styles-->
+	<!--		<link href="assets/css/bootstrap.min.css" rel="stylesheet" />-->
+	<link id="bootstrap-rtl-link" href="#" rel="stylesheet" />
+	<link href="assets/css/font-awesome.min.css" rel="stylesheet" />
+	<link href="assets/css/weather-icons.min.css" rel="stylesheet" />
+	<link href="assets/css/bootstrap-select/bootstrap-select.css" rel="stylesheet" />
+	<!--Beyond styles-->
+	<link id="beyond-link" href="assets/css/beyond.min.css" rel="stylesheet" />
+	<link href="assets/css/demo.min.css" rel="stylesheet" />
+	<link href="assets/css/typicons.min.css" rel="stylesheet" />
+	<link href="assets/css/animate.min.css" rel="stylesheet" />
+	<link id="skin-link" href="#" rel="stylesheet" type="text/css" />
+	<!--Page Related styles-->
+	<link href="assets/css/dataTables.bootstrap.css" rel="stylesheet" />
+	<!--Skin Script: Place this script in head to load scripts for skins and rtl support-->
+	<script src="assets/js/skins.min.js"></script>
+	<body>
+
+		<!-- Page Body -->
+		<div class="page-body">
+
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<div class="widget">
+						<div class="widget-header ">
+							<span class="widget-caption" data-i18n="pigFarmEnvironment.h1"></span>
+						</div>
+						<div class="widget-body">
+							<div class="table-toolbar">
+								<div class="row">
+
+									<div class="box-msg">
+										<div class="box-msg-tit">
+											<span></span>
+											<h6 data-i18n="house.gestationHouse"></h6>
+										</div>
+										<div class="box-msg-con">
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=')">
+												<!--'1629','714'-->
+												<p data-i18n="pigFarmEnvironment.pregnancy1"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5 data-i18n="pigFarmEnvironment.ammonia"></h5>
+													</li>
+												</ul>
+												<div class="warn">
+													<img src="photo/warn.png" />
+												</div>
+											</div>
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=')">
+												<p data-i18n="pigFarmEnvironment.pregnancy2"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=' )">
+												<p data-i18n="pigFarmEnvironment.pregnancy3"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=' )">
+												<p data-i18n="pigFarmEnvironment.pregnancy4"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+											
+												</ul>
+											</div>
+											<div class="clear"></div>
+										</div>
+									</div>
+									<div class="box-msg bg_red">
+										<div class="box-msg-tit ">
+											<span></span>
+											<h6 data-i18n="pigFarmEnvironment.hDelivery"></h6>
+										</div>
+										<div class="box-msg-con">
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=产房一舍' )">
+												<p data-i18n="pigFarmEnvironment.delivery1"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+										</div>
+										<div class="clear"></div>
+									</div>
+
+									<div class="box-msg bg_green">
+										<div class="box-msg-tit ">
+											<span></span>
+											<h6 data-i18n="house.nurseryHouse"></h6>
+										</div>
+										<div class="box-msg-con">
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=保育一舍' )">
+												<p data-i18n="pigFarmEnvironment.conservation1"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+										</div>
+										<div class="clear"></div>
+									</div>
+
+									<div class="box-msg bg_yellow">
+										<div class="box-msg-tit ">
+											<span></span>
+											<h6 data-i18n="house.finisherHouse"></h6>
+										</div>
+										<div class="box-msg-con">
+											<div class="box-msg-list" onclick="javascript:showHtml('pigFarmEnvironment1.html?name=育肥一舍' )">
+												<p data-i18n="pigFarmEnvironment.fattening1"></p>
+												<ul>
+													<li>
+														<h5>60%</h5>
+														<h5>24</h5>
+														<h5>4ppm</h5>
+													</li>
+													<li>
+														<h5 data-i18n="pigFarmEnvironment.humidity"></h5>
+														<h5 data-i18n="pigFarmEnvironment.temperature"></h5>
+														<h5>NH3</h5>
+													</li>
+												</ul>
+											</div>
+										</div>
+										<div class="clear"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- /Page Body -->
+			<!--Basic Scripts-->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/bootstrap.min.js"></script>
+			<script src="assets/js/slimscroll/jquery.slimscroll.min.js"></script>
+			<script src="assets/js/bootstrap-select/bootstrap-select.js"></script>
+
+			<!--	<link rel="stylesheet" type="text/css" href="http://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/css/bootstrap-select.css">  -->
+			<!--	<script type="text/javascript" src="http://cdn.bootcss.com/bootstrap-select/2.0.0-beta1/js/bootstrap-select.js"></script> -->
+
+			<!--Beyond Scripts-->
+			<script src="assets/js/beyond.min.js"></script>
+
+			<!--Page Related Scripts-->
+			<script src="assets/js/datatable/jquery.dataTables.min.js"></script>
+			<script src="assets/js/datatable/ZeroClipboard.js"></script>
+			<script src="assets/js/datatable/dataTables.tableTools.min.js"></script>
+			<script src="assets/js/datatable/dataTables.bootstrap.min.js"></script>
+			<script src="assets/js/datatable/datatables-init.js"></script>
+			<script type="text/javascript" src="../../js/common.js" charset="utf-8"></script>
+			<!-- 国际化        -->
+			<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+			<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+			<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+
+			<!--<script type="text/javascript" src="assets/js/qrcode/jquery.min.js"></script>-->
+			<script>
+				i18n('../../locales', onLangReady) //国际化
+				function onLangReady() {}
+
+				function openDiv() {
+					$('#Div').modal('show');
+				}
+
+				function showHtml(html, name) {
+					location.href = html;
+				}
+
+				function ShowWindow(url, width, height) {
+					$(".mywindow").remove();
+					var x = $(window).width() / 2 - 200;
+					var y = GetWthHei();
+
+					alert(x)
+					alert(y)
+					var Windowhtml = "<div class='mywindow' style=' position:absolute; left:" + 10 + "px;top:" + 10 +
+						"px; z-index:9999;'><iframe src='" + url + "' name='myiframe' id='myiframe' style='border:0px;width:" + width +
+						"px;height:" + height + "px;' frameborder='0' scrolling='no'></iframe></div>";
+					var dd = $(".mywindow");
+					$("body").append(Windowhtml);
+				}
+
+				function GetWthHei() {
+					var hei = 0;
+					var windhei = $(window).height(); //当前窗口高度  
+					var tophei = document.documentElement.scrollTop; //被滚动条隐藏的高度  
+					hei = tophei + windhei / 2 - 200;
+					return hei;
+				}
+				
+				
+				
+			</script>
+	</body>
+</html>

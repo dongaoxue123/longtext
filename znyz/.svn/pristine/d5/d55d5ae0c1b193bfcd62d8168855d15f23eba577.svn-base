@@ -1,0 +1,298 @@
+
+var authToken = localStorage.getItem('authToken');
+var user = localStorage.getItem('user');
+var houseId = '';
+var houseName = '';
+$(function() {
+	InitData();
+});
+
+function InitData() {
+	// 取得user信息
+	if (authToken.length = 0){
+		alert("请重新登录");
+		window.top.location.href = 'wxlogin.html';
+		return false;
+	}
+	setInit();
+	$("#houseListFooter").addClass("active");
+	houseId = getUrlParam('houseId');
+	houseName = getUrlParam('houseName');
+	switchKind(1);
+}
+function switchKind(kind){
+	switch(kind){
+		case 1:
+			$("#week_title_lists").empty();
+			$("#week_lists").empty();
+			$(".dropload-down").remove();
+			document.getElementById('weekDiv').style.display='block'
+			document.getElementById('li-week').className='active'
+			document.getElementById('monthDiv').style.display='none'
+			document.getElementById('li-month').className=''
+			getWeekData();
+			break;
+		case 2:
+			$("#month_title_lists").empty();
+			$("#month_lists").empty();
+			$(".dropload-down").remove();
+			document.getElementById('monthDiv').style.display='block'
+			document.getElementById('li-month').className='active'
+			document.getElementById('weekDiv').style.display='none'
+			document.getElementById('li-week').className=''
+			getMonthData();							
+			break;
+
+	}
+}
+function getWeekData(){
+	var groupId = JSON.parse(user).groupId;
+	var farmId = JSON.parse(user).farmId;
+    // 获得本周时间
+    var weekStartDate = getWeekStartDate();
+    var weekEndDate = getWeekEndDate();
+    //获取本周汇总数据
+    getWeekTotalData(authToken,houseId,weekStartDate,weekEndDate);
+	//获取本周数据列表
+	getWeekListData(authToken,houseId,weekStartDate,weekEndDate);
+}
+function getMonthData(){
+	var groupId = JSON.parse(user).groupId;
+	var farmId = JSON.parse(user).farmId;
+	 //获得本月时间
+    var monthStartDate= getMonthStartDate();     
+    var monthEndDate=getMonthEndDate();
+	//获取本月汇总数据
+	getMonthTotalData(authToken,houseId,monthStartDate,monthEndDate);
+	//获取本月数据列表
+	getMonthListData(authToken,houseId,monthStartDate,monthEndDate);
+}
+function getWeekTotalData(authToken,houseId,weekStartDate,weekEndDate){
+	var result = '';
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/feeding/getFeedingTotal',
+		data: 'authToken='+authToken+'&house_id='+houseId+'&start_date='+weekStartDate+'&end_date='+weekEndDate,
+		contentType: 'application/json',
+		dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data)
+			if (data) {
+				if (data.errcode == 200) {		
+			        for (var key in data.dataSource.list){
+			        	result = result+'<div id="weekTitle" class="divBox">'+
+			        		'<li style="font-size:20px;text-align:center;"><span>本周汇总记录('+houseName+')</span></li>'+
+			        		'<div class="dor2"><div><li style="font-size:20px;">'+weekStartDate+' 至  '+weekEndDate+'</li>'+
+			        		'<li style="font-size:20px;">'+houseName+' 饲喂汇总：</li>';
+			        	var feeding_total = data.dataSource.list[key].feeding_total;
+			        	var arr = feeding_total.split(";");
+			        	for(var i=0;i<arr.length-1;i++){
+			        		result = result +'<li style="font-size:20px;">'+arr[i]+'KG</li>';
+			        	}
+			        	result = result+'</div></div></div>';
+			        }
+			        $('#week_title_lists').prepend(result);
+				}
+			}else{
+				alert(data.errmsg);
+				if(data.errcode=="10005"){
+					window.top.location.href = 'wxlogin.html';
+				}
+			}
+		}
+	});
+}
+function getWeekListData(authToken,houseId,weekStartDate,weekEndDate){
+	// 页数
+    var pageNum = 0;
+    // 每页展示10个
+    var pageSize = 10;
+    // dropload
+	$('#week_content').dropload({
+        scrollArea : window,
+        loadDownFn : function(me){
+            pageNum++;
+            // 拼接HTML
+            var result = '';
+			$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/feeding/getListByDate',
+				data: 'authToken='+authToken+'&house_id='+houseId+'&start_date='+weekStartDate+'&end_date='+weekEndDate+'&pageNum='+pageNum+'&pageSize='+pageSize,
+				contentType: 'application/json',
+				dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					console.log(data)
+					if (data) {
+						if (data.errcode == 200) {		
+					        for (var key in data.dataSource.list){
+					        	var feeding_time = data.dataSource.list[key].feeding_time;
+					        	feeding_time = feeding_time.substr(0,16);
+					        	if((data.dataSource.list[key].materiel_name1.length > 0 && data.dataSource.list[key].feeding_scale1 != '0')
+					        		||(data.dataSource.list[key].materiel_name2.length > 0 && data.dataSource.list[key].feeding_scale2 != '0')
+					        		||(data.dataSource.list[key].materiel_name3.length > 0 && data.dataSource.list[key].feeding_scale3 != '0')){
+						        	result = result + '<div class="dor"><div class="dateleft"><h2>'+feeding_time+'</h2></div>'+
+						        		'<div class="weeInfo">';
+						        		if(data.dataSource.list[key].materiel_name1.length > 0 && data.dataSource.list[key].feeding_scale1 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name1+data.dataSource.list[key].feeding_scale1+'KG</li>';
+						        		}
+						        		if(data.dataSource.list[key].materiel_name2.length > 0 && data.dataSource.list[key].feeding_scale2 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name2+data.dataSource.list[key].feeding_scale2+'KG</li>';
+						        		}
+						        		if(data.dataSource.list[key].materiel_name3.length > 0 && data.dataSource.list[key].feeding_scale3 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name3+data.dataSource.list[key].feeding_scale3+'KG</li>';
+						        		}
+						        	result = result + '</div><div class="edit" onclick="editFeedInfo(event)"><span class="iconfont icon-bianji"></span>'+
+						        	        '<input type="text" id="id" style="display:none" value="'+data.dataSource.list[key].id+'"/></div></div>'
+					        	}
+					        }
+						} else {
+//							alert(data.errmsg);
+							// 锁定
+                    		me.lock();
+							// 无数据
+                            me.noData();
+						}
+					}else{
+                        // 锁定
+                        me.lock();
+                        // 无数据
+                        me.noData();
+                    }
+                    // 为了测试，延迟1秒加载
+                    setTimeout(function(){
+                        // 插入数据到页面，放到最后面
+                        if(result.length > 0){
+                        	$('#week_lists').append(result);
+                        }
+                        // 每次数据插入，必须重置
+                        me.resetload();
+                    },100);
+				},
+				error: function(xhr, type){
+//                  alert('数据加载出错，请返回！');
+                    // 即使加载出错，也得重置
+                    me.resetload();
+                }
+			});
+		}
+    })
+}
+function getMonthTotalData(authToken,houseId,monthStartDate,monthEndDate){
+	var result = '';
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/feeding/getFeedingTotal',
+		data: 'authToken='+authToken+'&house_id='+houseId+'&start_date='+monthStartDate+'&end_date='+monthEndDate,
+		contentType: 'application/json',
+		dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data)
+			if (data) {
+				if (data.errcode == 200) {		
+			        for (var key in data.dataSource.list){
+			        	result = result+'<div id="monthTitle" class="divBox">'+
+			        		'<li style="font-size:20px;text-align:center;"><span>本月汇总记录('+houseName+')</span></li>'+
+			        		'<div class="dor2"><div><li style="font-size:20px;">'+monthStartDate+' 至  '+monthEndDate+'</li>'+
+			        		'<li style="font-size:20px;">'+houseName+' 饲喂汇总：</li>';
+			        	var feeding_total = data.dataSource.list[key].feeding_total;
+			        	var arr = feeding_total.split(";");
+			        	for(var i=0;i<arr.length-1;i++){
+			        		result = result +'<li style="font-size:20px;">'+arr[i]+'KG</li>';
+			        	}
+			        	result = result+'</div></div></div>';
+			        }
+			        $('#month_title_lists').prepend(result);
+				} else{
+					alert(data.errmsg);
+					if(data.errcode=="10005"){
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		}
+	});
+}
+function getMonthListData(authToken,houseId,monthStartDate,monthEndDate){
+	// 页数
+    var pageNum = 0;
+    // 每页展示10个
+    var pageSize = 10;
+    // dropload
+	$('#month_content').dropload({
+        scrollArea : window,
+        loadDownFn : function(me){
+            pageNum++;
+            // 拼接HTML
+            var result = '';
+            $.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/feeding/getListByDate',
+				data: 'authToken='+authToken+'&house_id='+houseId+'&start_date='+monthStartDate+'&end_date='+monthEndDate+'&pageNum='+pageNum+'&pageSize='+pageSize,
+				contentType: 'application/json',
+				dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				success: function(data) {
+					console.log(data)
+					if (data) {
+						if (data.errcode == 200) {		
+					        for (var key in data.dataSource.list){	
+					        	var feeding_time = data.dataSource.list[key].feeding_time;
+					        	feeding_time = feeding_time.substr(0,16);
+					        	if((data.dataSource.list[key].materiel_name1.length > 0 && data.dataSource.list[key].feeding_scale1 != '0')
+					        		||(data.dataSource.list[key].materiel_name2.length > 0 && data.dataSource.list[key].feeding_scale2 != '0')
+					        		||(data.dataSource.list[key].materiel_name3.length > 0 && data.dataSource.list[key].feeding_scale3 != '0')){
+						        	result = result + '<div class="dor"><div class="dateleft"><h2>'+feeding_time+'</h2></div>'+
+						        		'<div class="weeInfo">';
+						        		if(data.dataSource.list[key].materiel_name1.length > 0 && data.dataSource.list[key].feeding_scale1 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name1+data.dataSource.list[key].feeding_scale1+'KG</li>';
+						        		}
+						        		if(data.dataSource.list[key].materiel_name2.length > 0 && data.dataSource.list[key].feeding_scale2 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name2+data.dataSource.list[key].feeding_scale2+'KG</li>';
+						        		}
+						        		if(data.dataSource.list[key].materiel_name3.length > 0 && data.dataSource.list[key].feeding_scale3 != '0'){
+						        			result = result + '<li style="font-size:20px;text-align: left;">'+data.dataSource.list[key].house_name+' 饲喂：'+ data.dataSource.list[key].materiel_name3+data.dataSource.list[key].feeding_scale3+'KG</li>';
+						        		}
+						        	result = result + '<div class="edit" onclick="editFeedInfo(event)"><span class="iconfont icon-bianji"></span>'+'<input type="text" id="id" style="display:none" value="'+data.dataSource.list[key].id+'"/></div></div></div>'
+					        	}
+					        }
+						} else {
+//							alert(data.errmsg);
+							// 锁定
+                    		me.lock();
+							// 无数据
+                            me.noData();
+						}
+					}else{
+                        // 锁定
+                        me.lock();
+                        // 无数据
+                        me.noData();
+                    }
+                    // 为了测试，延迟1秒加载
+                    setTimeout(function(){
+                        // 插入数据到页面，放到最后面
+			            $('#month_lists').append(result);
+                        // 每次数据插入，必须重置
+                        me.resetload();
+                    },100);
+				},
+				error: function(xhr, type){
+//                  alert('数据加载出错，请返回！');
+                    // 即使加载出错，也得重置
+                    me.resetload();
+                }
+			});
+       }
+   })
+}
+
+function editFeedInfo(e) { 
+	var id = '';
+	var targetClass = $(e.target).attr("class");
+	if (targetClass == 'iconfont icon-bianji'){	
+		id = $(e.target).parent().find("#id").val();
+	} else if(targetClass == 'edit edit1'){	
+		id = $(e.target).find("#id").val();
+	}
+	// 跳转页面并传输参数
+	window.location.href = 'AddFeeding.html?id='+id;					
+}	

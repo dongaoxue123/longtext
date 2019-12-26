@@ -1,0 +1,5 @@
+<ul>
+	<li id="backfatFooter" onclick="location='fieldList.html'"><span class="iconfont icon-weibiaoti1"></span><h5>测膘</h5></li>
+	<li id="countFooter" onclick="location='count.html'"><span class="iconfont icon-pig"></span><h5>统计</h5></li>
+	<li id="setFooter" onclick="location='set.html'"><span class="iconfont icon-shezhi"></span><h5>配置</h5></li>
+</ul>

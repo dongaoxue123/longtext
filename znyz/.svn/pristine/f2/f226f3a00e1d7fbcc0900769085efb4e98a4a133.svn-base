@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>生产详情</title>
+    <script src="js/flexible.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+    
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+	
+	<div class="main">
+		<div class="date_box" id="productionDetail">
+		</div>
+	</div>
+	
+</body>
+<script>
+	var pigsArchivesId = '';
+	var authToken = '';
+    $(document).ready(function(){
+    	pigsArchivesId = getUrlParam("pigsArchivesId");
+    	// 取得authToken
+		authToken = localStorage.getItem('authToken');
+		if (authToken.length = 0){		
+			alert("请重新登录");
+			window.top.location.href = 'wxlogin.html';
+			return false;
+		} 
+		getPigProductInfo();
+    });
+	// 取得猪生产信息
+	function getPigProductInfo() {
+		var result ='';
+		$.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/production/getListPage',
+			contentType: 'application/json',
+			data: 'authToken='+authToken+'&pigs_archives_id='+pigsArchivesId+'&pageNum=0&pageSize=0',
+			dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			success: function(data) {
+				console.log(data)
+				if (data) {
+					if (data.errcode == 200) {		
+			        	var year='';
+				        for (var key in data.dataSource.list){
+				        	var matingDate = data.dataSource.list[key].mating_date;//配种时间
+				        	var pregnancyTestDate = data.dataSource.list[key].pregnancy_test_date;//妊检时间
+				        	var deliveryDate = data.dataSource.list[key].delivery_date;//分娩时间
+				        	var weaningDate = data.dataSource.list[key].weaning_date;//断奶时间
+				        	var matingYear='';
+				        	var matingMonth='';
+				        	var pregnancyTestYear='';
+				        	var pregnancyTestMonth='';
+				        	var deliveryYear='';
+				        	var deliveryMonth='';
+				        	var weaningYear='';
+				        	var weaningMonth='';
+				        	if(matingDate!=null){
+				        		matingDate = matingDate.substr(0,11);
+				        		matingYear = matingDate.substr(0,4);
+				        		matingMonth = matingDate.substr(5,9);
+				        	}
+				        	if(pregnancyTestDate!=null){
+				        		pregnancyTestDate = pregnancyTestDate.substr(0,11);
+				        		pregnancyTestYear = pregnancyTestDate.substr(0,4);
+				        		pregnancyTestMonth = pregnancyTestDate.substr(5,9);
+				        	}
+				        	if(deliveryDate!=null){
+				        		deliveryDate = deliveryDate.substr(0,11);
+				        		deliveryYear = deliveryDate.substr(0,4);
+				        		deliveryMonth = deliveryDate.substr(5,9);
+				        	}
+				        	if(weaningDate!=null){
+				        		weaningDate = weaningDate.substr(0,11);
+				        		weaningYear = weaningDate.substr(0,4);
+				        		weaningMonth = weaningDate.substr(5,7);
+				        	}
+				        	if(weaningDate == null || weaningDate == ''){//生产周期未结束，按顺序显示配种、妊检、分娩信息。
+				        		if(deliveryDate!=null && deliveryDate !=''){//分娩信息
+				        			if(deliveryYear!=year){
+				        				result = result+'<h4 class="red">'+deliveryYear+'年</h4> ';
+				        				year = deliveryYear;
+				        			}
+					        		result = result+'<div class="dateline flex">        ' +
+													'	<h5>'+deliveryMonth+'</h5>                  ' +
+													'	<div class="date_con">          ' +
+													'		<ul class="flex">           ' +
+													'			<li><span></span></li>  ' +
+													'			<li><h4>分娩</h4></li>  ' +
+													'			<li>                    ' +
+													'				<p>总仔数：<span class="yellow">'+data.dataSource.list[key].total_number+'</span>   活仔数：<span class="yellow">'+data.dataSource.list[key].alive_number+'</span> </p> '+
+													'			</li> ' +
+													'		</ul>     ' +
+													'	</div>        ' +
+													'</div>           ' ;
+				        		}
+				        		if(pregnancyTestDate!=null && pregnancyTestDate!=''){//妊检信息
+				        			if(pregnancyTestYear!=year){
+				        				result = result+'<h4 class="red">'+pregnancyTestYear+'年</h4> ';
+				        				year = pregnancyTestYear;
+				        			}
+				        			result = result+'<div class="dateline flex">        ' +
+													'	<h5>'+pregnancyTestMonth+'</h5> ' +
+													'	<div class="date_con">          ' +
+													'		<ul class="flex">           ' +
+													'			<li><span></span></li>  ' +
+													'			<li><h4>妊检</h4></li>  ' +
+													'			<li>                    ' +
+													'				<p>妊检结果：<span class="yellow">'+data.dataSource.list[key].pregnancy_test_result+'</span></p> '+
+													'			</li>                   ' +
+													'		</ul>                       ' +
+													'	</div>                          ' +
+													'</div>                             ' ;
+				        		}
+				        		if(matingDate!=null && matingDate!=''){//配种信息
+				        			if(matingYear!=year){
+				        				result = result+'<h4 class="red">'+matingYear+'年</h4> ';
+				        				year = matingYear;
+				        			}
+				        			result = result+'<div class="dateline flex">        ' +
+													'	<h5>'+matingMonth+'</h5>        ' +
+													'	<div class="date_con">          ' +
+													'		<ul class="flex">           ' +
+													'			<li><span></span></li>  ' +
+													'			<li><h4>配种</h4></li>  ' +
+													'			<li>                    ' +
+													'				<p>与配公猪：ZZ1520</p> '+
+													'			</li>                   ' +
+													'		</ul>                       ' +
+													'	</div>                          ' +
+													'</div>                             ' ;
+				        		}
+				        	}else{
+								if(deliveryYear!=year){
+			        				result = result+'<h4 class="red">'+deliveryYear+'年</h4> ';
+			        				year = deliveryYear;
+			        			}
+				        		result = result+'<div class="dateline flex">        ' +
+												'	<h5>'+deliveryMonth+'</h5>      ' +
+												'	<div class="date_con">          ' +
+												'		<ul class="flex">           ' +
+												'			<h3>'+data.dataSource.list[key].parity+'胎</h3> ' +
+												'			<li><span></span></li>  ' +
+												'			<li><h4>分娩</h4></li>  ' +
+												'			<li>                    ' +
+												'				<p>总仔数：<span class="yellow">'+data.dataSource.list[key].total_number+'</span>   活仔数：<span class="yellow">'+data.dataSource.list[key].alive_number+'</span> </p> '+
+												'				<p>与配公猪：ZZ1221</p>       ' +
+												'				<p>断奶日期：'+weaningDate+'</p> ' +
+												'			</li> ' +
+												'		</ul>     ' +
+												'	</div>        ' +
+												'</div>           ' ;
+				        	}
+			        	}
+			            $('#productionDetail').append(result);
+			        }
+				} 
+			}
+		});
+	}
+</script>
+</html>

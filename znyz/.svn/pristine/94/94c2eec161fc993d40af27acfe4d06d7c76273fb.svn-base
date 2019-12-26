@@ -1,0 +1,264 @@
+<!doctype html>
+<html style="height: 100%;color:#333333;background: #fff;">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+		<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+		<meta name="format-detection" content="telephone=no" />
+		<!--告诉设备忽略将页面中的数字识别为电话号码-->
+		<meta content="false" name="twcClient" id="twcClient" />
+		<!--判断页面是否在本地Native（本地APP）环境中-->
+		<title></title>
+		<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+	</head>
+
+	<body style="height:100%;">
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="location='PigHouse.html'"></span>
+			<!--<h1 id ="userTitle">修改当前猪舍</h1>-->
+		</header>
+		<main>
+
+			<div class="addlist">
+				<ul>
+					<li>
+						<span>栋舍名称</span>
+						<input type="text" name="houseName" id="houseName" value="" placeholder="栋舍名称" />
+					</li>
+					<li>
+						<span>栋舍代码</span>
+						<input type="text" name="code" id="code" value="" placeholder="栋舍代码" disabled=""/>
+					</li>
+					<li>
+						<span>栋舍类别</span>
+						<select class="form-control" name="type" id="type">
+                        </select>
+					</li>
+					<li>
+						<span>栏位行数</span>
+						<input type="text" name="column_num" id="column_num" value="" placeholder="栏位行数" />
+					</li>
+					<li>
+						<span>栏位列数</span>
+						<input type="text" name="row_num" id="row_num" value="" placeholder="栏位列数" />
+					</li>
+					<li>
+						<span>创建时间</span>
+						<input type="text" name="create_time" id="create_time" value="" placeholder="创建时间" readonly="readonly"/>
+					</li>
+					<li>
+						<span>备注</span>
+						<input type="text" name="remark" id="remark" value="" placeholder="备注" />
+					</li>
+				</ul>
+			</div>
+
+			<div class="btn">
+				<input type="submit" name="save" id="save" onclick="javascript:save()" value="保存" />
+				<input type="submit" name="cancel" id="goBack" onclick="goBack()" value="取消" />
+			</div>
+			<div class="footer">
+			</div>
+		</main>
+		<script type="text/javascript">
+			var authToken;
+			var user;
+			var id;
+			var type;
+			
+			$(document).ready(function() {
+				// 取得authToken
+				authToken = localStorage.getItem('authToken');
+//				setInit();
+//				$("#setFooter").addClass("active");
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				user = localStorage.getItem('user');
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				id = getUrlParam("id");
+				$.ajax({
+					type: "GET",
+					url: commonIP + "/api/system/house/getHouseListPage?authToken="+authToken+'&id='+id+'&pageNum=0&pageSize=0',
+					contentType: 'application/json',
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {
+								$('#houseName').html(data.dataSource.list[0].name);
+							}
+						}
+					}
+				});
+				
+				id = getUrlParam("id");
+				var type = "";
+				if(id != null){//已存在记录进行修改时先查询
+					//修改时设置标题为"修改"
+//					$("#userTitle").text("修改当前猪舍");
+					document.title="修改猪舍";
+					$.ajax({
+						type: "GET",
+						url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&id='+id+'&pageNum=0&pageSize=0',
+						contentType: 'application/json',
+						success: function(data) {
+							var data = JSON.parse(data);
+							if (data.errcode == 200) {
+								//赋值1510651423000
+								function formatDate(now) { 
+									var now=new Date(data.dataSource.list[0].create_time); 
+								var year=now.getFullYear(); 
+								var month=now.getMonth()+1; 
+								var date=now.getDate(); 
+								var hour=now.getHours(); 
+								var minute=now.getMinutes(); 
+								var second=now.getSeconds(); 
+								return year+"-"+month+"-"+date+" "+hour+":"+minute+":"+second; 
+								};       
+								$('#code').val(data.dataSource.list[0].code);
+								$('#farmId').val(data.dataSource.list[0].farmId);
+								$('#groupName').val(data.dataSource.list[0].groupName);
+								$('#farmName').val(data.dataSource.list[0].farmName);
+								$('#houseName').val(data.dataSource.list[0].name);//密码不带出，直接修改为新密码
+								$('#column_num').val(data.dataSource.list[0].column_num);
+								$('#row_num').val(data.dataSource.list[0].row_num);
+								$('#create_time').val(formatDate(data.dataSource.list[0].create_time));
+								$('#remark').val(data.dataSource.list[0].remark);
+								type = data.dataSource.list[0].typeName;
+							} else {
+								alert(data.errmsg);
+								if(data.errcode=="10005"){
+									window.top.location.href = 'wxlogin.html';
+								}
+							}
+						}
+					});
+				}else{
+//					$("#userTitle").text("新建猪舍");
+					document.title="新建猪舍";
+				}
+				type = getUrlParam("type");
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/system/option/getOptionListSelect?authToken=' + authToken+"&type=HouseType",
+					contentType: 'application/json',
+					success: function(data) {
+						var data = JSON.parse(data);
+						$('#query_houseInfo_type').append('<option value=""></option>')
+						if (data.errcode == 200) {
+							for (var i = 0; i < data.dataSource.total; i++) {
+								if(data.dataSource.list[i].id == type)
+								{
+									$('#type').append('<option selected value=' + data.dataSource.list[i].id + '>' + data.dataSource.list[i].name + '</option>')
+								}else{
+									$('#type').append('<option value=' + data.dataSource.list[i].id + '>' + data.dataSource.list[i].name + '</option>')
+								}
+								
+								obj = document.getElementById("type");
+								if(data.dataSource.list[i].name == type){
+    								obj[i].selected = true;
+								}
+								
+							}
+			
+						} else {
+							alert(data.errmsg);
+							if (data.errcode == "10005") {
+								window.top.location.href = 'login.html';
+							}
+						}
+					}
+				});
+			});
+			/**
+			 * 加载集团下拉列表
+			 */
+			function houseTypeSelect() {
+				alert(1);
+				exit();
+				
+			}
+			function save(){
+				var authToken = localStorage.getItem('authToken');
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				var houseName=$('#houseName').val();
+				var code=$('#code').val();
+				var type = $('#type option:selected').val();
+				var column_num=$('#column_num').val();
+				var row_num=$('#row_num').val();
+				var create_time=$('#create_time').val();
+				var remark=$('#remark').val();	
+				if(houseName.replace(/\s/g,"")==''){
+					alert('栋舍名称不能为空!');
+					return;
+				}
+				if(code.replace(/\s/g,"")==''){
+					alert('栋舍代码不能为空!');
+					return;
+				}
+				if(type.replace(/\s/g,"")==''){
+					alert('栋舍类别不能为空!');
+					return;
+				}
+				$.ajax({
+					type: "POST",
+					url: commonIP + "api/system/house/update?authToken="+authToken,
+					data: JSON.stringify({
+						"id": id,
+						"name": houseName,
+						"code": code,
+						"type": type,
+						"row_num": row_num,
+						"column_num": column_num,
+						"remark": remark
+					}) ,
+					contentType: 'application/json',
+					success: function(data) {
+						var data = JSON.parse(data);
+						if (data.errcode == 200) {
+							alert('保存成功');
+							clear();
+							if(id!=null){//修改保存后跳转回账号列表页
+								window.location.href = 'PigHouse.html';
+							}
+						} else {
+							alert(data.errmsg);
+							if(data.errcode=="10005"){
+								window.top.location.href = 'wxlogin.html';
+							}
+						}
+					}
+				});
+				
+			}
+			function clear(){
+				$('#name').val(null);
+				$('#loginName').val(null);
+				$('#passWord').val(null);
+				$('#phone').val(null);
+				$('#mail').val(null);
+			}
+		</script>
+	</body>
+
+</html>

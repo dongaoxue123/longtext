@@ -1,0 +1,73 @@
+ function load() {
+    var num = 4;
+    var counter1 = 1;
+    var dropload = $('.assess').dropload({
+        scrollArea:window,
+        loadDownFn:function(me){
+            // 加载“推荐医生”的数据
+            $.ajax({
+                url:'getDAListByUserId?nowpage="+counter1+"pageSize="+num,
+                type: 'GET',
+                success: function (data) {
+                    var data = JSON.parse(data)
+                    var datas=data.content.content;
+                    var html="";
+                    var html3 ="";
+                    var length=datas.length;
+                    if(length==0){
+                        me.lock();
+                        // 无数据
+                        me.noData();
+                        me.resetload();
+                        if(counter1 ==1){
+                            $(".dropload-down").css("display","none");//没有更多数据的文字
+                        }
+                    }else{
+                        $(".dropload-load").show();
+                        counter1++;
+                        for(var i=0;i<length;i++){
+                            var evaluate='';
+                            if(datas[i].status==1){
+                                evaluate='<span class="right go" title="'+datas[i].id+'">去评价</span>';
+                                html3= '<ul class="add" title="'+datas[i].id+'">';
+
+
+                            }else if(datas[i].status==2){
+                                evaluate='<span class="right right2" title="'+datas[i].id+'">已评价</span>';
+                                html3='<ul class="detail" title="'+datas[i].id+'">';
+                            }
+
+
+                            html+='<div class="assess-main">'+
+                                    '<p class="time">'+
+                                    '<span class="left">'+datas[i].dateCreate+'</span>'+
+                                    evaluate+
+                                    '</p>'+
+                                   html3+
+                                    '<li><span>看诊医生：</span><span>'+datas[i].doctorName+'</span><span class="doctor">'+datas[i].doctorTitle+'</span></li>'+
+                                    '<li><span>就诊机构：</span><span>'+datas[i].workUnit+'</span></li>'+
+                                    '<li><span>就诊人：</span><span>'+datas[i].patientName+'</span></li>'+
+                                    '</ul>'+
+                                    '</div>'
+                            if(length < 4 &&  i ==(length-1)){//表示一页未满已经没有数据
+                                // 锁定
+                                me.lock();
+                                // 无数据
+                                me.noData();
+                                break;
+                            }
+                        }
+                        $(".assess1").append(html)
+                       // me.noData();
+                        //me.unlock();
+                       me.resetload();
+                    };
+                },
+                error: function (xhr, type) {
+                    // 即使加载出错，也得重置
+                    me.resetload();
+                }
+            });
+        }
+    });
+}

@@ -1,0 +1,783 @@
+<html>
+
+	<head>
+		<title>设备监测</title>
+
+
+		<meta name="description" content="设备监测" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" href="assets/img/favicon.png" type="image/x-icon">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+		<!--Basic Styles-->
+		<script src="assets/js/jquery.min.js"></script>
+		<link href="assets/css/bootstrap.min.css" rel="stylesheet" />
+		<!-- <link id="bootstrap-rtl-link" href="#" rel="stylesheet" /> -->
+		<link href="assets/css/font-awesome.min.css" rel="stylesheet" />
+		<link href="assets/css/weather-icons.min.css" rel="stylesheet" />
+		<link href="assets/css/bootstrap-select/bootstrap-select.css" rel="stylesheet" />
+
+		<!--Beyond styles-->
+		<link id="beyond-link" href="assets/css/beyond.min.css" rel="stylesheet" />
+		<link href="assets/css/demo.min.css" rel="stylesheet" />
+		<link href="assets/css/typicons.min.css" rel="stylesheet" />
+		<link href="assets/css/animate.min.css" rel="stylesheet" />
+		<!-- <link id="skin-link" href="#" rel="stylesheet" type="text/css" /> -->
+
+		<!--Page Related styles-->
+		<link href="assets/css/dataTables.bootstrap.css" rel="stylesheet" />
+
+		<!--Skin Script: Place this script in head to load scripts for skins and rtl support-->
+		<script src="assets/js/skins.min.js"></script>
+
+		<!--萤石云JS-->
+		<script src="../../common/js/ezuikit.js"></script>
+
+
+
+		<link rel="stylesheet" href="TemplateData/style.css">
+		<link rel="shortcut icon" href="TemplateData/favicon.ico" />
+		<!--<script src="TemplateData/UnityProgress.js"></script>-->
+	</head>
+	<body>
+
+		<!-- Page Body -->
+		<div class="page-body">
+
+			<div class="row">
+				<div class="col-xs-12 col-md-12">
+					<div class="widget">
+						<div class="widget-header ">
+							<span class="widget-caption"><a href="javascript:showHtml('pigFarmEnvironment.html')" data-i18n="pigFarmEnvironment.h1"></a>
+								> <span id='fieldName'></span></span>
+						</div>
+						<div class="widget-body">
+							<div class="table-toolbar">
+								<div class="row">
+
+									<div class="box-msg" style="display: flex;">
+										<div style="margin-left:20px">
+											<!-- <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" height="500px" width="960px"></canvas> -->
+											<!--<img src="photo/pigFarmPhoto.jpg" style="border: 10px solid #fff;margin-left: 4px;">-->
+											<div id="videoLabel">
+												<video id="myPlayer" autoplay src="" width="860px" height="400px" controls playsInline webkit-playsinline>
+												</video>
+											</div>
+											<div class="layui-input-inline"> <br /> </div>
+											<div id="videoButton">
+											</div>
+										</div>
+
+										<div class="box-msg-con" style='width:500px;min-width: 500px;'>
+
+											<div id='temperatureChart' style='width:250px;height:250px;float: left;margin-bottom: -40px;margin-top: -14px;'>
+											</div>
+											<div id='humidityChart' style='width:250px;height:250px;float: left;margin-bottom: -40px;margin-top: -14px;'>
+											</div>
+											<div id='ammoniaChart' style='width:250px;height:250px;float: left;'>
+											</div>
+											<div id='noiseChart' style='width:250px;height:250px;float: left;'>
+											</div>
+											<!--											<a href="javascript:showHtml('indoorChart.html?name=')" style="position:relative;top:-430px;left:520px;">查看详细
+											</a>-->
+										</div>
+
+
+									</div>
+								</div>
+							</div>
+							<table class="table table-striped table-hover table-bordered" id="editabledatatable" lay-filter="editabledatatable">
+							</table>
+							<script type="text/html" id="barDemo">
+							  <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail" data-i18n="device.details"></a>
+							</script>
+					
+						</div>
+
+					</div>
+					<!-- /Page Body -->
+
+	</body>
+	<script src="echarts/echarts.js"></script>
+
+	<script type="text/javascript" src="../../js/common.js" charset="utf-8"></script>
+	<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script type="text/javascript">
+		//直播视频显示的总体思路:
+		//从设备列表里面获取设备的直播地址,存到array全局对象中
+		//从array中取出地址,按照直播地址的顺序构建切换的按钮
+		//在按钮中添加点击事件方法,并且取到直播的地址和数组的id,传入切换直播的方法
+		//直播方法中重新构建直播的html,并且附上直播的地址
+		function showHtml(html) {
+			location.href = html;
+		}
+		var user = localStorage.getItem("user");
+		var authToken = localStorage.getItem("authToken");
+		var houseid = getUrlParam("houseid");
+		var farmId;
+		//初始化用的值
+		var humidity; //湿度
+		var temperature; //温度
+		var ammonia; //氨气
+		var noise; //声音
+		var videoUrlArray = new Array(); //直播视频存的url
+		var code;//环境监测设备code
+		i18n('../../locales', onLangReady) //国际化
+		function onLangReady() {
+			// 	initChart()
+		}
+		layui.use(['form', 'table', 'laydate'], function() {
+			var table = layui.table;
+			var form = layui.form;
+			var laydate = layui.laydate;
+			var $ = layui.$;
+			var player; //直播对象
+			farmId = JSON.parse(user).farmId;
+			timedRefreshDashboard();
+			// groupId = JSON.parse(user).groupId;
+			// alert(farmId)
+			// alert(houseid)
+
+			// videoLivePigFram()
+			
+			//渲染设备表格
+			table.render({
+				elem: '#editabledatatable',
+				url: commonIP + "api/system/device/getListPage?authToken=" + authToken + '&page=0&limit=0&houseId=' + houseid //数据请求路径
+					,
+				parseData: function(res) { //res 即为原始返回的数据
+					console.log(res)
+					return {
+						"code": res.code, //解析接口状态
+						"msg": res.msg, //解析提示文本
+						"count": res.count, //解析数据长度
+						"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+					};
+				},
+				cellMinWidth: 80,
+				cols: [
+					[{
+							type: 'numbers',
+							width: '3%'
+						}, {
+							field: 'code',
+							title: i18next.t("设备ID"),
+							width: '15%',
+							templet: "<div><a href='javascript:void(0)'  class='linkFontColor'>{{d.code}}</a></div>",
+							event: 'code'
+						}, {
+							field: 'deviceType',
+							title: i18next.t("device.deviceType"),
+							width: '15%'
+						}, {
+							field: 'state',
+							title: i18next.t("授权状态"),
+							width: '11%'
+						}	,{
+							fixed: 'right',
+							title: i18next.t("opt") , 
+							width:'20%',  
+							align:'center', 
+							toolbar: '#barDemo',
+						}//一个工具栏  具体请查看layui官网
+
+
+					]
+				],
+				done: function(res, page, count) { //res 接口返回的信息
+				
+					//根据返回的数字来显示状态,0位不可用,1为可用
+					i18n('../../locales', function() {
+						$("[data-field = 'state']").children().each(function() {
+							if ($(this).text() == '1') {
+								$(this).text(i18next.t("group.usable"));
+							}
+							if ($(this).text() == '0') {
+								$(this).text(i18next.t("group.unusable"));
+							}
+
+						})
+						
+						//根据返回的数字来显示设备类型,0为采集盒,1为守望者,2为环境采集
+						$("[data-field = 'deviceType']").children().each(function() {
+							if ($(this).text() == '1') {
+								$(this).text(i18next.t("device.collectionBox"));
+							} else if ($(this).text() == '0') {
+								$(this).text(i18next.t("device.warder"));
+							} else if ($(this).text() == '2') {
+								$(this).text(i18next.t("环境采集"));
+							}
+
+
+						})
+
+					}) //国际化
+					
+					//根据返回的类型判断是不是环境采集设备
+					//如果是的话,则根据环境采集设备的code来查询温度,湿度,氨气和声音的数据,并且初始化仪表盘
+					for (i = 0; i < count; i++) {
+						deviceType = res.data[i].deviceType
+						if (deviceType == 2) {
+							code = res.data[i].code
+							$.ajax({
+								url: commonIP + 'api/system/device/getEnvironmentList?authToken=' + authToken + '&code=' + code,
+								parseData: function(res) { //res 即为原始返回的数据
+									return {
+										"code": res.code, //解析接口状态
+										"msg": res.msg, //解析提示文本
+										"count": res.count, //解析数据长度
+										"data": res.dataSource.list //解析数据列表
+									};
+								},
+								success: function(res) {
+									var dataObj = JSON.parse(res);
+									var data = dataObj.dataSource.list[0];
+									initEnvironmental(data)
+
+
+								}
+							});
+
+							i = count;
+						}
+
+					}
+					
+					//获取设备的视频url
+					//将视频的URL存到Array里
+					for (a = 0; a < count; a++) {
+						var videoYAdress = res.data[a].videoYAdress;
+						if (videoYAdress != null && videoYAdress != '') {
+							videoUrlArray[a] = videoYAdress;
+						}
+					}
+					
+					//构建直播的切换按钮以及点击事件
+					setVideoUrl()
+				},
+				even: true //开启隔行背景
+					,
+				page: true //开启分页
+					,
+				limit: 10 //默认十条数据一页
+					,
+				limits: [10, 20, 30, 50] //数据分页条
+					,
+				id: 'testReload'
+			});
+
+
+			//监听工具条-详情
+			table.on('tool(editabledatatable)', function(obj) {
+				var data = obj.data;
+				if (obj.event === 'code') {
+					code = data.code;
+					var deviceType = data.deviceType;
+					if (deviceType == 2) {
+
+						$.ajax({
+							url: commonIP + 'api/system/device/getEnvironmentList?authToken=' + authToken + '&code=' + code,
+							parseData: function(res) { //res 即为原始返回的数据
+								return {
+									"code": res.code, //解析接口状态
+									"msg": res.msg, //解析提示文本
+									"count": res.count, //解析数据长度
+									"data": res.dataSource.list //解析数据列表
+								};
+							},
+							success: function(res) {
+								var dataObj = JSON.parse(res);
+								initChart(dataObj)
+
+							}
+						});
+
+					}
+				}else if(obj.event === 'detail'){
+				  var index = layer.open({
+										    type: 2,
+										    content: "deviceDetail.html?id=" + data.id + "&code=" + data.code,
+										    area: ['800px', '600px'],
+										    maxmin: true
+						});  
+				}
+
+			});
+			
+			
+			
+			//定时刷新仪表盘接口
+			function timedRefreshDashboard(){
+				 setInterval(function(){
+				  $.ajax({
+				  	url: commonIP + 'api/system/device/getEnvironmentList?authToken=' + authToken + '&code=' + code,
+				  	parseData: function(res) { //res 即为原始返回的数据
+				  		return {
+				  			"code": res.code, //解析接口状态
+				  			"msg": res.msg, //解析提示文本
+				  			"count": res.count, //解析数据长度
+				  			"data": res.dataSource.list //解析数据列表
+				  		};
+				  	},
+				  	success: function(res) {
+				  		var dataObj = JSON.parse(res);
+				  		initChart(dataObj)
+				  
+				  	}
+				  });
+				 }, 30000);
+			}
+			
+			
+			var urlButton = '';
+			//设置直播视频以及切换的按钮
+			function setVideoUrl() {
+				for (c = 0; c < videoUrlArray.length; c++) {
+					var videoUrl = videoUrlArray[c];
+					if (videoUrl != null && videoUrl != '') {
+						urlButton = urlButton + "<button class='layui-btn'  onClick='onClickVideo(" + c + ")' >" + c + "</button>";
+					}
+				}
+				//初始化直播,获取第一个直播地址,开始直播
+				var initUrl = videoUrlArray[1];
+				$('#myPlayer').attr("src", initUrl);
+				player = new EZUIKit.EZUIPlayer('myPlayer');
+				// 播放
+				player.play();
+
+				$("#videoButton").html(urlButton);
+			}
+			//按钮的点击事件
+			onClickVideo = function(c) {
+				var url = videoUrlArray[c];
+				switchVideo(url, c)
+			}
+			//切换直播的的方法
+			function switchVideo(url, c) {
+				//初始化判断
+				var src = $('#myPlayer').attr("src");
+				if (src != 'undefined') {
+					//videoLabel
+					player.stop();
+					//重新构建直播的html
+					var htmlVideo = '<video id="' + c +'" autoplay src="" width="860px"	height="400px"	controls	playsInline 	webkit-playsinline  >  </video>'
+					$('#videoLabel').html(htmlVideo)
+					//给新构建的直播html设置直播地址
+					$('#' + c).attr("src", url);
+					player = new EZUIKit.EZUIPlayer("" + c);
+					// temp = c;
+				}
+
+			}
+
+
+
+
+
+			var Module = {
+				TOTAL_MEMORY: 268435456,
+				errorhandler: null, // arguments: err, url, line. This function must return 'true' if the error is handled, otherwise 'false'
+				compatibilitycheck: null,
+				dataUrl: "Release/web.data",
+				codeUrl: "Release/web.js",
+				memUrl: "Release/web.mem",
+
+			};
+
+
+
+
+			//初始化仪表盘的方法
+			function initEnvironmental(dataObj) {
+				humidity = dataObj.airhumidity; //湿度
+				temperature = dataObj.temperature; //温度
+				ammonia = dataObj.ammonia; //氨气
+				noise = dataObj.noise; //声音
+
+
+				humidityOption = {
+					title: {
+						show: false,
+						text: '湿度',
+						top: '85%',
+						left: '40%'
+					},
+					tooltip: {
+						formatter: "{a} <br/>{b} : {c}%"
+					},
+					series: [{
+						name: '猪舍湿度',
+						type: 'gauge',
+						axisLine: { // 坐标轴圈线
+							lineStyle: { // 属性lineStyle控制线条样式
+								color: [
+									[0.4, '#33ccff'],
+									[0.8, '#1790cf'],
+									[1, '#1c7099']
+								],
+								width: 8,
+							}
+						},
+						axisLabel: { // 坐标轴内圈数字
+							padding: -12,
+						},
+						axisTick: { // 坐标轴刻度
+							length: 4, // 属性length控制线长
+						},
+						splitLine: { // 分隔线
+							length: 25, // 属性length控制线长
+							lineStyle: { // 属性lineStyle（详见lineStyle）控制线条样式
+								width: 3,
+								color: '#fff',
+							}
+						},
+
+						title: {
+							offsetCenter: [0, '80%'], // x, y，单位px
+							textStyle: { // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+								fontWeight: 'bolder',
+								fontSize: 18,
+								color: '#191970',
+							}
+						},
+						detail: {
+							formatter: '{value}%',
+							offsetCenter: [0, '50%'], // x, y，单位px
+							fontSize: 20,
+						},
+						pointer: {
+							width: 4
+						},
+						data: [{
+							value: humidity,
+							name: '湿度'
+						}]
+					}]
+				};
+
+				temperatureOption = {
+					title: {
+						show: false,
+						text: '温度',
+					},
+					tooltip: {
+						formatter: "{a} <br/>{b} : {c}℃"
+					},
+					series: [{
+						name: '猪舍温度',
+						min: -30,
+						max: 50,
+						splitNumber: 8,
+						type: 'gauge',
+						axisLine: { // 坐标轴线
+							lineStyle: { // 属性lineStyle控制线条样式
+								width: 8,
+								color: [
+									[0.5, '#f16b4c'],
+									[0.8, '#d8361b'],
+									[1, '#99311c']
+								],
+							}
+						},
+						axisLabel: { // 坐标轴内圈数字
+							padding: -12,
+						},
+						axisTick: { // 坐标轴刻度
+							length: 4, // 属性length控制线长
+						},
+						splitLine: { // 分隔线
+							length: 25, // 属性length控制线长
+							lineStyle: { // 属性lineStyle（详见lineStyle）控制线条样式
+								width: 3,
+								color: '#fff',
+							}
+						},
+						pointer: { //指针
+							width: 4,
+						},
+						title: {
+							offsetCenter: [0, '80%'], // x, y，单位px
+							textStyle: { // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+								fontWeight: 'bolder',
+								fontSize: 18,
+								color: '#800000',
+							}
+						},
+						detail: {
+							formatter: '{value}℃',
+							fontSize: 20,
+							offsetCenter: [0, '50%'], // x, y，单位px
+						},
+						data: [{
+							value: temperature,
+							name: '温度'
+						}]
+					}]
+				};
+
+				ammoniaOption = {
+					title: {
+						show: false,
+						text: '氨气',
+					},
+					tooltip: {
+						formatter: "{a} <br/>{b} : {c}ppm"
+					},
+					series: [{
+						name: '猪舍氨气',
+						type: 'gauge',
+						max: 30, //舒适10以下
+						axisLine: { // 坐标轴线
+							lineStyle: { // 属性lineStyle控制线条样式
+								width: 8,
+								color: [
+									[0.3, '#FFD700'],
+									[1, '#FFA500'],
+
+								],
+							}
+						},
+						axisLabel: { // 坐标轴内圈数字
+							padding: -12,
+						},
+						axisTick: { // 坐标轴刻度
+							length: 4, // 属性length控制线长
+						},
+						splitLine: { // 分隔线
+							length: 25, // 属性length控制线长
+							lineStyle: { // 属性lineStyle（详见lineStyle）控制线条样式
+								width: 3,
+								color: '#fff',
+							}
+						},
+						pointer: { //指针
+							width: 4,
+						},
+						title: {
+							offsetCenter: [0, '80%'], // x, y，单位px
+							textStyle: { // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+								fontWeight: 'bolder',
+								fontSize: 18,
+								color: '#8B4513',
+							}
+						},
+						detail: {
+							formatter: '{value}ppm',
+							fontSize: 20,
+							offsetCenter: [0, '50%'], // x, y，单位px
+						},
+						data: [{
+							value: ammonia,
+							name: '氨气'
+						}]
+					}]
+				};
+
+				noiseOption = {
+					title: {
+						show: false,
+						text: '声音',
+					},
+					tooltip: {
+						formatter: "{a} <br/>{b} : {c}%"
+					},
+					series: [{
+						name: '猪舍声音',
+						type: 'gauge',
+						min: 0,
+						max: 120, //舒适 50 - 70
+						splitNumber: 12,
+						axisLine: { // 坐标轴线
+							lineStyle: { // 属性lineStyle控制线条样式
+								width: 8,
+								color: [
+									[0.42, '#86b379'],
+									[0.58, '#228B22'],
+									[1, '#006400']
+								],
+							}
+						},
+						axisLabel: { // 坐标轴内圈数字
+							padding: -12,
+						},
+						axisTick: { // 坐标轴刻度
+							length: 4, // 属性length控制线长
+						},
+						splitLine: { // 分隔线
+							length: 25, // 属性length控制线长
+							lineStyle: { // 属性lineStyle（详见lineStyle）控制线条样式
+								width: 3,
+								color: '#fff',
+							}
+						},
+						pointer: { //指针
+							width: 4,
+						},
+						title: {
+							offsetCenter: [0, '80%'], // x, y，单位px
+							textStyle: { // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+								fontWeight: 'bolder',
+								fontSize: 18,
+								color: '#006400',
+							}
+						},
+						detail: {
+							formatter: '{value}dB',
+							fontSize: 20,
+							offsetCenter: [0, '50%'], // x, y，单位px
+
+						},
+						data: [{
+							value: noise,
+							name: '声音'
+						}]
+					}]
+				};
+
+				humidityChart = echarts.init(document.getElementById('humidityChart'));
+				humidityChart.setOption(humidityOption, true);
+
+				temperatureChart = echarts.init(document.getElementById('temperatureChart'));
+				temperatureChart.setOption(temperatureOption, true);
+
+				ammoniaChart = echarts.init(document.getElementById('ammoniaChart'));
+				ammoniaChart.setOption(ammoniaOption, true);
+
+				noiseChart = echarts.init(document.getElementById('noiseChart'));
+				noiseChart.setOption(noiseOption, true);
+
+
+			}
+
+			var humidity = getUrlParam("humidity"); //湿度
+			var temperature = getUrlParam("temperature"); //温度
+			var ammonia = getUrlParam("ammonia"); //氨气
+			var noise = getUrlParam("noise"); //声音
+			
+			//更新仪表盘数据	
+			function initChart(data) {
+				// console.log(data)
+				var info = data.dataSource.list[0];
+				console.log(info)
+				humidityChart.setOption({
+					series: [{
+						name: i18next.t("pigFarmEnvironment1.humidityChartName"),
+						data: [{
+							value: info.airhumidity,
+							name: i18next.t("pigFarmEnvironment.humidity")
+						}]
+					}]
+				});
+				temperatureChart.setOption({
+					series: [{
+						name: i18next.t("pigFarmEnvironment1.temperatureChartName"),
+						data: [{
+							value: info.temperature,
+							name: i18next.t("pigFarmEnvironment.temperature")
+						}]
+					}]
+				});
+				ammoniaChart.setOption({
+					series: [{
+						name: i18next.t("pigFarmEnvironment1.ammoniaChartName"),
+						data: [{
+							value: info.ammonia,
+							name: i18next.t("pigFarmEnvironment.ammonia")
+						}]
+					}]
+				});
+				noiseChart.setOption({
+					series: [{
+						name: i18next.t("pigFarmEnvironment1.noiseChartName"),
+						data: [{
+							value: info.noise,
+							name: i18next.t("pigFarmEnvironment.noise")
+						}]
+					}]
+				});
+			}
+
+
+			/*$(function(){
+				let search = window.parent.document.getElementById("center_id").contentWindow.location.search;
+				search = decodeURI(search.replace('?name=',''))
+				$('#fieldName').text(search)
+			})*/
+
+			function OnUnityEvent(name) {
+				$('#editabledatatable tr').each(function(index, target) {
+					if (target.id == name || target.id == 'title') {
+						target.className = ''
+					} else {
+						target.className = 'hide'
+					}
+				})
+			}
+
+
+
+			function control(e) {
+
+				let row
+				if (e.target.tagName === 'A') {
+					row = $(e.target.parentNode.parentNode)
+				} else {
+					row = $(e.target.parentNode.parentNode.parentNode)
+				}
+
+				let res = confirm(i18next.t('pigFarmEnvironment1.confirmTxt') + e.target.innerText + " " + $(row).find('.name').text() +
+					'?')
+
+				if (res) {
+					switch (e.target.innerText.trim()) {
+
+						case i18next.t('pigFarmEnvironment1.turnOn').trim():
+							$(row).find('.state').text(i18next.t('pigFarmEnvironment1.trState'))
+							switch ($(row).find('.name').text()) {
+								case "风扇":
+								case "Electric fan":
+									$(row).find('.stateInfo').text(i18next.t('pigFarmEnvironment1.running'))
+									break;
+								case "守望者轨道巡视机器人-1":
+								case "守望者轨道巡视机器人-2":
+								case "The rail Robot Watchman-1":
+								case "The rail Robot Watchman-2":
+									$(row).find('.stateInfo').text(i18next.t('pigFarmEnvironment1.tr1StateInfo'))
+									break;
+								default:
+									$(row).find('.stateInfo').text(i18next.t('pigFarmEnvironment1.tr4StateInfo'))
+									break;
+							}
+							e.target.innerText = i18next.t('pigFarmEnvironment1.turnOff')
+							break;
+						case i18next.t('pigFarmEnvironment1.turnOff').trim():
+							if (language === "en") {
+								$(row).find('.state').text(i18next.t('pigFarmEnvironment1.closed'))
+							} else {
+								$(row).find('.state').text(i18next.t('close'))
+							}
+
+							$(row).find('.stateInfo').text(i18next.t('pigFarmEnvironment1.closed'))
+							e.target.innerText = i18next.t('pigFarmEnvironment1.turnOn')
+							break;
+						case '详情':
+
+					}
+
+				}
+			}
+
+			//		function closeDiv(){
+			//		 $(".mywindow").remove();  
+			//		}
+
+		});
+	</script>
+	<!-- <script src="Release/UnityLoader.js"></script> -->
+</html>

@@ -1,0 +1,32 @@
+package com.xlqx.znyz.screen.service;
+
+import java.util.Map;
+
+/**
+ * 栋舍中单独查询Service
+ * @author wangshoujian
+ *
+ */
+public interface AloneScreenService {
+	
+	
+	/**
+	 * 查询栋舍下商品猪总数
+	 * @author wangshoujian
+	 * @createDate 2019年7月11日
+	 *
+	 * @param paramMap
+	 * @return
+	 */
+	public int getHogPigCount(Map<String, Object> paramMap);
+
+	/**
+	 * 获取商品猪重平均数
+	 * @author wangshoujian
+	 * @createDate 2019年7月11日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public float getAvgWeight(Map<String, Object> parameter);
+}

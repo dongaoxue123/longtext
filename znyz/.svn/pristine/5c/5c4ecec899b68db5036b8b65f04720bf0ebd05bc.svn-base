@@ -1,0 +1,117 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测重系统</title>
+	
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/echarts.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<script src="script/Feeding.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body  style="height:100%;">
+	
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="goFieldList()"></span>
+			<h1>饲喂记录</h1>
+		</header>
+		
+		<main>
+			<div class="top">
+				<h3 id="PigsNumber">&nbsp</h3>
+				<h4 id="PigInfos" >&nbsp</h4>
+			</div>
+			
+			<div class="menu">
+				<ul>
+					<li onclick="menuClick('weight')" >体重</li>
+					<li onclick="menuClick('backfat')"  >背膘</li>
+					<li onclick="menuClick('feeding')" class="active" > 饲喂</li>
+					<li onclick="menuClick('pigRecord')" >档案 </li>
+					<div class="clear"></div>
+				</ul>
+			</div>
+			
+			<div class="datemenu">
+				<ul>
+					<li class="active" style="width: 160px;" id='li-week' onclick="switchKind(1)">日</li>
+					<li id='li-month' style="width: 160px;" onclick="switchKind(2)">周</li>
+<!--					<li id='li-history' onclick="switchKind(3)">饲喂建议</li>-->
+				</ul>
+				<div class="clear"></div>
+			</div>
+			
+			<div class="divCon" id="days">
+				<div class="content">
+					<div>
+						<span class="iconfont icon-time"></span>
+						<span id="logInfo" class=""></span>
+					</div>				
+					<div class="weight">
+						<h2>饲喂：</h2><h1 id="dayTotal">0.0</h1><h2>kg</h2>
+					</div>
+				</div>
+				<div class="chart" id="dayChart"></div>
+				<div id ="dayList">
+					
+				</div>
+			</div>
+			
+			<div class="divCon" id='weeks' style="display: none;">
+				<div class="content">
+					<div>
+						<span class="iconfont icon-time"></span>
+						<span id="logInfo1" class=""></span>
+					</div>
+					<div class="weight">
+						<h2>饲喂：</h2><h1 id="weekTotal">0.0</h1><h2>kg</h2>
+					</div>
+				</div>
+				<div class="chart" id="weekChart"></div>
+				<div id ="weekList">
+					
+				</div>
+			</div>
+			<div class="divCon" id='historys' style="display: none;">
+				<div class="info">
+					<ul>
+						<li>2017年9月5日 星期二 第36周</li>
+					</ul>
+				</div>
+				<div class="msg">
+					<ul>
+						<li>本日饲喂建议</li>
+						<li>调整 ： +3KG</li>
+					</ul>
+				</div>
+				<!--<div class="number">
+					<div class="btn_nav">
+						<a href="#" class="active tab1">周</a>
+						<a href="#" class="tab1">月</a>
+					</div>
+					
+					<div class="btn_con">
+						<h2>最近一周饲喂量</h2>
+						<div class="chart chart5">
+						</div>
+					</div>
+					
+					<div class="btn_con" style="display: none;">
+						<h2>最近一月饲喂量</h2>
+						<div class="chart chart5">
+						</div>
+					</div>
+				</div>-->
+			</div>
+		</main>
+</body>
+</html>

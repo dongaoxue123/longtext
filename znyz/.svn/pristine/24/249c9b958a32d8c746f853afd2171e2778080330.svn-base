@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>体温图表</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	</head>
+	
+	<style>
+		.chart_con {
+			margin: 30px 0 0 30px;
+			width: 750px;
+			height: 560px;
+		}
+	</style>
+
+	<body>
+		<div class="chart_con" id="oestrusChart">
+		</div>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../basedata/assets/js/jquery.min.js"></script>
+	<script src="../basedata/echarts/echarts.js"></script>
+	<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var isOestrus;
+			//本月测重记录(折线图)
+			var oestrusOption = {
+				title: {
+					text: '近期体温(℃)',
+					subtext: '',
+					top: -4,
+					textStyle: {
+						fontSize: 12,
+					}
+				},
+
+				grid: {
+					top: '15%',
+					bottom: '15%'
+				},
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					top: -4,
+					data: ['体温']
+				},
+				toolbox: {
+					show: false,
+					feature: {
+						dataZoom: {
+							yAxisIndex: 'none'
+						},
+						dataView: {
+							readOnly: false
+						},
+						magicType: {
+							type: ['line', 'bar']
+						},
+						restore: {},
+						saveAsImage: {}
+					}
+				},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					axisLabel: { //坐标轴刻度标签的相关设置。
+						interval: 0,
+						rotate: "45"
+					},
+					data: []
+				},
+				yAxis: {
+					type: 'value',
+					axisLabel: {
+						formatter: '{value}'
+					},
+					splitNumber: 5
+				},
+				series: [{
+					name: '体温',
+					type: 'line',
+//					data: [0, 0, 0, 0, 0],
+					symbolSize: 5,
+					markPoint: {
+						symbol: 'pin',
+						symbolSize: [60, 60],
+						data: [{
+							type: 'max',
+							name: '最大值'
+						}]
+					},
+					markLine: {
+						data: [{
+							type: 'average',
+							name: '平均值'
+						}]
+					}
+				}]
+			};
+
+			var authToken = localStorage.getItem("authToken");
+
+			window.onload = function(){
+				isOestrus = GetQueryString("isOestrus");
+				i18n('../../locales', onLangReady) //国际化
+			}
+			function onLangReady(){
+				if(!checkToken()) {
+					alert(i18next.t("timeout"));
+					window.top.location.href = '../../login.html';
+				}
+				getOestrusInfo()
+			}
+
+			function getHourArray() {
+				let now = new Date()
+				let nowTime = now.getHours()
+				let aHour = new Array()
+				for(let i = 0; i < nowTime; i++) {
+					aHour.push(i + ':00')
+				}
+				return aHour
+			}
+
+			function getXArray() {
+				let now = new Date()
+				let aTime = new Array()
+				aTime = [8, 10, 12, 14, 16]
+				let aX = new Array()
+				for(let i = 2; i >= 0; i--) {
+					let iDay = new Date()
+					iDay.setDate(now.getDate() - i)
+					for(let j = 0; j < aTime.length; j++) {
+						if(now.getDate() == iDay.getDate() && aTime[j] > now.getHours()) {
+							break;
+						}
+//						if(language === "en"){
+							aX.push(iDay.getDate() + "/" + (iDay.getMonth() + 1)+ " " + aTime[j] + ' :00')
+//						}else{
+//							aX.push((iDay.getMonth() + 1) + "/" + iDay.getDate() + " " + aTime[j] + ' :00')
+//						}
+						
+					}
+				}
+				return aX
+			}
+
+			function getCArray(len) {
+				let aC = new Array()
+				
+				aC = (isOestrus === '0' ? [38.5, 38.5, 38.6, 38.6, 38.6, 38.5, 38.5, 38.6, 38.6, 38.6, 38.5, 38.6, 38.6, 38.7, 38.7] : [38.7, 38.7, 38.8, 38.8, 38.9, 40, 40.1, 40, 40.1, 40, 40, 40.2, 40.3, 40.3, 40.3])
+				return aC
+			}
+			
+			function getOestrusInfo(){
+				oestrusChart = echarts.init(document.getElementById('oestrusChart'));
+				oestrusChart.setOption(oestrusOption);
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/bodyinformation/getPigTemperature',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&isOestrus=' + isOestrus,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data);
+						
+						if(data) {
+							if(data.errcode == 200) {
+								var xData = data.dataSource.list[0].x //getXArray()
+								var cDataArry = data.dataSource.list[0].y//getCArray(xData.length)
+								// 填入数据
+								oestrusChart.setOption({
+									title: {
+										text: i18next.t("chart.recentTemperature")
+									},
+									legend: {
+										data: [i18next.t("common.temperature")]
+									},
+									xAxis: {
+										data: xData
+									},
+									yAxis: {
+										min: 35,
+										splitNumber: 5
+									},
+				
+									series: [{
+										name: i18next.t("common.temperature"),
+										data: cDataArry
+									
+									}]
+								});
+								
+							} else {
+								if(data.errcode == "10005") {
+									alert(data.errmsg);
+									window.top.location.href = 'wxlogin.html';
+								}
+							}
+						}
+					},
+					error: function(err) {
+
+					}
+				})
+			}
+				
+			
+			//取得月猪重信息
+//			function getOestrusInfo() {
+//				oestrusChart = echarts.init(document.getElementById('oestrusChart'));
+//				oestrusChart.setOption(oestrusOption);
+//				
+//				
+//				
+//				
+//				
+//				
+//				
+//			}
+		</script>
+	</body>
+
+</html>

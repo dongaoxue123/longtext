@@ -1,0 +1,8 @@
+.layui-form-label.layui-required:after{
+        content:"*";
+        color:red;
+        position: absolute;
+		font-size: 25px;
+		top:14px;
+		left:4px
+}

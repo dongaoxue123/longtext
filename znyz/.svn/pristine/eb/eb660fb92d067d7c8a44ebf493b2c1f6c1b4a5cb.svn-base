@@ -1,0 +1,244 @@
+<html>
+
+	<head>
+		<title>Title</title>
+		<script src="../../statics/libs/jquery-1.7.2.js"></script>
+		<link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../../common/css/cyType.css">
+		<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+		<script src="../../statics/plugins/layui/layui.js"></script>
+		<script src="../../common/js/whole/cyLayer.js"></script>
+		<script src="../../common/js/whole/utils.js"></script>
+		<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div class="layui-field-box">
+			<form class="layui-form">
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label layui-required" data-i18n="common.houseName"></label>
+					<div class="layui-input-inline">
+						<input type="text" autocomplete="off" id="name" name="name" data-i18n="[placeholder]common.houseNameText" lay-verify="required|name" maxlength="10" class="layui-input" autocomplete="off">
+					</div>
+					<label class="layui-form-label layui-required" data-i18n="house.typeName"></label>
+					<div class="layui-input-inline">
+						<select id="type" name="type" style="height: 38px;border-color: #F0F0F0;" lay-verify="required|type">
+							<option value="" data-i18n="house.houseTypeValDefault"></option>
+							<option value="00021" data-i18n="house.gestationHouse"></option>
+							<option value="00022" data-i18n="house.reserveHouse"></option>
+							<option value="00023" data-i18n="house.nurseryHouse"></option>
+							<option value="00024" data-i18n="house.matingHouse"></option>
+							<option value="00059" data-i18n="house.finisherHouse"></option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+
+					<label class="layui-form-label layui-required" data-i18n="house.fieldRows"></label>
+					<div class="layui-input-inline">
+						<input type="text" autocomplete="off" id="row_num" name="row_num" data-i18n="[placeholder]house.fieldRowsText" maxlength="4" autocomplete="off" oninput="value=value.replace(/[^\d]/g,'')" lay-verify="required|row_num" class="layui-input">
+					</div>
+					<label class="layui-form-label layui-required" data-i18n="house.fieldColumns"></label>
+					<div class="layui-input-inline">
+						<input type="text" id="column_num" autocomplete="off" name="column_num" data-i18n="[placeholder]house.fieldRowsText" maxlength="4" autocomplete="off" oninput="value=value.replace(/[^\d]/g,'')" lay-verify="required|column_num" class="layui-input">
+					</div>
+				</div>
+				<div class="layui-form-item" style="padding-right: 20px">
+					<label class="layui-form-label" data-i18n="common.remark"></label>
+					<div class="layui-input-block" style="width: 490px">
+						<textarea id="remark" autocomplete="off" name="remark" data-i18n="[placeholder]common.remarkText" class="layui-textarea" maxlength="100" autocomplete="off"></textarea>
+					</div>
+				</div>
+				<div class="page-footer">
+					<div class="btn-list">
+						<div class="btnlist">
+							<button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+							<button class="layui-btn" onclick="$t.closeWindow();" data-i18n="btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		<!-- 国际化        -->
+		<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+		<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+		<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var authToken = localStorage.getItem("authToken");
+			//alert(authToken);
+			var user = localStorage.getItem("user");
+
+			var groupId;
+			var farmId;
+			groupId = JSON.parse(user).groupId;
+			farmId = JSON.parse(user).farmId;
+			i18n('../../locales', onLangReady) //国际化
+			function onLangReady() {
+				layui.use(['form', 'laydate'], function() {
+							var form = layui.form;
+							var $ = layui.$;
+							var laydate = layui.laydate;
+							if(!checkToken()) {
+								alert(i18next.t("timeout"));
+								window.top.location.href = '../../login.html';
+							}
+
+							//创建时间 日期控件
+							laydate.render({
+								elem: '#bornDate' //指定元素
+									,
+								theme: 'molv',
+								calendar: true //重要节日
+							});
+							//创建时间 日期控件
+							laydate.render({
+								elem: '#enterDate' //指定元素
+									,
+								theme: 'molv',
+								calendar: true //重要节日
+							});
+
+							var userId = GetQueryString("id"); //userId为空表示新增，否则是修改
+
+							//监听提交
+							if(userId == null) //添加
+							{
+
+								form.on('submit(submit)', function(res) {
+										var rowNum = $("#row_num").val();
+										var columnNum = $("#column_num").val();
+										if(rowNum == 0 || columnNum == 0) {
+											var warnMessage = "请录入大于0的正整数";
+											alert(warnMessage);
+											return false;
+										}
+										
+									
+											//layer.msg(JSON.stringify(res.field));
+											$.ajax({
+												type: 'POST',
+												url: commonIP + "api/system/house/create?authToken=" + authToken + "&groupId=" + groupId + "&farmId=" + farmId,
+												contentType: 'application/json',
+												data: JSON.stringify(res.field),
+												async: false,
+												success: function(data) {
+													var dataObj = JSON.parse(data);
+													if(dataObj) {
+														if(dataObj.errcode == "200") {
+															alert(i18next.t("addSucc"));
+															layer.close(layer.index);
+															window.parent.location.reload();
+														} else {
+															alert(dataObj.errmsg);
+														}
+													}
+												}
+											});
+											return false;
+										});
+									} else //编辑
+									{
+										form.on('submit(submit)', function(res) {
+													
+				var rowNum = $("#row_num").val();
+				var columnNum = $("#column_num").val();
+				if(rowNum == 0 ||columnNum == 0) {
+					var warnMessage = "请录入大于0的正整数";
+					alert(warnMessage);
+					return false;
+				}	
+											//layer.msg(JSON.stringify(res.field));
+											$.ajax({
+												type: 'POST',
+												url: commonIP + "api/system/house/update?authToken=" + authToken,
+												contentType: 'application/json',
+												data: JSON.stringify({
+													"id": userId,
+													"group_id": groupId,
+													"farmId": farmId,
+													"name": res.field.name,
+													"type": res.field.type,
+													"row_num": res.field.row_num,
+													"column_num": res.field.column_num,
+													"remark": res.field.remark
+												}),
+												async: false,
+												success: function(data) {
+													var dataObj = JSON.parse(data);
+													if(dataObj) {
+														if(dataObj.errcode == "200") {
+															alert(i18next.t("updateSucc"));
+															layer.close(layer.index);
+															window.parent.location.reload();
+														} else {
+															alert(dataObj.errmsg);
+														}
+													}
+												}
+											});
+											return false;
+										});
+									}
+
+									if(userId != null) //编辑
+									{
+										$.ajax({
+											type: "GET",
+											url: commonIP + 'api/system/house/getHouseListPage?authToken=' + authToken + '&page=0&limit=0&id=' + userId,
+											contentType: 'application/json',
+
+											success: function(data) {
+												var datas = JSON.parse(data);
+												//console.log(datas);
+												if(datas.errcode == 200) {
+													//赋值
+													$("#type").val(datas.dataSource.list[0].type);
+													form.render('select');
+
+													$("#name").val(datas.dataSource.list[0].name); //填充内容
+													$("#row_num").val(datas.dataSource.list[0].row_num);
+													$("#column_num").val(datas.dataSource.list[0].column_num);
+													$("#remark").val(datas.dataSource.list[0].remark);
+												} else {
+													alert(data.errmsg);
+													if(data.errcode == "10005") {
+														window.top.location.href = '../../login.html';
+													}
+												}
+											}
+										});
+									} else {
+										//新增
+									}
+								});
+
+						}
+
+						function GetQueryString(name) {
+							var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+							var r = window.location.search.substr(1).match(reg);
+							if(r != null) return unescape(r[2]);
+							return null;
+						}
+						$("#row_num").change(function() {
+							var rowNum = $("#row_num").val();
+							if(rowNum == 0) {
+								//alert(1);
+								var warnMessage = "请录入大于0的正整数";
+								alert(warnMessage);
+							}
+						});
+
+						$("#column_num").change(function() {
+							var columnNum = $("#column_num").val();
+							if(columnNum == 0) {
+								//alert(1);
+								var warnMessage = "请录入大于0的正整数";
+								alert(warnMessage);
+							}
+						});
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,27 @@
+package com.xlqx.znyz.screen.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+public interface ScreenNumberDao {
+
+	/**
+	 * 查询猪只数量列表（分页）
+	 *
+	 * @author wangshoujian
+	 * @createDate 2019年7月10日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public List<ScreenNumberBean> getList(Map<String, Object> parameter);
+}

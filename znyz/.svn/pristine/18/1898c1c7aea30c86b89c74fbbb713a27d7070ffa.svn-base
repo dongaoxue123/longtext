@@ -1,0 +1,123 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>智能养猪-智慧养猪</title>
+
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="description" content="智能养猪">
+		<meta name="keywords" content="智能养猪">
+		<meta name="author" content="小龙潜行科技">
+		<link rel="stylesheet" type="text/css" href="style/animate.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+		<script src="js/skyest.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.backstretch.min.js"></script>
+		<script src="js/main.js"></script>
+	</head>
+<body>
+
+<!---------------------------- 导航 ----------------------------------> 
+<div class="header">
+
+		</div>
+		<script src="components/header.js" type="text/javascript" charset="utf-8"></script>
+
+		<div class="banner banner-index" onclick="LinkTo()" style="position: relative; z-index: 0; background: none;height: 368px;"></div>
+		<script src="js/Banner" type="text/javascript"></script>
+		<script type="text/javascript">
+			var images = ["images/banner_02.jpg"];
+			if(banners.length > 0) {
+				$(".banner-index").attr("style", "cursor:pointer;");
+				images = [];
+				for(i = 0; i < banners.length; i++) {
+					images.push(banners[i]["img"]);
+				}
+			}
+
+			$(function() {
+				$('.banner-index').backstretch(images, {
+					fade: 750,
+					duration: 3000
+				});
+			});
+
+			function LinkTo() {
+				if(banners.length > 0) {
+					for(i = 0; i < banners.length; i++) {
+						if($(".backstretch img").attr("src") == banners[i]["img"] && banners[i]["url"] != "") {
+							window.location.href = banners[i]["url"];
+						}
+					}
+				}
+			}
+		</script>
+		<div class="container clear">
+			<!--user左侧菜单-->
+			<div class="side">
+				<dl class="sidemenu">
+					<dt><i class="icon"></i>智慧养猪</dt>
+					<dd>
+						<a class="active" href="">关于智慧养猪</a>
+					</dd>
+				</dl>
+			</div>
+			<!--右侧main-->
+			<!--个人首页-->
+			<div class="main user_home">
+				<div class="uc-head uc-head-border">关于智慧养猪</div>
+				<div class="uc-home clear">
+
+					<div class="width1200 pb50 pt50"> 
+					     <div class="about">
+					          <h2>关于智慧养猪</h2>
+					          <h3>一、智能养猪解决方案介绍</h3>
+					          <div class="hr mt20"></div>  
+					          <p>小龙智能养猪平台综合运用物联网技术、人工智能技术对生猪养殖过程中产生的声音、图像、视频、温湿度、氨气浓度等信息进行采集、分析，从而实现对母猪、商品猪、公猪养殖过程的全面管理与监控，从而建设覆盖养猪行业环境、疾病、基因、营养、健康等全领域、综合化的智能养猪平台。</p>
+					          <img src="images/zhihui01.png">        
+					          <h3>（一）产品用户服务对象</h3>
+					          <div class="hr mt20"></div>
+					          <p>1、养殖企业。利用该平台实时监测企业名下各猪场猪增重情况，与饲料喂养量结合则可实现最为重要的指标——料肉比的实时监控。而对于集团性养猪企业，则可以综合评价名下各猪场的增重情况，为各猪场养殖情况进行评测并给出各种建议。结合智能养猪的环境、疾病等监测传感器，对猪的生长环境进行监测及分析，即可对各增重情况异常的猪场给予喂料情况、生长环境等调整建议。
+					</p><p>2、上下游产业。上下游企业主要是指饲料企业、加工屠宰企业及终端销售企业。系统可预测出一定时间内各地区生猪出栏量及相应价格趋势等，而这对于上下游产业有很大帮助。
+					</p><p>3、政府职能部门。猪养殖行业有一定的周期性，而这种周期性对养殖企业及终端消费者都是有伤害的，而政府职能部门希望消除这种周期性，实现产业平稳良性发展。平台可以对关键数据进行实时预测，并以行业咨询报告等形式为职能部门提供服务。</p>
+					          <p>4、终端消费者。平台可为终端消费者提供有可信度的商品质量信息。为产品追溯等工作提供支持。</p>
+					          <h3>（二）产品解决方案</h3>
+					          <div class="hr mt20"></div> 
+					          <b>1、系统架构</b>
+					          <img src="images/chart01.png" style="width: 100%;">
+					          <img src="images/chart02.png" style="width: 100%;">
+					          <b>2、平台系统</b>
+					          <img src="images/chart03.png" style="width: 100%;">
+					          <p>测重核心算法程序。以组件形式呈现，是嵌入式程序的一部分，实现对采集到的图像实时估重。<br>
+					          标准接口服务。以标准形式提供对外接口，服务对象是所有需要体重相关数据的应用软件。<br>
+					          嵌入式程序。除调用核心算法程序进行估重外，还实现图像及体重数据采集及传输功能。<br>
+					          测重系统平台PC端。实现用户管理、对猪场简单的基本管理及统计分析报表。<br>
+					           （1）用户管理及权限管理。使授权用户可以访问系统。<br>
+					           （2）基础信息管理。设备管理实现采集设备与猪舍绑定。公司管理实现多级管理，适应集团化多猪场公司。还实现地区管理、猪场管理、猪舍管理、猪栏管理等功能。<br>
+					           （3）实时体重预测。选定某一猪栏，可见该栏采集设备采集传输过来的图片及实时预估体重。<br>
+					           （4）统计分析报表。<br>增长曲线。可呈现单只猪栏或单舍、单猪场的猪重日增长曲线、日预测增长曲线；<br>增长情况对比。猪舍内各猪栏生长曲线对比，不同猪舍内生长曲线对比，不同猪场对比；<br>猪场评估报告。猪场与其他猪场的增重比较；<br>料肉比。实现对猪场料肉比数据的实时记录与分析；<br>增重异常预警。对增重情况异常数据进行报警；<br>分栏预警。对体重差异过大的猪栏做出分栏预警。</p>
+					<p>5、测重系统平台移动端。<br>
+					（1）实时体重预测。选定某一猪栏，可见该栏采集设备采集传输过来的视频及实时预估体重。<br>
+					（2）统计分析。可呈现“测重系统平台PC端”中的各种统计分析。
+					</p>
+					<p>6、分栏系统软件。可实现现场对某一栏猪进行分栏。</p>
+					<p>7、采集设备管理系统。包括嵌入式设备注册、控制参数设置、远程维护系统升级等功能。</p>
+					     </div>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+		<div class="footer">
+					
+		</div>
+		<script src="components/footer.js" type="text/javascript" charset="utf-8"></script>
+</body>
+</html>

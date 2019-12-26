@@ -1,0 +1,33 @@
+package com.xlqx.znyz.screen.dao;
+
+import java.util.Map;
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+public interface AloneScreenDao {
+
+	/**
+	 * 查询栋舍下商品猪总数
+	 * @author wangshoujian
+	 * @createDate 2019年7月11日
+	 *
+	 * @param paramMap
+	 * @return
+	 */
+	public int getHogPigCount(Map<String, Object> paramMap);
+	
+	/**
+	 * 获取商品猪重平均数
+	 * @author wangshoujian
+	 * @createDate 2019年7月11日
+	 *
+	 * @param parameter
+	 * @return
+	 */
+	public float getAvgWeight(Map<String, Object> parameter);
+}

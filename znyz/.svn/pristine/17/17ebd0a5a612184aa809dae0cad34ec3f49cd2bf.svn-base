@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>智能养猪-关于我们</title>
+
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="description" content="智能养猪">
+		<meta name="keywords" content="智能养猪">
+		<meta name="author" content="小龙潜行科技">
+		<link rel="stylesheet" type="text/css" href="style/animate.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+		<script src="js/skyest.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.backstretch.min.js"></script>
+		<script src="js/main.js"></script>
+	</head>
+
+	<body>
+		<div class="header">
+
+		</div>
+		<script src="components/header.js" type="text/javascript" charset="utf-8"></script>
+
+		<div class="banner banner-index" onclick="LinkTo()" style="position: relative; z-index: 0; background: none;height: 368px;"></div>
+		<script src="js/Banner" type="text/javascript"></script>
+		<script type="text/javascript">
+			var images = ["images/banner_05.jpg"];
+			if(banners.length > 0) {
+				$(".banner-index").attr("style", "cursor:pointer;");
+				images = [];
+				for(i = 0; i < banners.length; i++) {
+					images.push(banners[i]["img"]);
+				}
+			}
+
+			$(function() {
+				$('.banner-index').backstretch(images, {
+					fade: 750,
+					duration: 3000
+				});
+			});
+
+			function LinkTo() {
+				if(banners.length > 0) {
+					for(i = 0; i < banners.length; i++) {
+						if($(".backstretch img").attr("src") == banners[i]["img"] && banners[i]["url"] != "") {
+							window.location.href = banners[i]["url"];
+						}
+					}
+				}
+			}
+		</script>
+
+		<!--main-->
+		<div class="container clear">
+			<!--user左侧菜单-->
+			<div class="side">
+				<dl class="sidemenu">
+					<dt><i class="icon"></i>关于我们</dt>
+					<dd>
+						<a class="active" href="">公司介绍</a>
+					</dd>
+				</dl>
+			</div>
+			<!--右侧main-->
+			<!--个人首页-->
+			<div class="main user_home">
+				<div class="uc-head uc-head-border">公司介绍</div>
+				<div class="uc-home clear">
+
+					<p>    
+					北京小龙潜行科技有限公司成立于2018年，是一家致力于畜牧行业智能化产品研发的科技公司。公司在成立之初就汇聚了一批人工智能、大数据领域精英人才及畜牧行业养殖专家，
+					同时与哈尔滨工业大学、东北农业大学等国内知名高校密切合作，将一批科研成果转化落地。主打产品采用先进的人工智能技术解决了养猪行业饲喂、管理过程关键指标的无接触、
+					无应激测量问题，基于图像视频技术的猪只盘点、背膘测量等产品已在多家猪场进行示范建设，产品应用效果良好，极大地解决了猪场科学管理难题、提升了管理效率、提高了经济效益，
+					受到用户的一致好评。公司与国内知名畜牧企业保持紧密沟通，智能化产品受到正大集团、牧原集团等企业的极大关注。公司也积极地与国外畜牧养殖、畜牧设备生产企业接触，
+					进行技术及销售渠道合作，达成更广泛的产业布局。小龙潜行以解决畜牧行业痛点问题为己任，以促进畜牧产业健康升级为奋斗目标。
+					</p>
+				</div>
+				</br></br></br></br></br></br>
+			</div>
+
+		</div>
+		
+		<div class="footer">
+			
+		</div>
+		<script src="components/footer.js" type="text/javascript" charset="utf-8"></script>
+		<!--footer结束-->
+		
+	</body>
+
+</html>

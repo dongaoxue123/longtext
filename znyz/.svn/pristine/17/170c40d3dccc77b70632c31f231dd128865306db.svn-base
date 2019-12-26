@@ -1,0 +1,26 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 栏位设备bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class FieldDeviceBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	// 设备code
+	private String code;
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+}

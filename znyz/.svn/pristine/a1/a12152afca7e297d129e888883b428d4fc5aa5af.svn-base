@@ -1,0 +1,396 @@
+/*
+ * 首页JS
+ */
+var pigPriceChart = echarts.init(document.getElementById('pigPriceChart'));
+var feedPriceChart = echarts.init(document.getElementById('feedPriceChart'));
+var myChart = echarts.init(document.getElementById('farm_size_1'));
+var countsDataArry ="";
+var timeDataArry = "";
+var authToken = "";
+var user = "";
+var group_id ="";
+var farm_id = "";
+$(function() {
+	authToken = localStorage.getItem("authToken");
+	user =localStorage.getItem("user");
+	group_id = JSON.parse(user).groupId;
+	farm_id = JSON.parse(user).farmId;
+	if (authToken.length = 0) {
+		alert("请重新登录");
+		window.top.location.href = 'wxlogin.html';
+		return false;
+	} else {
+		GetAppCountsInfo();
+		GetAppTimeInfo();
+		switchFeedPrice(1)
+		switchPigPrice(1)
+		myChart.setOption(option);
+	}
+
+});
+
+var dayHourOption = {
+	color: ['#1E90FF'],
+
+	title: {
+		text: 'App使用时长',
+		left: 'center',
+		top: 20
+	},
+	dataZoom: {
+		show: false
+	},
+	tooltip: {
+		trigger: 'axis',
+		axisPointer: {
+			type: 'cross',
+			crossStyle: {
+				color: '#999'
+			}
+		}
+	},
+	legend: {
+		data: ['时长']
+	},
+	xAxis: [{
+		type: 'category',
+		max: 11,
+		data: ["肥猪测重", "母猪体况", "企业内训", "母猪档案", "猪只盘点", "生长监控", "妊检录入", "配种录入", "种猪转舍", "设备控制", "PIGKNOWS", "卓牧鸟"],
+		axisLabel: {   
+			interval:0,                
+			rotate:40                          
+		}
+
+	}],
+	yAxis: [{
+			type: 'value',
+			name: '小时',
+			min: 0,
+			max: 10,
+			interval: 2
+		}
+	]
+	,
+	series: [{
+			name: '使用时长',
+			type: 'bar',
+			barWidth:20,//柱图宽度
+			itemStyle: {
+				normal: {
+					color: function(params) {
+						return params.dataIndex > 5 ? 'rgba(30,144,255)' : 'rgba(30,144,255)'
+					}
+				}
+			},
+			data: [5.6,6,3.5,2.8,4,5.4,3.8,3.2,2.5,4,2.8,4.9]
+		}
+	]
+};
+
+var dayTimesOption = {
+	//color: ['#ff7d27', '#47b73d', '#fcc36e', '#57a2fd', "#228b22", '#ff9f3f'],//饼图颜色
+	title : {
+        text: 'App使用次数',
+        x:'center'
+    },
+    tooltip : {
+        trigger: 'item',
+        formatter: "{a} <br/>{b} : {c} ({d}%)"
+    },
+    legend: {
+        orient : 'vertical',
+        x : 'left',
+        data:  ["肥猪测重", "母猪体况", "企业内训", "母猪档案", "猪只盘点", "生长监控", "妊检录入", "配种录入", "种猪转舍", "设备控制", "PIGKNOWS", "卓牧鸟"]
+    },
+/*    toolbox: {
+        show : true,
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+            magicType : {
+                show: true, 
+                type: ['pie', 'funnel'],
+                option: {
+                    funnel: {
+                        x: '25%',
+                        width: '50%',
+                        funnelAlign: 'left',
+                        max: 1548
+                    }
+                }
+            },
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },*/
+    series : [
+        {
+            name:'使用次数',
+            type:'pie',
+            radius: ['50%', '70%'],  //设置环形的空间大小 
+            center: ['50%', '60%'],
+            data:[{name:'肥猪测重',value:26},//5.6,6,3.5,2.8,4,5.4,3.8,3.2,2.5,4,2.8,4.9
+            		{name:'母猪体况',value:28},
+            		{name:'企业内训',value:16},
+            		{name:'母猪档案',value:10},
+            		{name:'猪只盘点',value:15},
+            		{name:'生长监控',value:21},
+            		{name:'妊检录入',value:13},
+            		{name:'配种录入',value:11},
+           			{name:'种猪转舍',value:8},
+            		{name:'设备控制',value:17},
+            		{name:'PIGKNOWS',value:14},
+           			{name:'卓牧鸟',value:19}]
+        }
+    ]
+};
+
+
+/*生长曲线 */
+var option = {
+		 title : {
+        text: '生长曲线',
+    },
+    tooltip : {
+        trigger: 'axis'
+    },
+/*    legend: {
+        data:['批次2018001','批次2018002']
+    },*/
+/*    toolbox: {
+        show : true,
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+            magicType : {show: true, type: ['line', 'bar']},
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },*/
+    calculable : true,
+    xAxis : [
+        {
+            type : 'category',
+            boundaryGap : false,
+            data : []
+        }
+    ],
+    yAxis : [
+        {
+        	type: 'value',
+			name: '斤',
+			min: 0,
+			max: 200,
+			interval: 40
+        }
+    ],
+    series : [
+        {
+        	name:'重量',
+            type:'line',
+            data:[],
+            itemStyle : { normal: {label : {show: true}}}
+            
+        },
+    ]
+}
+
+/*
+ * 切换
+ */
+function switchFeedPrice(index, e) {
+	if(e != undefined) {
+		var children = e.target.parentNode.children
+		for(var i = 0; i < children.length; i++) {
+			children[i].className = 'widget-caption'
+		}
+		e.target.className = 'widget-caption active'
+	}
+
+	switch(index) {
+		case 1: //日
+			feedPriceChart.setOption(dayHourOption);
+			break;
+	}
+}
+
+/*
+ * 切换
+ */
+function switchPigPrice(index, e) {
+	if(e != undefined) {
+		var children = e.target.parentNode.children
+		for(var i = 0; i < children.length; i++) {
+			children[i].className = 'widget-caption'
+		}
+		e.target.className = 'widget-caption active'
+	}
+
+	switch(index) {
+		case 1:
+			pigPriceChart.setOption(dayTimesOption);
+			break;
+	}
+}
+
+/**
+ * 获取当前时间
+ */
+function getDate() {
+	var myDate = new Date();
+	//获取当前年
+	var year = myDate.getFullYear();
+	//获取当前月
+	var month = myDate.getMonth() + 1;
+	//获取当前日
+	var date = myDate.getDate();
+	var now = year + '-' + p(month) + "-" + p(date);
+	return now;
+}
+
+function p(s) {
+	return s < 10 ? '0' + s : s;
+}
+
+//取得一周APP使用次数
+function GetAppCountsInfo() {
+	pigPriceChart.setOption(dayTimesOption)
+	let names = ["肥猪测重", "母猪体况", "企业内训", "母猪档案", "猪只盘点", "生长监控", "妊检录入", "配种录入", "种猪转舍", "设备控制", "PIGKNOWS", "卓牧鸟"]
+	names=["a"]
+	let values = [10,18,14,12,9,6,7,5,10,8,5,7]
+	values=[11]
+	let datas = new Array()
+	datas=[{name:'a',value:11}]
+//	for (let i = 0; i < 12; i++){
+//		datas.push({
+//		     name: names[i],
+//		     value: values[i]
+//		})
+//	}
+	console.log(names)
+	console.log(datas)
+	pigPriceChart.setOption({
+						legend: {                    
+		                    data: names
+		                },
+						series: [{
+					        data:datas	
+						}]
+					});
+	return;
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/system/device/getAppUseCounts',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&farmId= '+ farm_id,
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data);
+
+			if (data) {
+				if (data.errcode == 200) {
+					// 使用次数集合
+					countsDataArry = data.dataSource.list[0].appListData;
+					for(var i = 0;i< names.length; i++){
+		                counts.push({
+		                    name: names[i],
+		                    value: countsDataArry[i]
+		                });
+		            }
+					// 填入数据
+					pigPriceChart.setOption({
+						legend: {                    
+		                    data: names
+		                },
+						series: [{
+					            data:counts	
+						}]
+					});
+				} else {
+					if (data.errcode == "10005") {
+						alert(data.errmsg);
+					}
+				}
+			}
+		},
+		error: function(err) {
+
+		}
+	})
+}
+
+//取得一周APP使用时长
+function GetAppTimeInfo() {
+	var currentDate = getDate();
+    var countsList = [];
+    var counts
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/system/device/getAppUseTime',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&farmId= '+ farm_id,
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data);
+
+			if (data) {
+				if (data.errcode == 200) {
+					// 使用次数集合
+					timeDataArry = data.dataSource.list[0].appTimeListData;
+					for(var i = 0;i< timeDataArry.length; i++){
+						counts = parseInt(timeDataArry[i]/60%24) 
+		                countsList.push(counts);
+		            }
+					// 填入数据
+					feedPriceChart.setOption({
+						series: [{
+					            data:countsList	
+						}]
+					});
+				} else {
+					if (data.errcode == "10005") {
+						alert(data.errmsg);
+					}
+				}
+			}
+		},
+		error: function(err) {
+
+		}
+	})
+}
+
+function query()
+{
+	var counts = [];
+	var house_id = document.getElementById("houseId").value;
+    $.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/weight/getWeightBatchList',
+			contentType: 'application/json',
+			data: 'authToken='+authToken+'&group_id='+group_id+'&farm_id='+farm_id+'&house_id='+house_id,
+			dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			success: function(data) {
+				console.log(data);
+				if (data) {
+					if (data.errcode == 200) {
+						//时间
+						var timeDataArry = data.dataSource.list[0].date;
+						//重量
+						var weightDataArry = data.dataSource.list[0].data;
+						// 填入数据
+						option.xAxis[0].data = timeDataArry;
+						option.series[0].data = weightDataArry;
+						myChart.setOption(option);
+					} else {
+							option.xAxis[0].data = '';
+						    option.series[0].data = '';
+							myChart.setOption(option);
+					}
+				}
+			},
+			error: function(err) {
+	
+			}
+	})
+}

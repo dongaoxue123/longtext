@@ -1,0 +1,62 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body  style="height:100%;">
+		<header>
+		</header>
+		<main>
+			
+			<div class="btn">
+				<input type="submit" name="save" id="removeBinding" value="账号解绑" onclick="javascript:removeBinding()"/>
+			</div>
+			
+			<div class="addlist" id ="userlist">
+			</div>
+		</main>
+		<script  type="text/javascript">
+        	// 取得authToken
+			var authToken = localStorage.getItem('authToken');
+			var user = localStorage.getItem('user');
+			var userid = JSON.parse(user).id;
+			var openId = localStorage.getItem("openId");
+	        $(document).ready(function () {
+				if (authToken.length = 0){		
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+	        });			
+			function removeBinding(){
+				$.ajax({
+					type: "POST",
+					url: commonIP + 'api/users/logout?authToken=' + authToken+'&userid='+userid,
+					data: JSON.stringify({
+						"openId":openId
+					}) ,
+					contentType: 'application/json',
+					success: function(data) {
+						if (data.errcode == 200) {
+							window.top.location.href = 'login.html';
+						} else {
+							alert(data.errmsg);
+						}
+					}
+				});
+			}
+		</script>
+</body>
+</html>

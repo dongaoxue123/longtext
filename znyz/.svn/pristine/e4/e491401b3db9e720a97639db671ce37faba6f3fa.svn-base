@@ -1,0 +1,308 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>设备控制</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<link rel="stylesheet" type="text/css" href="style/weui.min.css"/>
+	<link rel="stylesheet" type="text/css" href="style/common.css"/>
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+</head>
+<body>
+	<div class="main">
+		<!--<div class="box_com">
+			<span>设备种类</span>
+			<select name="data">
+				<option value="">测重设备1</option>
+				<option value="">测重设备2</option>
+			</select>
+		</div>-->
+		<div class="box_com">
+			<span>所处栋舍</span>
+			<select name="houseId" id="houseId" onchange= "getEquipment()">
+			</select>
+		</div>
+	</div>
+	
+	<div class="main">
+		
+	</div>
+	
+	<div class="weight_list bg_lightblue flex">
+		<ul class="box_list">
+			<li class="blue"><h2><span id="EquipmentCount"></span>台</h2></li>
+			<li>设备总数</li>
+		</ul>
+		<ul class="box_list">
+			<li class="red"><h2><span id="AEquipmentCount"></span>台</h2></li>
+			<li>设备异常</li>
+		</ul>
+	</div>
+	<div id="EquipmentListTemplate">
+		<div id="EquipmentListTemplateZ" class="divBox">
+			
+		</div>
+	</div>
+		
+	<div id="dialogs1">
+		<!--BEGIN dialog1-->
+        <div class="js_dialog" id="iosDialog1">
+            <div class="weui-mask"></div>
+            <div class="weui-dialog">
+                <div class="weui-dialog__hd"><strong class="weui-dialog__title">请确认操作</strong></div>
+                <div class="weui-dialog__bd">确定启动？</div>
+                <div class="weui-dialog__ft">
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" onclick="Determine()">确定</a>
+                    <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" onclick="cancel()">取消</a>
+                </div>
+            </div>
+        </div>
+        <!--END dialog1-->
+	</div>
+</body>
+<script>
+	function goBack()
+	{
+		window.history.back();
+	}
+	
+	var authToken = localStorage.getItem('authToken');
+	var pigsArchivesId;
+	var houseName;
+	var code;
+	var deviceCodeItem;
+	var houseId;
+	$(document).ready(function() {
+		$("#dialogs1").hide();
+		getHouseList();
+		setInterval("getEquipment()", 1000*5);//5秒查询一次设备状态
+	});
+	function getHouseList(){
+		var user = localStorage.getItem('user');
+		var groupId = JSON.parse(user).groupId;
+		var farmId = JSON.parse(user).farmId;
+		$.ajax({
+			type: "GET",
+			url: commonIP + '/api/system/house/getHouseListPage',
+			contentType: 'application/json',
+			data: 'authToken='+authToken+'&groupId='+groupId+'&farmId='+farmId+'&pageNum=0&pageSize=0',
+			dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			async:true,
+			success: function(data) {
+				console.log(data)
+				if (data) {
+					if (data.errcode == 200) {	
+						var html = '';
+				        for (var key in data.dataSource.list){
+				        	if(key==0){
+				        		html = html + '<option value="'+ data.dataSource.list[key].id +'" selected="">'+ data.dataSource.list[key].name +'</option>';
+				        	}else{
+				        		html = html + '<option value="'+ data.dataSource.list[key].id +'">'+ data.dataSource.list[key].name +'</option>';
+				        	}
+				        }
+				        $("#houseId").html(html);
+				        getEquipment();//查询设备信息
+					} else {
+						alert(data.errmsg);
+						if(data.errcode =="10005"){
+							window.top.location.href = 'wxlogin.html';
+						}
+					}
+				}
+			}
+		});
+	}
+	// 取得信息
+	function getEquipment() {
+		houseId = $("#houseId").val();
+		$("#EquipmentListTemplateZ").empty();
+		getEquipmentCount(houseId);
+		$.ajax({
+			type: "GET",
+			url: commonIP + 'api/pig/equipment/getEquipmentListPage?house_id='+houseId,
+			contentType: 'application/json',
+			data: 'authToken=' + authToken,
+			dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			async:false,
+			success: function(data) {
+				console.log(data);
+				if(data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				} else {
+					//获取模板
+					var html = '';
+					deviceCodeItem = '';
+					for(var key in data.dataSource.list) {
+						var state ="";
+						deviceCodeItem=deviceCodeItem+data.dataSource.list[key].code;
+						if(key != data.dataSource.list-1){
+							deviceCodeItem=deviceCodeItem+',';
+						}
+						deviceCode = deviceCodeItem;
+						stateCode = 6;	
+						$.ajax({
+				        	type:"GET",
+				        	url:commonIP +'api/pig/equipment/changeEquipmentState',
+				        	contentType:'application/json',
+				        	data:'authToken='+authToken+ '&deviceCode=' + deviceCode+ '&stateCode=' + stateCode+'&authCode='+authToken,
+				        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+				        	async:false,
+				        	success:function(result){
+				        		console.log(result);
+				        		if(result.errcode == 200 && result.dataSource != null){
+				        			for(var res in result.dataSource.list) {
+				        				if(result.dataSource.list[res].deviceCode == data.dataSource.list[key].code)
+					        				{
+					        					html = html+'<div class="weight_list bg_lightgray">'+
+											    '<ul class="box_lh">'+
+											       '<li><h3 class="dark">设备识别号：' +data.dataSource.list[key].code + '</h3></li>' +
+												   '<li><h6>所处位置： ' + data.dataSource.list[key].name + '</h6></li>' +
+												   '<input type="hidden" value="'+ data.dataSource.list[key].house_id  +'">' +
+								                   '<li>当前状态： '+result.dataSource.list[res].deviceState+'</li>' +
+								                   '<li><a onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","3")  class="btn_style bg_red">停止</a>' +
+												       '<a class="btn_style bg_green" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","1")>启动</a>' +
+												       '<a class="btn_style bg_gray" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","2")>返回</a>' +
+												       '<a class="btn_style bg_blue" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","4")>重启</a>' +
+												   '</li>'+
+												'</ul>'+
+												'<div class="btn_corner btn_follow bg_yellow">'+
+													'<a onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","0")>初始化</a>'+
+												'</div>'+
+											    '</div>';
+								           }
+							         }
+				        		}
+				        		else if(result.errcode == 200 && result.dataSource == null){
+		        						html = html+'<div class="weight_list bg_lightgray">'+
+									    '<ul class="box_lh">'+
+									       '<li><h3 class="dark">设备识别号：' +data.dataSource.list[key].code + '</h3></li>' +
+										   '<li><h6>所处位置： ' + data.dataSource.list[key].name + '</h6></li>' +
+										   '<input type="hidden" value="'+ data.dataSource.list[key].house_id  +'">' +
+						                   '<li><a onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","3")  class="btn_style bg_red">停止</a>' +
+										       '<a class="btn_style bg_green" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","1")>启动</a>' +
+										       '<a class="btn_style bg_gray" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","2")>返回</a>' +
+										       '<a class="btn_style bg_blue" onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","4")>重启</a>' +
+										   '</li>'+
+										'</ul>'+
+										'<div class="btn_corner btn_follow bg_yellow">'+
+											'<a onclick=changeEquipmentState("'+ data.dataSource.list[key].code +'","0")>初始化</a>'+
+										'</div>'+
+									    '</div>';
+				        		}
+							   	else if (result.errcode == "10005") {
+									window.top.location.href = 'wxlogin.html';
+								}
+				        	}
+			           });	
+					}
+					$("#EquipmentListTemplateZ").html(html);
+					//alert(deviceCodeItem);
+				}
+			}
+		});
+	}
+	
+	function changeEquipmentState(deviceCode,stateCode) {
+		var state = "";
+		if(stateCode==0){
+			state = "初始化";
+		}else if(stateCode==1){
+			state = "启动";
+		}else if(stateCode==2){
+			state = "返回";
+		}else if(stateCode==3){
+			state = "暂停";
+		}else if(stateCode==4){
+			state = "重启";
+		}
+			var msg ='确定要执行'+state+'操作吗?';
+	        if(confirm(msg)){
+		        $.ajax({
+		        	type:"GET",
+		        	url:commonIP +'api/pig/equipment/changeEquipmentState',
+		        	contentType:'application/json',
+		        	data:'authToken='+authToken+ '&deviceCode=' + deviceCode+ '&stateCode=' + stateCode+'&authCode='+authToken,
+		        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		        	success:function(data){
+		        		console.log(data);
+		        		if(data.errcode == 200){
+		        			console.log(data);
+			    			var state = "";
+			    			if(stateCode==0){
+			    				state = "初始化";
+			    			}else if(stateCode==1){
+			    				state = "启动";
+			    			}else if(stateCode==2){
+			    				state = "返回";
+			    			}else if(stateCode==3){
+			    				state = "暂停";
+			    			}else if(stateCode==4){
+			    				state = "重启";
+			    			}
+			        		if (data.errcode == 200) {
+								if(data.dataSource.list[0].resultCode == 1){
+									alert(state+"指令发送成功");
+								}else{
+									alert(state+"指令发送失败");
+								}
+							}else {
+								if (data.errcode == "10005") {
+									window.top.location.href = 'wxlogin.html';
+								}else{
+									alert('设备未返回"'+state+'"结果');
+								}
+								
+							} 
+		        		}else if (data.errcode == "10012") {
+							alert(data.errmsg);
+						}else if (data.errcode == "10005") {
+							window.top.location.href = 'wxlogin.html';
+						}
+		        	}
+	            });	
+		    } 		
+	}
+	
+	// 取得信息
+	function getEquipmentCount(houseId) {
+		$("#EquipmentCount").html("0");
+		$("#AEquipmentCount").html("0");
+        $.ajax({
+        	type:"GET",
+        	url:commonIP +'api/pig/equipment/getEquipmentCount?houseId='+houseId,
+        	contentType:'application/json',
+        	data:'authToken='+authToken,
+        	dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+        	success:function(data){
+        		console.log(data);
+        		if (data.errcode == "10005") {
+					window.top.location.href = 'wxlogin.html';
+				}else {
+					$("#EquipmentCount").html(data.dataSource.list[0]);
+        			$("#AEquipmentCount").html(data.dataSource.list[1]);
+				} 
+        	}
+        });	
+	}
+	
+	function Determine() {
+      $("#dialogs1").show();
+	}
+	
+	
+	function cancel() {
+      $("#dialogs1").hide();
+	}
+	
+</script>
+</html>

@@ -1,0 +1,266 @@
+{
+  "menuList": [
+    	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Swine Farm device Monitor",
+          "type": 1,
+          "url": "page/basedata/pigFarmEnvironment.html",
+          "menuID":"1"
+        }
+      ],
+      "name": "Device Monitor",
+      "type": 0,
+      "url": null
+    },
+  	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Pig House Information Management",
+          "type": 1,
+          "url": "page/basedata/house.html",
+          "menuID":"3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "PEN Information Management ",
+          "type": 1,
+          "url": "page/basedata/field.html",
+          "menuID":"4"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Sow document",
+          "type": 1,
+          "url": "page/basedata/pig.html",
+          "menuID":"5"
+        }
+      ],
+      "name": "General Information Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "batch Management",
+          "type": 1,
+          "url": "page/hogBactch/hogBatch.html",
+          "menuID":"3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Pen Management",
+          "type": 1,
+          "url": "page/hogBactch/hogBatchField.html",
+          "menuID":"4"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Transfer Management",
+          "type": 1,
+          "url": "page/hogBactch/hogBatchChangeField.html",
+          "menuID":"5"
+        }
+      ],
+      "name": "Pig Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Sow body management",
+          "type": 1,
+          "url": "page/bodyInformation/pigBodyInformation.html",
+          "menuID":"13"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Pig body management",
+          "type": 1,
+          "url": "page/hogBactch/pigGrowMonitor.html",
+          "menuID":"5"
+        }
+      ],
+      "name": "Body management",
+      "type": 0,
+      "url": null
+    },
+   	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Pig behavior",
+          "type": 1,
+          "url": "page/abnormal/abnormalMonitorPig.html",
+          "menuID":"13"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Personnel behavior",
+          "type": 1,
+          "url": "page/abnormal/abnormalMonitorPerson.html",
+          "menuID":"13"
+        }
+      ],
+      "name": "Abnormal behavior monitoring",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-tachometer",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Breeding Information Management",
+          "type": 1,
+          "url": "page/productData/matingBusiness.html",
+          "menuID":"8"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Gestation Information Management",
+          "type": 1,
+          "url": "page/productData/pregnancyTestBusiness.html",
+          "menuID":"9"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Farrowing Information Management",
+          "type": 1,
+          "url": "page/productData/deliveryBusiness.html",
+          "menuID":"10"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Weaning Information Management",
+          "type": 1,
+          "url": "page/productData/weaningBusiness.html",
+          "menuID":"11"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Transferring information Management",
+          "type": 1,
+          "url": "page/productData/changeHouse.html",
+          "menuID":"12"
+        }
+      ],
+      "name": "Production Information Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "User Management",
+          "type": 1,
+          "url": "page/systemManage/user.html",
+          "menuID":"13"
+        }
+      ],
+      "name": "System Management",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "weight measure Statistics",
+          "type": 1,
+          "url": "page/deviceExport/deviceExport.html",
+          "menuID":"14"
+        }
+      ],
+      "name": "handheld device output",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "Industry News",
+          "type": 1,
+          "url": "page/basedata/pigsCharts.html",
+          "menuID":"15"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "APP statistics",
+          "type": 1,
+          "url": "page/basedata/charts.html",
+          "menuID":"16"
+        }
+      ],
+      "name": "Diagram Management",
+      "type": 0,
+      "url": null
+    }
+  ],
+  "code": 0
+}

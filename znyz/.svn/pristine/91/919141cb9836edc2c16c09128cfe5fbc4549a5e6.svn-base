@@ -1,0 +1,113 @@
+{
+  "menuList": [
+  	{
+      "children": null,
+      "icon": "fa fa-table",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "集团信息管理",
+          "type": 1,
+          "url": "page/basedata/group.html",
+          "menuID":"1"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "猪场信息管理",
+          "type": 1,
+          "url": "page/basedata/farm.html",
+          "menuID":"2"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "栋舍信息管理",
+          "type": 1,
+          "url": "page/basedata/house.html",
+          "menuID":"3"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "采集设备管理",
+          "type": 1,
+          "url": "page/basedata/device.html",
+          "menuID":"6"
+        }
+      ],
+      "name": "基础数据管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-window-restore",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "用户管理",
+          "type": 1,
+          "url": "page/systemManage/user.html",
+          "menuID":"13"
+        },
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "角色管理",
+          "type": 1,
+          "url": "page/systemManage/role.html",
+          "menuID":"14"
+        }
+      ],
+      "name": "系统管理",
+      "type": 0,
+      "url": null
+    },
+    {
+      "children": null,
+      "icon": "fa fa-pie-chart",
+      "list": [
+        {
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "体况评分管理",
+          "type": 1,
+          "url": "page/systemSetting/pigScore.html",
+          "menuID":"16"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "生产阶段管理",
+          "type": 1,
+          "url": "page/systemSetting/productionStage.html",
+          "menuID":"17"
+        },{
+          "children": null,
+          "icon": "fa fa-table",
+          "list": null,
+          "name": "饲喂标准管理",
+          "type": 1,
+          "url": "page/systemSetting/feedStandard.html",
+          "menuID":"18"
+        }
+          
+      ],
+      "name": "系统设置",
+      "type": 0,
+      "url": null
+    }
+ 
+  ],
+  "code": 0
+}

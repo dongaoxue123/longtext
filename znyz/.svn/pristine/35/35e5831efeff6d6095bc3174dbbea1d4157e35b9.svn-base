@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>配种信息管理</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+  
+</head>
+<script src="../../statics/plugins/layui/layui.js"></script>
+<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+<body> 
+    <div class="layui-form-item" id="button" style="margin-top: 10px;">
+    	<div class="layui-form-item" style="padding-right: 20px">
+    		<!--<label class="layui-form-label">猪场名称:</label>
+				<div class="layui-input-inline">			
+	      <select id="farmId" name="farmId" style="height: 38px;border-color: #F0F0F0;">
+	        	<option value="">请选择猪场</option>
+	    	</select>
+		    </div>-->
+		    
+		    <label class="layui-form-label"><span data-i18n="matingBusiness.sowCode"></span>:</label>
+		   <form class="layui-form">
+			<div class="layui-input-inline">
+		    	<!-- <input class="layui-input" id="pigNumbers" name="pigNumbers">   -->
+				<select id="pigNumbers" name="pigNumbers" lay-filter="pigNumbers" style="height: 38px;border-color: #F0F0F0;" lay-search>
+					<option value=""></option>
+				</select>
+		    </div>
+			</form>
+			
+      <button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+      <button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+    	<button class="layui-btn" id="add" data-i18n="btnAdd"></button>
+		<button type="button" class="layui-btn" id="download"  ><i class="layui-icon">&#xe601;</i>下载导入模板</button>
+    	<button type="button" class="layui-btn" id="upload" data-i18n="[append]import"><i class="layui-icon">&#xe67c;</i></button>
+    	<!--	<button type="button" class="layui-btn" id="uploadHistory"><i class="layui-icon">&#xe67c;</i>历史记录导入</button>-->
+    </div>
+    </div>
+	
+<table class="layui-hide" id="matingBusiness" lay-filter="matingBusiness"></table>
+<script type="text/html" id="barDemo">
+  <!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a>-->
+  <!--<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">补录</a>-->
+   <!--<a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>-->
+	<a class="layui-btn layui-btn-xs" lay-event="edit" data-i18n="btnEdit"></a>
+</script>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+  var farmId;
+  farmId = JSON.parse(user).farmId;
+  i18n('../../locales', onLangReady) //国际化
+  function onLangReady(){
+	layui.use(['form','table','laydate'], function(){
+		var table = layui.table;
+		var form = layui.form;
+		var laydate = layui.laydate;
+		var $ = layui.$;
+		if(!checkToken()){
+	  		alert(i18next.t("timeout"));
+	 			window.top.location.href = '../../login.html';
+		}
+	
+		var page = 1;
+		var pageSize = 30;
+		var pigsType ='00034';
+		//获取猪只下拉列表(母猪编号)
+	   	$.ajax({
+	      //  url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page='+page+'&limit='+pageSize+'&pigs_type=00032',
+	      url: commonIP + 'api/pig/info/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page='+0+'&limit='+0+'&pigs_type=00032',
+
+	      success: function (res) {
+
+	    	var dataObj = JSON.parse(res);
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].pigs_archives_id+'">'+dataObj.dataSource.list[i].pigs_number+'</option>';
+	            }
+	            $("#pigNumbers").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	    	  }
+	    }
+	    });
+		
+		  //方法级渲染
+		table.render({
+		    elem: '#matingBusiness'
+		    ,url: commonIP + "api/pig/matingbusiness/getListPage?authToken="+authToken+"&farmId=" + farmId  //数据请求路径
+		    	    ,parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      //"data": res.dataSource.list //解析数据列表
+			    	"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+			    };
+  			}
+		    ,cellMinWidth: 80
+		    ,cols: [[
+		      {type:'numbers',width:'2%'}
+		      ,{field:'matingDate', title: i18next.t("matingBusiness.breedingDate") ,width:'10%'}
+		      ,{field:'farmName', title: i18next.t("common.farmName") ,width:'9%'}
+		      ,{field:'pigNumbers', title: i18next.t("matingBusiness.sowCode") ,width:'7%'}
+		      ,{field:'houseName', title: i18next.t("matingBusiness.breedingHouse") ,width:'9%'}
+		      ,{field:'fieldName', title: i18next.t("matingBusiness.breedingField") ,width:'7%'}
+		      ,{field:'isFarmPig', title: i18next.t("matingBusiness.isFarmBoar") ,width:'8%'}
+		      ,{field:'parentPig1Number', title: i18next.t("matingBusiness.breedingBoar") + '1',width:'8%'}
+		      ,{field:'parentPig2Number', title: i18next.t("matingBusiness.breedingBoar") + '2',width:'8%'}
+		      ,{field:'parentPig3Number', title: i18next.t("matingBusiness.breedingBoar") + '3',width:'8%'}
+		      ,{field:'operatorName', title: i18next.t("common.optUser") ,width:'7%'}
+		      ,{field:'remark', title: i18next.t("common.remark") ,width:'6%'}
+		      ,{fixed: 'right',title:  i18next.t("opt") , width:'7%',  align:'center', toolbar: '#barDemo'}//一个工具栏  具体请查看layui官网
+		    ]]
+		    ,even: true //开启隔行背景
+		    ,page: true   //开启分页
+		    ,limit:10   //默认十条数据一页
+		    ,limits:[10,20,30,50]  //数据分页条
+		    ,id: 'testReload'
+		    ,done:function(){
+		    	i18n('../../locales') //国际化
+		    }
+		});
+		
+		//监听工具条
+			table.on('tool(matingBusiness)', function(obj){
+			    var data = obj.data;
+			    //补录
+			    if(obj.event === 'detail'){
+			       var index = layer.open({
+							    type: 2,
+							    content: "updateMatingBusiness.html?id="+data.id +"&type=1",
+							    area: ['800px', '500px'],
+							    maxmin: true
+							}); 
+  
+			    } else if(obj.event === 'del'){
+			        layer.confirm(i18next.t("delConfirm"), function(index){
+			        	//alert(data.id);
+			      		  $.ajax({  
+					            url: commonIP + "api/pig/matingbusiness/delete?authToken="+authToken,
+					            type: 'POST',
+											contentType: 'application/json',
+											data: JSON.stringify({"id":data.id}),
+			                success: function(text) {
+			                	var dataObj = JSON.parse(text);
+			                		if(dataObj.code == 0){
+					                		layer.msg(dataObj.msg, {icon: 6});
+											        obj.del();
+											        layer.close(index);  
+			                		}else{
+			                				layer.msg(dataObj.msg, {icon: 5});
+			                		}
+			                }
+				            });  
+			      		});
+						
+			    } else if(obj.event === 'edit'){
+					    var index = layer.open({
+							    type: 2,
+							    content: "addMatingBusiness.html?id="+data.id +"&type=2",
+							    area: ['800px', '500px'],
+							    maxmin: true
+							});  
+			    }
+		  });
+			  
+		  $('#add').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'addMatingBusiness.html',
+					    area: ['850px', '600px'],
+					    maxmin: true
+					});
+//					layer.full(index);
+		  });
+		  
+		  $('#upload').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'uploadMatingBusiness.html?type=0',
+					    area: ['450px', '200px'],
+					    maxmin: true
+					});
+		  });
+		  $('#download').on('click', function(){
+		   		window.location.href="http://azp.longoor.com/excel_template/导入猪只配种业务模板.xls"
+		  });
+		  $('#uploadHistory').on('click', function(){
+		   		var index = layer.open({
+					    type: 2,
+					    content: 'uploadMatingBusiness.html?type=1',
+					    area: ['450px', '200px'],
+					    maxmin: true
+					});
+		  });
+		var active = {
+		    reload: function(){
+		      //执行重载
+		      table.reload('testReload', {
+		        page: {
+		          curr: 1 //重新从第 1 页开始
+		        }
+		        ,where: {
+	            	farmId: $("#farmId").val(),
+	            	// pigNumbers: $("#pigNumbers").val()
+					pigNumbers: $('#pigNumbers option:selected').text()
+		        }
+		      });
+		    },
+		};
+
+    //创建时间 日期控件
+    laydate.render({
+		  	elem: '#createDate' //指定元素
+		  	,range: true //是否开启范围选择，即双控件
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+//		  	,mark: {'2018-5-14': '生日','2018-5-28': '纪念日'} //日期备注，如重要事件或活动标记
+		});
+		$('#search').on('click', function(){
+		    active['reload'].call(this);
+		});
+		
+		
+		$('#reset').on('click', function(){
+			//清空后重新刷新下拉菜单
+			$('#pigNumbers').val("");
+			form.render("select");
+
+		});
+		
+		
+				
+	});
+	}
+</script>
+
+</body>
+</html>

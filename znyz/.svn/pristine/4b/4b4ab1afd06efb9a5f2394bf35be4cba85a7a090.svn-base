@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title></title>
+    <script src="js/flexible.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+    <script type="text/javascript">
+    	
+   		document.addEventListener('plusready', function(){
+   			//console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。"
+   			
+   		});
+   		
+    </script>
+</head>
+<body>
+	<div class="close">
+		<span class="iconfont icon-close1"></span>
+	</div>
+	
+	<div class="weight_list bg_lightgray mt0">
+		<div class="msg_corner bg_red">
+			<a href="#">计算公式</a>
+		</div>
+		
+		<p class="p_text">
+			<b style="font-size: 16px;">限饲计算方式：</b><br/>
+			<a style="font-size: 16px;">
+				妊娠母猪所需的能量包括自身代谢能、胎儿及附属物增重能、背膘调整能。各能量需要的计算公式如下：
+			</a>
+		</p>
+		<p class="p_text">
+			<a style="font-size: 16px;color:#0086B3;">日自身代谢能：</a>
+			<a style="font-size: 16px;">ME=110×(增重/2+母猪调整前体重)0.75</a>
+		</p>
+		<p class="p_text">
+			<a style="font-size: 16px;color:#0086B3;">日胎儿及附属物增重能：</a>
+			<a style="font-size: 16px;">BWE=胎儿增重×5Mcal/Kg÷调整天数</a>
+		</p>
+		<p class="p_text">
+			<a style="font-size: 16px;color:#0086B3;">日背膘调整能：</a>
+			<a style="font-size: 16px;">PWE=(TP2-SP2)×5Kg/mm×5Mcal/Kg÷调整天数</a>
+		</p>
+		<p class="p_text">
+			<a style="font-size: 16px;color:#0086B3;">母猪日饲喂量：</a>
+			<a style="font-size: 16px;">W=(ME+PWE+BWE)/E</a>
+		</p>
+		<p class="p_text">
+			<a style="font-size: 16px;">其中，TP2代表调整后背膘值，SP2代表调整前背膘值，E代表饲喂饲料能量值。</a>
+		</p>
+	</div>
+	
+	
+
+	
+
+</body>
+</html>

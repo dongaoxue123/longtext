@@ -1,0 +1,146 @@
+package com.xlqx.znyz.screen.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.xlqx.znyz.core.screendatasourcebean.NumberData;
+import com.xlqx.znyz.core.screendatasourcebean.NumberDataSource;
+import com.xlqx.znyz.core.screendatasourcebean.NumberSourceDataBean;
+import com.xlqx.znyz.screen.bean.ScreenNumberBean;
+import com.xlqx.znyz.screen.service.ScreenNumberService;
+
+/**
+ * 首页查询猪只数量图表
+ * 
+ * @author wangshoujian
+ *
+ */
+@RestController
+@RequestMapping(value = "/api/screen/number")
+public class ScreenNumberController {
+	private final Logger logger = LoggerFactory.getLogger(ScreenNumberController.class);
+
+	@Autowired
+	private ScreenNumberService screenNumberService;
+
+	/**
+	 * 前台页面种猪时间/数量
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/getPigList", method = RequestMethod.POST)
+	public NumberSourceDataBean<NumberDataSource> getPigList() {
+		logger.info("ScreenNumberController==>getList()");
+		NumberSourceDataBean<NumberDataSource> sdb = new NumberSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = null;
+		List<ScreenNumberBean> res = screenNumberService.getList(parameter, "0", "0");
+		List<NumberData> numberDataList = new ArrayList();
+		if (res != null && res.size() > 0) {
+			String[] date = new String[res.size()];
+			String[] pigNumber = new String[res.size()];
+			int[] hogNumber = new int[res.size()];
+			// 取出日期扔进数组
+			for (int i = 0; i < res.size(); i++) {
+				date[i] = res.get(i).getDate();
+				pigNumber[i] = String.valueOf(res.get(i).getPigNumber());
+				hogNumber[i] = res.get(i).getHogNumber();
+			}
+			NumberData numberData = new NumberData();
+			numberData.setName("种猪");
+			numberData.setData(pigNumber);
+			numberDataList.add(numberData);
+			sdb.setData(new NumberDataSource<NumberDataSource>(numberDataList));
+
+			sdb.getData().setCategories(date);
+			sdb.getData().setSeries(numberDataList);
+			sdb.setMessage(0, "查询成功");
+
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+
+		return sdb;
+
+	}
+
+	/**
+	 * 前台页面商品猪猪时间/数量
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/getHogList", method = RequestMethod.POST)
+	public NumberSourceDataBean<NumberDataSource> getHogList() {
+		logger.info("ScreenNumberController==>getList()");
+		NumberSourceDataBean<NumberDataSource> sdb = new NumberSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = null;
+		List<ScreenNumberBean> res = screenNumberService.getList(parameter, "0", "0");
+		List<NumberData> numberDataList = new ArrayList();
+		if (res != null && res.size() > 0) {
+			String[] date = new String[res.size()];
+			String[] pigNumber = new String[res.size()];
+			String[] hogNumber = new String[res.size()];
+			// 取出日期扔进数组
+			for (int i = 0; i < res.size(); i++) {
+				date[i] = res.get(i).getDate();
+				pigNumber[i] = String.valueOf(res.get(i).getPigNumber());
+				hogNumber[i] = String.valueOf(res.get(i).getHogNumber());
+			}
+			NumberData numberData = new NumberData();
+			numberData.setName("商品猪");
+			numberData.setData(hogNumber);
+			numberDataList.add(numberData);
+			sdb.setData(new NumberDataSource<NumberDataSource>(numberDataList));
+			sdb.getData().setCategories(date);
+			sdb.getData().setSeries(numberDataList);
+			sdb.setMessage(0, "查询成功");
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+
+		return sdb;
+
+	}
+
+	/**
+	 * 前台页面设备时间/数量
+	 * 
+	 * @return
+	 */
+	@RequestMapping(value = "/getDeviceList", method = RequestMethod.POST)
+	public NumberSourceDataBean<NumberDataSource> getDeviceList() {
+		logger.info("ScreenNumberController==>getList()");
+		NumberSourceDataBean<NumberDataSource> sdb = new NumberSourceDataBean<NumberDataSource>();
+		Map<String, Object> parameter = null;
+		List<ScreenNumberBean> res = screenNumberService.getList(parameter, "0", "0");
+		List<NumberData> numberDataList = new ArrayList();
+		if (res != null && res.size() > 0) {
+			String[] date = new String[res.size()];
+			String[] deviceNumber = new String[res.size()];
+			// 取出日期扔进数组
+			for (int i = 0; i < res.size(); i++) {
+				date[i] = res.get(i).getDate();
+				deviceNumber[i] = String.valueOf(res.get(i).getDeviceNumber());
+			}
+			NumberData numberData = new NumberData();
+			numberData.setName("设备数量");
+			numberData.setData(deviceNumber);
+			numberDataList.add(numberData);
+			sdb.setData(new NumberDataSource<NumberDataSource>(numberDataList));
+			sdb.getData().setCategories(date);
+			sdb.getData().setSeries(numberDataList);
+			sdb.setMessage(0, "查询成功");
+		} else {
+			sdb.setMessage(1, "猪场未找到");
+		}
+		return sdb;
+
+	}
+}

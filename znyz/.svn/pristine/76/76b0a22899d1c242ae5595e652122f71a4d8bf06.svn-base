@@ -1,0 +1,155 @@
+var authToken;//token
+var user;//登录用户
+$(document).ready(function() {
+
+				// 取得authToken
+	authToken = localStorage.getItem('authToken');
+				//alert(authToken)
+	if (authToken == null) {
+			alert("请重新登录");
+			window.top.location.href = 'wxlogin.html';
+			return false;
+	}
+	user = localStorage.getItem('user');
+	var uid= JSON.parse(user).id;
+
+	var pigId =getUrlParam('pid');
+	 // 每页展示10个
+	 var size = 5;
+	 var page = 0;
+	 $('#lists').empty();
+	 // dropload
+	 $(".dropload-down").remove();
+	 //查询体况信息列表
+	    $('#content').dropload({
+	        scrollArea : window,
+	        loadUpFn:function(me){
+//          	location.reload(); 
+				page=1;
+		        var result = '';
+		        $.ajax({
+					type: "GET",
+					url:commonIP + "api/pig/historyRemarks/getList",
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigId='+pigId+'&pageNum='+page+'&pageSize='+size+'&uid='+uid,
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		            success: function(data){
+		            	console.log(data);
+						if (data && data.errcode == 200) {
+							$(".dropload-load").show();
+					        for (var key in data.dataSource.list){
+								result = result+'<div class="weight_list bg_lightblue" >'+
+										'<div class="btn_corner btn_follow btn_unfollow"><a href="pigRemark.html?id='+data.dataSource.list[key].id+'">编辑</a></div>'+
+										'<ul class="history">'+
+										'<li class="flex"><h4 class="dark">'+data.dataSource.list[key].createUserName+'</h4><h6>'+data.dataSource.list[key].createTime+'</h6></li>'+
+										'<li><p>'+data.dataSource.list[key].textMessage+'</p></li>'+
+										'</ul>';
+								result = result+'<ul class="picture flex">';
+										if(data.dataSource.list[key].pic1 != null && data.dataSource.list[key].pic1!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic1+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic2!=null&&data.dataSource.list[key].pic2!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic2+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic3!=null&&data.dataSource.list[key].pic3!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic3+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic4!=null&&data.dataSource.list[key].pic4!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic4+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic5!=null&&data.dataSource.list[key].pic5!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic5+'"/></li>';
+										}
+										result = result+'</ul></div></div>';
+				        		
+					        }
+					        $('#lists').html(result);
+					        me.resetload();
+						} else {
+							if(data.errcode == 10005){
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+							me.lock();
+                        	// 无数据
+                    	    me.noData();
+                            me.resetload();
+						}
+		            },
+		            error: function(xhr, type){
+		                // 即使加载出错，也得重置
+		                me.resetload();
+		            }
+		        });
+	        
+	        },
+	        loadDownFn : function(me){
+		        page++;
+		        // 拼接HTML
+		        var result = '';
+		        $.ajax({
+					type: "GET",
+					url:commonIP + "api/pig/historyRemarks/getList",
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigId='+pigId+'&pageNum='+page+'&pageSize='+size+'&uid='+uid,
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		            success: function(data){
+		            	console.log(data);
+						if (data && data.errcode == 200) {
+							$(".dropload-load").show();
+					        for (var key in data.dataSource.list){
+								var date = new Date(data.dataSource.list[key].createTime);
+								result = result+'<div class="weight_list bg_lightblue" >'+
+										'<div class="btn_corner btn_follow btn_unfollow"><a href="pigRemark.html?id='+data.dataSource.list[key].id+'&pid='+pigId+'">编辑</a></div>'+
+										'<ul class="history">'+
+										'<li class="flex"><h4 class="dark">'+data.dataSource.list[key].createUserName+'</h4>&nbsp;&nbsp;<h6>'+date.toLocaleString()+'</h6></li>'+
+										'<li><p>'+data.dataSource.list[key].textMessage+'</p></li>'+
+										'</ul>';
+								result = result+'<ul class="picture flex">';
+										if(data.dataSource.list[key].pic1 != null && data.dataSource.list[key].pic1!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic1+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic2!=null&&data.dataSource.list[key].pic2!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic2+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic3!=null&&data.dataSource.list[key].pic3!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic3+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic4!=null&&data.dataSource.list[key].pic4!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic4+'"/></li>';
+										}
+										if(data.dataSource.list[key].pic5!=null&&data.dataSource.list[key].pic5!=''){
+											result = result+'<li><img src="'+data.dataSource.list[key].pic5+'"/></li>';
+										}
+										result = result+'</ul></div></div>';
+				        		
+					        }
+					        $('#lists').append(result);
+					        me.resetload();
+					        
+						} else {
+							if(data.errcode == 10005){
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+							me.lock();
+                        	// 无数据
+                    	    me.noData();
+                            me.resetload();
+						}
+		            },
+		            error: function(xhr, type){
+		                // 即使加载出错，也得重置
+		                me.resetload();
+		            }
+		        });
+	        }
+	    });
+	    
+});
+
+
+
+function  goBack(){
+	window.location.href = 'historyRemark.html';
+}

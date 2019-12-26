@@ -1,0 +1,43 @@
+package com.xlqx.znyz.screen.service.impl;
+
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xlqx.znyz.screen.dao.AloneScreenDao;
+import com.xlqx.znyz.screen.service.AloneScreenService;
+
+
+/**
+ * 大屏幕猪只数量Service
+ * 
+ * @author wangshoujian
+ *
+ */
+
+@Service("aloneScreenServiceImpl")
+public class AloneScreenServiceImpl implements AloneScreenService {
+	
+	private final Logger logger = LoggerFactory.getLogger(AloneScreenServiceImpl.class);
+	
+	@Autowired
+	private AloneScreenDao aloneScreenDao;
+
+	@Override
+	public int getHogPigCount(Map<String, Object> paramMap) {
+		logger.info("AloneScreenServiceImpl{}==>getHogPigCount()");
+		return aloneScreenDao.getHogPigCount(paramMap);
+	}
+	
+	@Override
+	public float getAvgWeight(Map<String, Object> parameter) {
+		logger.info("AloneScreenServiceImpl ==> getAvgWeight()");
+		return aloneScreenDao.getAvgWeight(parameter);
+	}
+	
+	
+	
+}

@@ -1,0 +1,55 @@
+package com.xlqx.znyz.screen.bean;
+
+import java.io.Serializable;
+
+/**
+ * 地图猪场返回bean
+ * 
+ * @author wangshoujian
+ *
+ */
+public class ScreenBodyBean implements Serializable {
+
+	private static final long serialVersionUID = 8505907113509229379L;
+
+	private String querys;
+
+	private String conditions;
+
+	private String drillDowns;
+
+	private String dependence;
+
+	public String getQuerys() {
+		return querys;
+	}
+
+	public void setQuerys(String querys) {
+		this.querys = querys;
+	}
+
+	public String getConditions() {
+		return conditions;
+	}
+
+	public void setConditions(String conditions) {
+		this.conditions = conditions;
+	}
+
+	public String getDependence() {
+		return dependence;
+	}
+
+	public void setDependence(String dependence) {
+		this.dependence = dependence;
+	}
+
+	public String getDrillDowns() {
+		return drillDowns;
+	}
+
+	public void setDrillDowns(String drillDowns) {
+		this.drillDowns = drillDowns;
+	}
+
+}

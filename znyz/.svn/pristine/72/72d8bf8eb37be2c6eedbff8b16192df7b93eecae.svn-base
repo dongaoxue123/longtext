@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>历史体况信息</title>
+
+    <link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+   
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+      <script src="script/dist/dropload.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="script/dist/dropload.css">
+    <script src="script/masklayer.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<script>
+	var pigId = getUrlParam("pigsArchivesId");
+	var pigsNumber = getUrlParam("pigsNumber");
+	var authToken = '';
+	var farmId = '';
+	var userId = '';
+	$(document).ready(function() {
+		// 取得authToken
+		authToken = localStorage.getItem('authToken');
+		var user = localStorage.getItem('user');
+		farmId = JSON.parse(user).farmId;
+		userId = JSON.parse(user).id;
+		if (authToken.length = 0) {
+			alert("请重新登录");
+			window.top.location.href = 'wxlogin.html';
+			return false;
+		}
+		$("#pigsNumberSpan").text(pigsNumber);
+		$("#pigsNumberSpan2").text(pigsNumber);
+		$("#pigsNumber").val(pigsNumber);
+		// 每页展示10个
+	 var size = 20;
+	 var page = 0;
+	// $('#lists').empty();
+	 // dropload
+	 $(".dropload-down").remove();
+	 //查询体况信息列表
+	    $('#content').dropload({
+	        scrollArea : window,
+	        loadUpFn:function(me){
+//          	location.reload(); 
+				page=1;
+		        var result = '<tr><th colspan="">时间</th><th>评分</th><th>背膘值</th><th>操作</th></tr>';
+		        $.ajax({
+					type: "GET",
+					url:commonIP + "api/pig/pigBackfatScore/getList",
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigId='+pigId+'&pageNum='+page+'&pageSize='+size+'&farmId='+farmId,
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		            success: function(data){
+		            	//result += '<tr><th colspan="2">时间</th><th>背膘值</th><th>评分</th><th>操作</th></tr>';
+		            	console.log(data);
+						if (data && data.errcode == 200) {
+							$(".dropload-load").show();
+					        for (var key in data.dataSource.list){
+					        	var measureTime = new Date(data.dataSource.list[key].measureTime).Format("yyyy-MM-dd");
+					        	var score = data.dataSource.list[key].score;
+					        	var backfatNum = data.dataSource.list[key].backfatNum;
+					        	var vid = data.dataSource.list[key].id;
+					        	result = result + '<tr><td rowspan="" align="center" id="'+vid+'measureTime">'+measureTime+'</td><td align="center" id="'+vid+'score">'+score+'</td><td align="center" id="'+vid+'backfatNum">'+backfatNum+'</td><td align="center" id="'+vid+'"><a id="showQuery" style="color:blue;">修改</a></td></tr>';
+					        }
+					        $('#lists').html(result);
+					        me.resetload();
+						} else {
+							if(data.errcode == 10005){
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+							me.lock();
+                        	// 无数据
+                    	    me.noData();
+                            me.resetload();
+						}
+		            },
+		            error: function(xhr, type){
+		                // 即使加载出错，也得重置
+		                me.resetload();
+		            }
+		        });
+	        
+	        },
+	        loadDownFn : function(me){
+		        page++;
+		        // 拼接HTML
+		        var result = '';
+		        $.ajax({
+					type: "GET",
+					url:commonIP + "api/pig/pigBackfatScore/getList",
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigId='+pigId+'&pageNum='+page+'&pageSize='+size+'&farmId='+farmId,
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		            success: function(data){
+		            	console.log(data);
+						if (data && data.errcode == 200) {
+							$(".dropload-load").show();
+					        for (var key in data.dataSource.list){
+								var measureTime = new Date(data.dataSource.list[key].measureTime).Format("yyyy-MM-dd");
+					        	var score = data.dataSource.list[key].score;
+					        	var backfatNum = data.dataSource.list[key].backfatNum;
+					        	var vid = data.dataSource.list[key].id;
+					        	result = result + '<tr><td rowspan="" align="center" id="'+vid+'measureTime">'+measureTime+'</td><td align="center" id="'+vid+'score">'+score+'</td><td align="center" id="'+vid+'backfatNum">'+backfatNum+'</td><td align="center" id="'+vid+'"><a id="showQuery" style="color:blue;">修改</a></td></tr>';
+					        }
+					        $('#lists').append(result);
+					        me.resetload();
+					        
+						} else {
+							if(data.errcode == 10005){
+								alert(data.errmsg);
+								window.top.location.href = 'wxlogin.html';
+							}
+							me.lock();
+                        	// 无数据
+                    	    me.noData();
+                            me.resetload();
+						}
+		            },
+		            error: function(xhr, type){
+		                // 即使加载出错，也得重置
+		                me.resetload();
+		            }
+		        });
+	        }
+	    });
+		//展示筛选窗口
+	$("#lists").on("click","#showQuery",function(){
+		$('html,body').addClass('ovfHiden'); 
+		$("#query").css('display','block'); 
+		//局部遮罩层
+        $("#allDom").jqLoading({ type: 1 });
+        var parentNode = $(this).parent();
+        var nodeId= parentNode.attr("id");
+        var measureTime = $("#"+nodeId+"measureTime").text();
+        var score = $("#"+nodeId+"score").text();
+        var backfatNum = $("#"+nodeId+"backfatNum").text();
+        $("#backfatNum").val(backfatNum);
+        $("#measureTime").val(measureTime)
+        $("#dataId").val(nodeId);
+	})
+		//取消查询按钮
+	$(".cancel").click(function(){
+		$("#query").css('display','none'); 
+		//关闭遮罩层
+		$("#allDom").jqLoading("destroy");
+	});
+	//确定查询按钮
+	$("#confirm").click(function(){
+	var backfatNum = $.trim($("#backfatNum").val()); //背膘值
+    var measureTime =$.trim($("#measureTime").val());//测量日期 
+    var pigsNumber = $.trim($("#pigsNumber").val());
+    if (measureTime == null || measureTime == '') {
+    	alert("测量时间不能为空!");
+    	return;
+    }
+    if (backfatNum == null || backfatNum == '') {
+    	alert("背膘值不能为空!");
+    	return;
+    }
+ 	var dataId =  $("#dataId").val();
+	//添加
+		$.ajax({
+			type: "POST",
+			url: commonIP + "api/pig/pigBackfatScore/update?authToken=" + authToken,
+			data: JSON.stringify({
+				"updateUser": userId,
+				"backfatNum": backfatNum,
+				"measureTime": measureTime,
+				"pigId": pigId,
+				"pigsNumber":pigsNumber,
+				"farmId":farmId,
+				"id":dataId
+			}),
+			contentType: 'application/json',
+			success: function(data) {
+				var data = JSON.parse(data);
+				if (data.errcode == 200) {
+				alert("修改成功！")
+					//关闭遮罩层
+					$("#allDom").jqLoading("destroy");
+					$("#query").css('display','none'); 
+					location.reload();
+				} else {
+					alert(data.errmsg);
+					if (data.errcode == "10005") {
+						window.top.location.href = 'wxlogin.html';
+						//window.location.href = 'login.html';
+					}
+				}
+			}
+		});
+ 	
+	});
+});
+
+</script>
+<body id="allDom">
+	
+<div class="main" >
+		<h3 class="p_standard">历史体况信息</h3>
+		<div>猪只耳号：<span id="pigsNumberSpan" style='color:#EE7700;'></span></div>
+		
+	<div id="content"> 
+		<table border="1" cellspacing="0" cellpadding="0" class="standard_table" id="lists">
+			<tr><th colspan="">时间</th><th>评分</th><th>背膘值</th><th>操作</th></tr>
+			<!--<tr><td rowspan="2">断奶配种</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>添加葡萄糖</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种1-35天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种36-90天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td rowspan="2">配种91-112天</td><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>经产母猪</td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>
+			<tr><td>配种91-112天</td><td></td><td>925</td><td>2.5-4KG</td><td>2次</td><td>。。。</td></tr>-->
+			
+		</table>
+	</div>
+<div class="choose_box" style="display: none;" id="query">
+			<ul>
+				<li>
+					<h4>测量日期：</h4>
+					<input type="date"  name="measureTime" id="measureTime" style="width: 150px;"/>
+				</li>
+				<li>
+					<h4>猪只耳号：</h4>
+					<div id="pigsNumberSpan2"> </div>
+					<input type="hidden" id="pigsNumber"/> 
+				</li>
+				<li>
+					<h4>背膘值：</h4>
+					<input type="text" name="backfatNum" id="backfatNum" value="" /><i>mm</i>
+				</li>
+				<input type="hidden" name="dataId" id="dataId" value="" />
+			</ul>
+			<div class="main box_btn">
+				<a  class="cancel">取消</a>
+				<a id="confirm">确定</a>
+			</div>
+			
+		</div>		
+		
+</div>
+	
+</body>
+</html>

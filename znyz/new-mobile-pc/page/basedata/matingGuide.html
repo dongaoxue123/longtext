@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>配种指导</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+	</head>
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+	<style type="text/css">
+		.linkFontColor{
+			color: #0088CC!important;
+		}
+		.redFontColor{
+			color: #FF0000!important;
+		}
+		body .demo-class {
+			/*margin-left: 100px;*/
+		}
+	</style>
+	<body>
+		<div class="layui-form-item" id="button" style="margin-top: 10px;">
+			<div class="layui-form-item" style="padding-right: 20px">
+				<form class="layui-form">
+				<label class="layui-form-label"><span data-i18n="common.pigNumber"></span>:</label>
+				<div class="layui-input-inline">
+<!-- 					<input class="layui-input" id="code" name="code">-->					
+					<select id="code" name="code" lay-filter="code" style="height: 38px;border-color: #F0F0F0;" lay-search>
+						<option value=""></option>
+					</select>
+				</div>
+				 <label class="layui-form-label"><span data-i18n="common.fetalTimes"></span>:</label>
+				  <div class="layui-input-inline">
+				<input type="text" id="parity"autocomplete="off" name="parity" class="layui-input"  oninput = "value=value.replace(/[^\d]/g,'')" maxlength="2">
+				  </div>
+				</form>
+				<button class="layui-btn" id="search" data-i18n="btnSearch"></button>
+				<button class="layui-btn" id="reset" data-i18n="btnReset"></button>
+			</div>
+		</div>
+		<table class="layui-hide" id="pigInfo" lay-filter="pigInfo"></table>
+		
+		<!-- <script type="text/html" id="barDemoText">
+		 
+			<a class="layui-btn layui-btn-xs" id="pigBarDemoText" lay-event="pigBarDemoText" data-i18n="pigBarDemoText.feedFormula">饲喂建议</a>
+			  
+		  </script> -->
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+		<script>
+			var farmId;
+			var groupId;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			i18n('../../locales', onLangReady) //国际化
+	function onLangReady(){
+			if(!checkToken()) {
+				alert(i18next.t("timeout"));
+				window.top.location.href = '../../login.html';
+			}
+			farmId = JSON.parse(user).farmId;
+			groupId = JSON.parse(user).groupId;
+
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+				//方法级渲染
+				table.render({
+					elem: '#pigInfo',
+					url: commonIP + "api/pig/pigmatingguide/getListPage?authToken=" + authToken + "&farm_id=" + farmId //+ '&page=0&limit=0' //数据请求路径 
+						,
+					parseData: function(res) { //res 即为原始返回的数据
+					//console.log(res);
+						return {
+							"code": res.code, //解析接口状态
+							"msg": res.msg, //解析提示文本
+							"count": res.count, //解析数据长度
+							"data": res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+						};
+					},
+					cellMinWidth: 80,
+					cols: [
+						[{
+							type: 'numbers',
+							width: '2%'
+						}, {
+							field: 'pigs_number',
+							title: i18next.t("common.pigNumber"), //'猪只编号',
+							width: '7%'
+						}, {
+							field: 'pigVarietyName',
+							title: i18next.t("common.variety"), //'品种',
+							width: '7%'
+						}, {
+							field: 'strainName',
+							title: i18next.t("common.strain"), //'品系',
+							width: '7%'
+						}, {
+							field: 'parity',
+							title: i18next.t("common.fetalTimes"), //'猪只胎次',
+							width: '7%'
+						}, {
+							field: 'production_status_name',
+							title: i18next.t("common.pregnancyState"), //'生产状态',
+							width: '7%'
+						}, {
+							field: 'backfatData',
+							title: i18next.t("matingGuide.backfat"), //'背膘(mm)',
+							width: '7%'
+						}, {
+							field: 'weightData',
+							title: i18next.t("matingGuide.weight"), //'体重(kg)',
+							width: '7%'
+						},  
+						{
+							field: 'backfatScore',
+							title: i18next.t("pigScore.bodyScore"), //'体况评分',
+							width: '8%',
+							templet: "<div><a href='javascript:void(0)'  class='linkFontColor'>{{d.backfatScore}}</a></div>",
+							event: 'showScore'
+						},
+						{
+							field: 'matingGuideMessage',
+							title: i18next.t("matingGuide.matingProposal"), //'配种建议',
+							width: '8%',
+							// templet: "<div><a href='javascript:void(0)'  class='redFontColor'>{{d.matingGuideMessage}}</a></div>",
+							templet:setColor,
+							event: 'showMatingProposal'
+						}
+						]
+					],
+					even: true //开启隔行背景
+						,
+					page: true //开启分页
+						,
+					limit: 10 //默认十条数据一页
+						,
+					limits: [10, 20, 30, 50] //数据分页条
+						,
+					id: 'testReload',
+					done:function(res,curr,count){
+						console.log(res)
+					}
+					
+				});
+				function setColor(data){
+					var matingGuideMessage = data.matingGuideMessage
+						if (matingGuideMessage == '可配') {
+							return "<div><a href='javascript:void(0)'  style='color:#34E708'>"+matingGuideMessage+"</a></div>"
+						}else{
+							return "<div><a href='javascript:void(0)'  style='color:red'>"+matingGuideMessage+"</a></div>"
+							
+						}
+				}
+				
+				var page = 1;
+				var pageSize = 30;
+				var pigsType ='00034';
+				//获取猪只下拉列表(母猪编号)
+				$.ajax({
+				  url: commonIP + 'api/pig/pigmatingguide/getListPage?authToken='+authToken +'&farm_id='+farmId + '&page=0&limit=0',
+				
+				  success: function (res) {
+				
+					var dataObj = JSON.parse(res);
+					console.log("11111"+dataObj.dataSource.list[0].pigs_archives_id)
+				    if(dataObj!=null && dataObj.dataSource.list.length>0){
+				        var groupOption;
+				        for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+				        	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].pigs_archives_id+'">'+dataObj.dataSource.list[i].pigs_number+'</option>';
+				        }
+				        $("#code").append(groupOption);
+				        form.render('select');//一定要加form.render();
+					  }
+				}
+				});
+				//获取栋舍下拉列表
+						$.ajax({
+						    url: commonIP + 'api/system/house/getHouseListPage?authToken='+authToken+'&page=0&limit=0&farmId='+ farmId,
+						    success: function (res) {
+						    	
+							var dataObj = JSON.parse(res);
+							// console.log(dataObj);
+						    if(dataObj!=null && dataObj.dataSource.list.length>0){
+						        var groupOption;
+						        for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+						        	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+						        }
+						        $("#houseId").append(groupOption);
+						        form.render('select');//一定要加form.render();
+							  }
+						}
+						}); 
+				
+				
+				
+				
+				//监听工具条
+				table.on('tool(pigInfo)', function(obj) {
+					var data = obj.data;
+					console.log(data)
+					if(obj.event === 'showScore') {
+						if(data.backfatScore!=''){
+							var index = layer.open({
+								skin: 'demo-class',
+								type: 2,
+								content: "pigScoreAlert.html?farmId="+farmId+"&groupId="+groupId,
+								area: ['800px', '650px'],
+								maxmin: false
+							});			
+						
+						
+						}
+						
+					} else if(obj.event === 'showMatingProposal') {
+						if(data.matingGuideMessage!=''){
+							var oestrus = layer.open({
+								type: 2,
+								content: "matingStandardAlert.html?farmId="+farmId+"&variety="+data.pig_variety_id+"&strain="+data.strain+"&parity="+data.parity+"&pigs_number="+data.pigs_number,
+								area: ['800px', '650px'],
+								maxmin: false
+							});
+						}
+					}
+				
+				});
+			
+
+				
+				
+				var active = {
+					reload: function() {
+						//执行重载
+						table.reload('testReload', {
+							page: {
+								curr: 1 //重新从第 1 页开始
+							},
+							where: {
+								pigs_number:$('#code option:selected').text(),
+								isOestrus: $("#parity").val()
+							}
+						});
+					},
+				};
+
+				$('#search').on('click', function() {
+					active['reload'].call(this);
+				});
+				$('#reset').on('click', function() {
+					$('#code').val("");
+					$('#parity').val("")
+					form.render("select");
+				});
+			});
+			
+			
+			}
+		</script>
+
+	</body>
+
+</html>

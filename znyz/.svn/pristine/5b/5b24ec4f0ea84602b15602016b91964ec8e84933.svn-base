@@ -1,0 +1,238 @@
+<!doctype html>
+<html style="height: 100%;color:#333333;background: #fff;">
+
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+		<!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+		<meta content="yes" name="apple-mobile-web-app-capable" />
+		<!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+		<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+		<!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+		<meta name="format-detection" content="telephone=no" />
+		<!--告诉设备忽略将页面中的数字识别为电话号码-->
+		<meta content="false" name="twcClient" id="twcClient" />
+		<!--判断页面是否在本地Native（本地APP）环境中-->
+		<title>测膘系统</title>
+		<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+		<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
+	</head>
+
+	<body style="height:100%;">
+		<main>
+			<div class="top">
+				<h3 id="logInfo"></h3>
+				<span class="iconfont icon-qrcode" id='qrcode'></span>
+			</div>
+			<div id="pigCountDiv" class="list">
+			</div>
+			<div id="houseListDiv">
+				<div id="houseListTemplate" class="divBox" style="display:none">
+					<div class="dor" onclick="normalPigs(event)">
+						<div class="rec" onclick="feedingInfo(event)">饲喂</div>
+						<input type="text" id="groupId" style="display:none" value="{$group_id}">
+						<input type="text" id="farmId" style="display:none" value="{$farm_id}">
+						<input type="text" id="houseId" style="display:none" value="{$house_id}">
+						<input type="text" id="houseName" style="display:none" value="{$house_name}">
+						<div class="list-con tc">
+							<h2 class='tmp'>{$house_name}</h2>
+							<h6 class='tmp'>{$device_status}</h6>
+						</div>
+						<div class="list-con tc">
+							<h2 class="blue">{$pig_num}</h2>
+							<h6 class='tmp'>测重母猪</h6>
+						</div>
+						<div class="list-con tc">
+							<h2 class="red">{$unusual_num}</h2>
+							<h6 class='tmp'>体重异常</h6>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="footer" style="z-index: 1000">
+			</div>
+			<script language="javascript">
+				//当前页footer按钮变色
+				function qqq(){
+					document.querySelector('#houseListFooter').className = 'active'
+				}
+				setInit(qqq);
+				setInterval("setCurDate()");//初始触发一次
+				setInterval("setCurDate()", 1000);
+				function setCurDate() {
+					var ndate = getCurDate();
+					var divT = document.getElementById("logInfo");
+					divT.innerHTML = ndate;
+				}
+			</script>
+		</main>
+
+		<script>
+			var authToken = localStorage.getItem('authToken');// 取得authToken
+			$(document).ready(function() {
+				$("#houseListFooter").addClass("active");
+				
+				getHouseInfo();
+				initQrcode();//微信扫码
+			});
+			// 取得栋舍信息
+			function getHouseInfo() {
+				// 取得user信息
+				var user = localStorage.getItem('user');
+				var groupId = JSON.parse(user).groupId;
+				var farmId = JSON.parse(user).farmId;
+				if (authToken.length = 0) {
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				}
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/weight/getPigCountByStatus',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&farm_id=' + farmId,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							var result = '';
+							if (data.errcode == 200) {
+								for (var key in data.dataSource.list) {
+									//循环显示
+									if (key % 3 == 0) {
+										color = "green";
+									} else if (key % 3 == 1) {
+										color = "blue";
+									} else if (key % 3 == 2) {
+										color = "red";
+									}
+									result = result + '<div><h2 class="' + color + '">' + data.dataSource.list[key].count + '</h2>' +
+										'<h6>' + data.dataSource.list[key].production_status_name + '</h6></div>';
+								}
+								$('#pigCountDiv').append(result);
+							} else {
+								alert(data.errmsg);
+								if (data.errcode == "10005") {
+									window.top.location.href = 'wxlogin.html';
+								}
+							}
+						}
+					}
+				});
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/weight/getFarmPigInfoList',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&farm_id=' + farmId,
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {
+								//获取模板
+								var houseListTemplate = $("#houseListTemplate").html();
+								for (var key in data.dataSource.list) {
+									//循环显示
+									var houseList;
+									//由于html()不是克隆，而是获取，为了不破坏原模板，我们将原模板拷贝给另一个变量，然后操作这个变量。
+									houseList = houseListTemplate;
+									houseList = houseList.replace(/\{\$group_id\}/gi, groupId);
+									houseList = houseList.replace(/\{\$farm_id\}/gi, farmId);
+									houseList = houseList.replace(/\{\$house_id\}/gi, data.dataSource.list[key].house_id);
+									houseList = houseList.replace(/\{\$house_name\}/gi, data.dataSource.list[key].house_name);
+									houseList = houseList.replace(/\{\$device_status\}/gi, data.dataSource.list[key].device_status_code);
+									houseList = houseList.replace(/\{\$pig_num\}/gi, data.dataSource.list[key].total_count);
+									houseList = houseList.replace(/\{\$unusual_num\}/gi, data.dataSource.list[key].abnormal_count);
+									//将改造后的html输出到页面
+									$('#houseListDiv').append(houseList);
+								}
+							} else {
+								if (data.errcode == "10005") {
+									window.top.location.href = 'wxlogin.html';
+								} else {
+									alert(data.errmsg);
+								}
+							}
+						}
+					}
+				});
+			}
+
+			function normalPigs(e) {
+				var targetClass = $(e.target).attr("class");
+				if (targetClass == 'blue' || targetClass == 'red' || targetClass == 'tmp'){
+					var houseId = $(e.target).parent().parent().find("#houseId").val();
+					var houseName = $(e.target).parent().parent().find("#houseName").val();
+					// 跳转页面并传输参数
+					window.location.href = 'fieldList.html?houseId=' + houseId + '&houseName=' + houseName;
+				}else if(targetClass == 'list-con tc'){
+					var houseId = $(e.target).parent().find("#houseId").val();
+					var houseName = $(e.target).parent().find("#houseName").val();
+					// 跳转页面并传输参数
+					window.location.href = 'fieldList.html?houseId=' + houseId + '&houseName=' + houseName;
+				}else if(targetClass == 'dor'){
+					var houseId = $(e.target).find("#houseId").val();
+					var houseName = $(e.target).find("#houseName").val();
+					// 跳转页面并传输参数
+					window.location.href = 'fieldList.html?houseId=' + houseId + '&houseName=' + houseName;
+				}
+			}
+			function feedingInfo(e){
+				var groupId = $(e.target).parent().find("#groupId").val();
+				var farmId = $(e.target).parent().find("#farmId").val();
+				var houseId = $(e.target).parent().find("#houseId").val();
+				var houseName = $(e.target).parent().find("#houseName").val();
+				// 跳转页面并传输参数
+				window.location.href = 'AddFeeding.html?groupId=' + groupId + '&farmId=' + farmId + '&houseId=' + houseId + '&houseName=' + houseName;
+			}
+			function initQrcode() { // 根据实际填写接口的配置地点     // 这里的接口地址是基于node-weixin配置的。    
+				// 当前的网页请求地址
+				var weixinUrl = location.href.split('#')[0];
+
+				$.ajax({
+					type: "POST",
+					url: commonIP + "api/system/wxserver/getjsConfig?authToken="+authToken,
+					data: JSON.stringify({
+						"url":weixinUrl
+					}) ,
+					contentType: 'application/json',
+					success: function(data) {
+						console.log(data)
+						var data = JSON.parse(data);
+						if (data.errcode == 200) {
+							wx.config({
+//							    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+							    appId: data.dataSource.list[0].appId, // 必填，公众号的唯一标识
+							    timestamp: data.dataSource.list[0].timestamp, // 必填，生成签名的时间戳
+							    nonceStr: data.dataSource.list[0].nonceStr, // 必填，生成签名的随机串
+							    signature: data.dataSource.list[0].signature,// 必填，签名，见附录1
+							    jsApiList: ['checkJsApi','scanQRCode'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+							});
+						}
+					}
+				});
+				wx.ready(function() { 
+					$('#qrcode').click(function () {
+						wx.scanQRCode({       // 默认为0，扫描效果由微信处理，1则直接返回扫描结果，       
+							needResult: 1,        // 可以指定扫二维码还是一维码，默认二者都有       
+							scanType: ["qrCode", "barCode"],        
+							success: function (res) {         // 当needResult 为 1 时，扫码返回的结果        
+								var pigsArchivesId = res.resultStr;  
+								// 跳转页面并传输参数
+								window.location.href = 'weight.html?pigsArchivesId='+pigsArchivesId;
+							}     
+						}); 
+					}); 
+				});       
+				
+			}
+			
+		</script>
+	</body>
+
+</html>

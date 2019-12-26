@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title></title>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="script/dist/dropload.min.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="script/dist/dropload.css">
+    <script src="script/remarkList.js" type="text/javascript" charset="utf-8"></script>
+    
+    <link rel="stylesheet" type="text/css" href="style/common.css"/>
+    <link rel="stylesheet" type="text/css" href="style/style.css"/>
+    <script type="text/javascript">
+    	
+   		document.addEventListener('plusready', function(){
+   			//console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。"
+   			
+   		});
+   		
+    </script>
+</head>
+<body>
+	
+	<div id="content"> 
+		<div id="lists">
+		<!--<div class="weight_list bg_lightblue" >
+		<div class="btn_corner btn_follow btn_unfollow">
+			<a href="pigRemark.html">编辑</a>
+		</div>
+		<ul class="history">
+			<li class="flex"><h4 class="dark">张某某</h4> <h6> 2017年</h6></li>
+			<li><p>体况良好</p></li>
+		</ul>
+		<ul class="picture flex">
+			<li><img src=""/></li>
+		</ul>
+		
+		</div>-->
+		</div>
+	</div>
+	
+	
+
+	
+
+</body>
+</html>

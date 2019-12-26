@@ -1,0 +1,409 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+	<link rel="stylesheet" href="../../common/css/extendedStyle.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="common.houseName"></label>
+            <div class="layui-input-inline">
+                <select id="houseId" name="houseId" lay-verify="required|houseId" lay-filter="houseId" style="height: 38px;border-color: #F0F0F0;">
+                	<option value="" data-i18n="field.houseOptionDefault"></option>
+		    	</select>
+            </div>
+            <label class="layui-form-label layui-required">栏位编码</label>
+            <div class="layui-input-inline">
+            	<select id="rfId" name="rfId" lay-verify="required|rfId" style="height: 50px;width:150px;border-color: #F0F0F0;">
+            		<option value="" data-i18n="field.fieldOptionDefault"></option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="common.batchCode"></label>
+            <div class="layui-input-inline">
+            	<select id="batchId" name="batchId" lay-verify="required|batchId" lay-filter="batchId" style="height: 38px;border-color: #F0F0F0;">
+            		
+            		<option value="" data-i18n="hogBatch.batchValDefault"></option>
+		    	</select>
+            </div>
+            <label class="layui-form-label" data-i18n="common.remark"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" autocomplete="off" data-i18n="[placeholder]common.remarkText" class="layui-input" maxlength="100"maxlength="100">
+            </div>
+            <!--
+            	作者：717854567@qq.com
+            	时间：2019-11-21
+            	描述：
+          
+        	<label class="layui-form-label" data-i18n="hogBatch.batchState"></label>
+            <div class="layui-input-inline">
+            <select id="batchStatus" name="batchStatus" style="height: 38px;border-color: #F0F0F0;">
+	        	<option value="" data-i18n="hogBatch.batchStateValDefault"></option>
+	        	<option value="1" data-i18n="normal"></option>
+	        	<option value="0" data-i18n="close"></option>
+	    	</select>
+            </div>
+              -->
+            
+        </div>
+        
+        
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="common.normalPigNum"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="goodCapacity" name="goodCapacity" lay-verify="required|goodCapacity"  class="layui-input" maxlength="3" autocomplete="off" data-i18n="[placeholder]只能录入数字，最大长度3" oninput = "value=value.replace(/[^\d]/g,'')">
+            </div>
+            <label class="layui-form-label layui-required" data-i18n="common.abnormalPigNum"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="badCapacity" name="badCapacity" class="layui-input" lay-verify="required|badCapacity"   maxlength="3" autocomplete="off" data-i18n="[placeholder]只能录入数字，最大长度3" oninput = "value=value.replace(/[^\d]/g,'')">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label layui-required" data-i18n="入栏时间"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="startTime" name="startTime"  lay-verify="required"  class="layui-input" autocomplete="off">
+            </div>
+            <label class="layui-form-label layui-required" data-i18n="出栏时间"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="endTime" name="endTime"  lay-verify="required"  class="layui-input" autocomplete="off">
+            </div>
+        </div>
+        <!--
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="common.remark"></label>
+            <div class="layui-input-inline">
+                <input type="text" id="remark" name="remark" autocomplete="off" data-i18n="[placeholder]common.remarkText" class="layui-input">
+            </div>
+        </div>
+        -->
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	var groupId;
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+	var userId ="";
+	var farmId ="";
+	var batchCode="";	
+    var hogBatchId = "";
+  i18n('../../locales', onLangReady) //国际化
+	function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+  			alert(i18next.t("timeout"));
+ 			window.top.location.href = '../../login.html';
+		}
+		groupId = JSON.parse(user).groupId;
+		farmId = JSON.parse(user).farmId; 
+		userId = JSON.parse(user).userId; 
+		
+		//创建时间 日期控件
+    	laydate.render({
+		  	elem: '#startTime' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#endTime' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		  	,format: 'yyyy/M/d'
+		});
+
+		var id = GetQueryString("id");//userId为空表示新增，否则是修改
+		if(id!=null && id!=''){
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/pigbatchfield/getDetail?authToken='+authToken+'&id='+id,
+				async: false,
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					if (datas.errcode == 200) {
+						//赋值
+						groupId = datas.dataSource.list[0].groupId;
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		}
+        //绑定栋舍
+	   	$.ajax({
+	   		url: commonIP + 'api/system/house/getHouseList?authToken='+authToken+"&farmId="+farmId,
+	   		async: false,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+			if (dataObj.errcode == 10016) {
+										return
+									} else {
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	if(dataObj.dataSource.list[i].type !== '00059'){continue;}
+	            	if(groupId==dataObj.dataSource.list[i].id){
+                		groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'" selected="">'+dataObj.dataSource.list[i].name+'</option>';
+                	}else{
+	            		groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].name+'</option>';
+                	}
+	            }
+	            $("#houseId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindRfId();
+	    	  }
+	    }
+		}
+	    }); 
+	    
+	    form.on('select(houseId)', function (data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+	    	document.getElementById("rfId").options.length = 0;
+	    	//document.getElementById("batchId").options.length = 0;
+					$('#rfId').val("");
+					form.render('select');
+					
+	    	BindRfId();
+        });
+        
+	    //绑定rfId
+ function BindRfId(){
+        	
+        	var houseId = $('#houseId').val();
+			//alert(houseId);
+        	//alert(houseId);
+		   	$.ajax({
+		   		url: commonIP + 'api/pig/field/getFieldListPage?type=00026&authToken='+authToken+"&house_id="+houseId+"&isUse="+1,
+		   		async: false,
+		      success: function (res) {
+				  // console.log(res)
+				    	var dataObj = JSON.parse(res);
+						if (dataObj.errcode == 10016) {
+							return
+						} else {
+							console.log(dataObj)
+					    if(dataObj!=null && dataObj.dataSource.list.length>0){
+		            var groupOption;
+		            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+		            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].id+'">'+dataObj.dataSource.list[i].code+'</option>';
+		            }
+		            $("#rfId").append(groupOption);
+		            form.render('select');//一定要加form.render();
+		            BindHogBatch();
+		    	}
+						}
+
+		    }
+	    }); 
+        }
+        
+        //绑定批次
+        function BindHogBatch(){
+        	//	alert(farmId);
+	   	$.ajax({
+	   		url: commonIP + 'api/pig/hogbatch/getHogBatchList?batchStatus=1&authToken='+authToken+"&farmId="+farmId,
+	   		async: false,
+	        success: function (res) {
+	    	var dataObj = JSON.parse(res);
+			if (dataObj.errcode == 10016) {
+										return
+									} else {
+										
+		    if(dataObj!=null && dataObj.dataSource.list.length>0){
+	            var groupOption;
+	            for (var i = 0; i < dataObj.dataSource.list.length; i++) {
+	            	groupOption = groupOption+'<option value="'+dataObj.dataSource.list[i].batchId+'">'+dataObj.dataSource.list[i].batchCode+'</option>';
+	            }
+	            $("#batchId").append(groupOption);
+	            form.render('select');//一定要加form.render();
+	            BindUpdateList();
+	    	  }
+	        }
+			 }
+	    }); 
+        }
+        
+	    form.on('select(batchId)', function (data) { //进行监听 看元素是否变化，获取下一个下拉框数据
+              hogBatchId = data.value;
+        });
+        //监听提交
+        if(id == null)//添加
+		{
+	        form.on('submit(submit)', function(res){
+	        	var goodCapacity = $("#goodCapacity").val();
+	        	var badCapacity = $("#badCapacity").val();
+	        if(badCapacity == 0 && goodCapacity == 0) {
+					var warnMessage = "请检查录入的猪只数量信息是否正确";
+					alert(warnMessage);
+					return false;
+				}	
+	        //layer.msg(JSON.stringify(res.field));
+	        var houseId = $('#houseId').val();
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/pigbatchfield/create?authToken="+authToken,
+				async: false,
+				contentType: 'application/json',
+				data: JSON.stringify({
+					"groupId":groupId,
+					"farmId":farmId,
+					"houseId":houseId,
+					"batchId":hogBatchId,
+					"batchStatus":"1",
+					"fieldId":res.field.rfId,
+					"badCapacity":res.field.badCapacity,
+					"startTime":res.field.startTime,
+					"endTime":res.field.endTime,
+					"goodCapacity":res.field.goodCapacity,	
+					"remark":res.field.remark,
+					"userid":userId
+				}),
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("addSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(i18next.t("addFailed"));
+						}
+					}
+				}
+             }); 
+           });
+        }
+		else//编辑
+		{
+			BindUpdateList();
+			form.on('submit(submit)', function(res){
+			var houseId = $('#houseId').val();
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/pig/pigbatchfield/updatePigBatchField?authToken="+authToken,
+				async: false,
+				contentType: 'application/json',
+				data: JSON.stringify({
+					"uid":id,
+					"houseId":houseId,
+					"batchId":res.field.batchId,
+					"batchStatus":"1",
+					//res.field.batchStatus"",
+				//king	"fieldId":res.field.rfId,
+					"fieldId":res.field.id,
+					"badCapacity":res.field.badCapacity,
+					"startTime":res.field.startTime,
+					"endTime":res.field.endTime,
+					"goodCapacity":res.field.goodCapacity,	
+					"remark":res.field.remark,
+					"userid":userId
+					}) ,
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("updateSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(i18next.t("updateFailed"));
+						}
+					}
+				}
+             }); 
+           });
+		}
+        function BindUpdateList(){
+		    if(id != null)//编辑
+		    {
+		    	document.getElementById("houseId").disabled = "true";
+		    	document.getElementById("rfId").disabled = "true";
+		    	document.getElementById("batchId").disabled = "true";
+		    	document.getElementById("batchStatus").disabled = "true";
+		    //	$("#houseId").empty();
+		    //	$("#rfId").empty();
+		    	//$("#batchId").empty();
+		    	$('#houseId').val("");
+		    		$('#rfId').val("");
+					$('#batchId').val("");
+		    	$.ajax({
+				type: "GET",
+				url: commonIP + 'api/pig/pigbatchfield/getDetail?authToken='+authToken+'&id='+id,
+				async: false,
+				contentType: 'application/json',
+				success: function(data) {
+					var datas = JSON.parse(data);
+					console.log(datas);
+					//alert(datas.dataSource.list[0].fieldId);
+					if (datas.errcode == 200) {
+						//赋值
+						$("#houseId").val(datas.dataSource.list[0].houseId);
+						$("#rfId").val(datas.dataSource.list[0].fieldId);
+                        $("#batchId").val(datas.dataSource.list[0].batchId);
+                        $("#batchStatus").val(datas.dataSource.list[0].batchStatus);
+						form.render('select');
+
+						$("#goodCapacity").val(datas.dataSource.list[0].goodCapacity);
+						$("#badCapacity").val(datas.dataSource.list[0].badCapacity);
+						$("#startTime").val(datas.dataSource.list[0].startTime);
+						$("#endTime").val(datas.dataSource.list[0].endTime);
+						$("#remark").val(datas.dataSource.list[0].remark);
+					} else {
+						alert(data.errmsg);
+						if(data.errcode=="10005"){
+								window.top.location.href = '../../login.html';
+						}
+					}
+				}
+				});
+		    }
+		    else
+		    {
+		    	//新增
+		    }
+        }
+    });
+    
+	}
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">设备识别名</label>
+            <div class="layui-input-inline">
+                <input type="text" id="code" name="code" lay-verify="required|code" class="layui-input" disabled>
+            </div>
+            <label class="layui-form-label">服务器地址</label>
+            <div class="layui-input-inline">
+                <input type="text" id="serverAddress" name="serverAddress" lay-verify="required|serverAddress" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">电量下限</label>
+            <div class="layui-input-inline">
+                <input type="text" id="batteryLimit" name="batteryLimit" lay-verify="required|batteryLimit" class="layui-input">
+            </div>
+            <label class="layui-form-label">停留时间</label>
+            <div class="layui-input-inline">
+                <input type="text" id="stopTime" name="stopTime" lay-verify="required|stopTime" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">采集图片张数</label>
+            <div class="layui-input-inline">
+                <input type="text" id="photograph" name="photograph" lay-verify="required|photograph" class="layui-input">
+            </div>
+            <label class="layui-form-label">有效时间</label>
+            <div class="layui-input-inline">
+                <input type="text" id="validTime" name="validTime" lay-verify="required|validTime" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">应用标识符</label>
+            <div class="layui-input-inline">
+                <input type="text" id="identifier" name="identifier" lay-verify="required|identifier" class="layui-input">
+            </div>
+            <label class="layui-form-label">速度设置</label>
+            <div class="layui-input-inline">
+                <input type="text" id="speedSetting" name="speedSetting" lay-verify="required|speedSetting" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">等待时间</label>
+            <div class="layui-input-inline">
+                <input type="text" id="waitTime" name="waitTime" lay-verify="required|waitTime" class="layui-input">
+            </div>
+            <label class="layui-form-label">rfid</label>
+            <div class="layui-input-inline">
+                <input type="text" id="rfid" name="rfid" lay-verify="required|rfid" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">启动时间</label>
+            <div class="layui-input-inline">
+                <input type="text" id="autoExecuteTime" name="autoExecuteTime" class="layui-input">
+            </div>
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-inline">
+                <select id="state" name="state" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="0">可用</option>
+		        	<option value="1">不可用</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        
+		if(!checkToken()){
+  			alert("登录超时，请重新登录！");
+ 			window.top.location.href = '../../login.html';
+		}
+
+    	
+    	form.on('submit(submit)', function(res){
+    	$.ajax({
+		type: "POST",
+		url: commonIP + 'api/xlqx/mq/sendConfigMsg?authToken='+authToken,
+		contentType: 'application/json',
+		data: JSON.stringify({
+				"userid":"",
+				"code":res.field.code,
+				"serverAddress":res.field.serverAddress,
+				"batteryLimit":res.field.batteryLimit,
+				"stopTime":res.field.stopTime,
+				"photograph":res.field.photograph,
+				"validTime":res.field.validTime,
+				"identifier":res.field.identifier,
+				"speedSetting":res.field.speedSetting,
+				"waitTime":res.field.waitTime,
+				"rfid":res.field.rfid,
+				"autoExecuteTime":res.field.autoExecuteTime,
+				"state":res.field.state
+			}) ,
+		async: false,
+		success: function(data) {
+				if (data == "success") {
+			     alert("配置发送成功！");
+                 layer.close(layer.index);  
+                 window.parent.location.reload();  
+				} else {
+	             layer.close(layer.index);  
+                 window.parent.location.reload();  
+				}
+		}
+		});
+		return false;
+      });
+	    	$.ajax({
+			type: "GET",
+			url: commonIP + 'api/system/deviceExcute/getListPage?authToken='+authToken+'&page=0&limit=0&code='+GetQueryString("code"),
+			parseData: function(res){ //res 即为原始返回的数据
+			    return {
+			    	"code": res.code, //解析接口状态
+      			"msg": res.msg, //解析提示文本
+      			"count": res.count, //解析数据长度
+			      "data": res.dataSource.list //解析数据列表
+			    };
+  			},
+			contentType: 'application/json',
+			success: function(data) {
+				var datas = JSON.parse(data);
+				console.log(datas);
+				if (datas.errcode == 200) {
+					//赋值
+					$("#state").val(datas.dataSource.list[0].state);
+					form.render('select');
+					$("#code").val(datas.dataSource.list[0].code);
+					$("#serverAddress").val(datas.dataSource.list[0].serverAddress);
+					$("#batteryLimit").val(datas.dataSource.list[0].batteryLimit);
+					$("#stopTime").val(datas.dataSource.list[0].stopTime);
+					$("#photograph").val(datas.dataSource.list[0].photograph);
+					$("#validTime").val(datas.dataSource.list[0].validTime);
+					$("#identifier").val(datas.dataSource.list[0].identifier);
+					$("#speedSetting").val(datas.dataSource.list[0].speedSetting);
+					$("#waitTime").val(datas.dataSource.list[0].waitTime);
+					$("#rfid").val(datas.dataSource.list[0].rfid);
+					$("#autoExecuteTime").val(datas.dataSource.list[0].autoExecuteTime);
+
+				} else {
+					alert(data.errmsg);
+					if(data.errcode=="10005"){
+							window.top.location.href = '../../login.html';
+					}
+				}
+			}
+			});   
+    });
+    
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form">
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label" data-i18n="user.userName"></label>
+            <div class="layui-input-block">
+                <input type="text" autocomplete="off" id="name" name="name" lay-verify="required|name" data-i18n="[placeholder]user.userNamePlaceholder" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="user.loginName"></label>
+            <div class="layui-input-block">
+                <input type="text"  autocomplete="off" id="loginName" name="loginName" lay-verify="required|loginName"  data-i18n="[placeholder]user.loginNamePlaceholder" class="layui-input">
+            </div>
+        </div>
+         <div class="layui-form-item" style="padding-right: 20px" id="passDiv">
+            <label class="layui-form-label" data-i18n="user.password"></label>
+            <div class="layui-input-block">
+                <input type="password"  autocomplete="off" id="password" name="password" lay-verify=""  data-i18n="[placeholder]user.passwordPlaceholder" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="user.phone"></label>
+            <div class="layui-input-block">
+                <input type="text" autocomplete="off" id="phone" name="phone"  data-i18n="[placeholder]user.phonePlaceholder" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label" data-i18n="user.email"></label>
+            <div class="layui-input-block">
+                <input type="text" autocomplete="off" id="mail" name="mail"  data-i18n="[placeholder]user.emailPlaceholder" class="layui-input">
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit" data-i18n="[append]btnSave"><i class="fa fa-floppy-o">&nbsp;</i></button>
+                    <button class="layui-btn" onclick="$t.closeWindow();" data-i18n="[append]btnBack"><i class="fa fa-undo">&nbsp;</i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+<script>
+	
+	var authToken=localStorage.getItem("authToken");
+	//alert(authToken);
+	var user =localStorage.getItem("user");
+ 	var groupId;
+    var farmId;
+    groupId = JSON.parse(user).groupId;
+    farmId = JSON.parse(user).farmId;
+    i18n('../../locales', onLangReady) //国际化
+	function onLangReady(){
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+		if(!checkToken()){
+	  		alert(i18next.t("timeout"));
+	 			window.top.location.href = '../../login.html';
+		}
+				
+        //创建时间 日期控件
+	    	laydate.render({
+				  	elem: '#bornDate' //指定元素
+				  	,theme: 'molv'
+				  	,calendar: true //重要节日
+				});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#enterDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		
+		var userId = GetQueryString("id");//userId为空表示新增，否则是修改
+        
+        //监听提交
+        if(userId == null)//添加
+		{
+	        form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/system/user/create?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+					"groupId":groupId,
+					"farmId":farmId,
+                    "name":res.field.name,
+                    "loginName":res.field.loginName,
+					"password":res.field.password
+				}),
+				async: false,
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+					console.log(dataObj);
+//					console.log(dataObj.errcode);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("addSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(dataObj.errmsg);
+						}
+					}
+				}
+				,error:function(){
+					alert( i18next.t("returnFailed"));
+				}
+             });
+             return false;
+           });
+        }
+		else//编辑
+		{
+			$("#passDiv").hide();
+			form.on('submit(submit)', function(res){
+	        //layer.msg(JSON.stringify(res.field));
+       		$.ajax({  
+                type: 'POST',
+				url: commonIP + "api/system/user/update?authToken="+authToken,
+				contentType: 'application/json',
+				data: JSON.stringify({
+						"id":userId,
+						"groupId":groupId,
+						"farmId":farmId,
+						"name":res.field.name,
+						//"loginName":res.field.loginName,
+						"mail":res.field.mail,
+						"phone":res.field.phone
+					}) ,
+				async: false,
+				
+				
+				success: function(data) {
+					var dataObj = JSON.parse(data);
+//					console.log(dataObj);
+//					console.log(dataObj.errcode);
+					if (dataObj) {
+						if (dataObj.errcode == "200") {
+					     alert(i18next.t("updateSucc"));
+                         layer.close(layer.index);  
+                         window.parent.location.reload();  
+						} else {
+						 alert(dataObj.errmsg);
+						}
+					}
+				}
+             }); 
+            return false;
+           });
+		}
+
+	    if(userId != null)//编辑
+	    {
+	    	$("#password").attr("disabled",true);
+	    	$("#loginName").attr("disabled",true);
+	    	$.ajax({
+			type: "GET",
+			url: commonIP + 'api/system/user/get?authToken='+authToken+'&page=0&limit=0&id='+userId,
+			contentType: 'application/json',
+			success: function(data) {
+				var datas = JSON.parse(data);
+				console.log(datas);
+				if (datas.errcode == 200) {
+					$("#name").val(datas.data[0].name);//填充内容
+					$("#loginName").val(datas.data[0].loginName);
+					$("#phone").val(datas.data[0].phone);
+					$("#mail").val(datas.data[0].mail);
+					//$("#password").val(datas.data[0].password);
+				} else {
+					//alert(data.errmsg);
+					if(data.errcode=="10005"){
+							window.top.location.href = '../../login.html';
+					}
+				}
+			}
+			});
+	    }
+	    else
+	    {
+	    	//新增
+	    }
+        
+    });
+   }
+	
+	function GetQueryString(name)
+	{
+	     var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+	     var r = window.location.search.substr(1).match(reg);
+	     if(r!=null)return  unescape(r[2]); return null;
+	}
+</script>
+</body>
+</html>

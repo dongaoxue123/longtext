@@ -1,0 +1,525 @@
+var authToken = '';
+var pigsArchivesId = '';
+var tab = '';
+var chart_con = '';
+var code;
+var farm_id; 
+// 基于准备好的dom，初始化echarts实例
+var weekChart;
+var monthChart;
+var cycleChart;
+var page = 0;
+// 指定图表的配置项和数据，本周测重记录(折线图)
+
+//周期测膘记录(折线图)
+var cycleOption = {
+   title: {
+		text: '体况评分',
+		subtext: '',
+		top: -4,
+		textStyle: {
+			fontSize: 12,
+		}
+	},
+	grid: {
+		top: '15%',
+		bottom: '15%'
+	},
+    tooltip : {
+        trigger: 'axis',
+        showDelay : 0,
+        formatter : function (params) {
+                return '配种天数 '+params[0].value[0] + '天 '
+                + '<br/>'
+                + '分数:BCS '+params[0].value[1];
+        },
+        axisPointer:{
+            show: true,
+            type : 'cross',
+            lineStyle: {
+                type : 'dashed',
+                width : 1
+            }
+        }
+    },
+    brush: {
+    },
+    legend: {
+        data: ['分数','标准分数'],
+        left: 'center'
+    },
+    toolbox: {
+        feature: {
+            brush: {
+                type: ['']
+            }
+        }
+    },
+    xAxis : [
+        {
+            type: 'value',
+            min: 0,
+            max: 120,
+            splitNumber:4,
+            axisLabel : {
+                formatter: '{value} 天'
+            },
+            splitLine: {
+                show: false
+            }
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value',
+            scale:true,
+            axisLabel : {
+                formatter: '{value}'
+            },
+            splitLine: {
+                show: true
+            }
+        }
+    ],
+    series : [
+        	{
+            name:'分数',
+            type:'line',
+//          smooth: true,
+			data:[0, 0, 0, 0, 0],
+            symbolSize: 5,
+            markArea: {
+                silent: true,
+                itemStyle: {
+                    normal: {
+                        color: 'transparent',
+                        borderWidth: 1,
+                        borderType: 'dashed'
+                    }
+                }
+            },
+            markPoint : {
+            	symbolSize: 60, 
+                data : [
+                    {type : 'max', name: '最大值'}
+//			                    ,{type : 'min', name: '最小值'}
+                ]
+            },
+            markLine : {
+                lineStyle: {
+                    normal: {
+                        type: 'solid'
+                    }
+                },
+                data : [
+                    {type : 'average', name: '平均值'},
+                    { xAxis: 170 }
+                ]
+            }
+//          ,showSymbol: false
+        },
+        
+        
+    ]
+
+}
+$(function() {
+	setInit();
+//	setInterval("setCurDate()", 1000);
+	pigsArchivesId = getUrlParam("pigsArchivesId");
+	tab = document.querySelectorAll('.tab');
+	chart_con = document.querySelectorAll('.chart_con');
+	$("#houseListFooter").addClass("active");
+
+	// 取得authToken
+	authToken = localStorage.getItem('authToken');
+	var user = localStorage.getItem('user');
+	farm_id = JSON.parse(user).farmId;
+	if (authToken.length = 0) {
+		alert("请重新登录");
+		window.top.location.href = 'wxlogin.html';
+		return false;
+	} else {
+		// 根据fieldId取得该栏位猪只信息。
+		GetPigInfo();
+		InitData();
+	}
+});
+function show(dataId){//显示隐藏层和弹出层
+//	if(dataId != null && dataId != '' && dataId<50){
+//		var hideobj = document.getElementById("hidebg");
+//		hidebg.style.display = "block"; //显示隐藏层 
+//		hidebg.style.height = document.body.clientHeight + "px"; //设置隐藏层的高度为当前页面高度 
+//		$("#pigImg").attr("src","image/"+dataId+".png");
+//		document.getElementById("hidebox").style.display = "block"; //显示弹出层 
+//	}else{
+//		alert('无图片信息');
+//	}
+}
+
+function hide(){//去除隐藏层和弹出层 
+	document.getElementById("hidebg").style.display = "none";
+	document.getElementById("hidebox").style.display = "none";
+}
+function setDataDisplayOrShow(){
+	var allData = document.getElementById('allData');
+	var checkFlag = allData.checked;
+	$(".unNormal").each(function(){
+		if(checkFlag){
+			$(this).attr("name", "on");
+			$(this).css('display','block'); 
+		}else{
+			$(this).attr("name", "off");
+			$(this).css('display','none'); 
+		}
+	});
+}
+
+
+function InitData() { 
+	switchKind(0)
+}
+
+function switchKind(kind) {
+	switch (kind) {
+		case 0:
+			tab[0].classList.add('active')
+			chart_con[0].style.display = 'block'
+			tab[1].classList.remove('active')
+			chart_con[1].style.display = 'none'
+			$("#paritySelect").hide();
+			GetCycleBackFatInfo();
+			break;
+		case 1:
+			tab[1].classList.add('active')
+			chart_con[1].style.display = 'block'
+			tab[0].classList.remove('active')
+			chart_con[0].style.display = 'none'
+			$("#paritySelect").show();
+			getPatitySelect();
+			break;
+	}
+}
+
+//取得猪只信息
+function GetPigInfo() {
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/info/getListPage',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId + '&page=1&limit=1',
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data)
+			if (data) {
+				if (data.errcode == 200) {
+					var pigsNumber = data.dataSource.list[0].pigs_number;//猪只编号
+					var pigVarietyName = data.dataSource.list[0].pigVarietyName;//品种名称
+					var houseName = data.dataSource.list[0].houseName;//栋舍名称
+					var code = data.dataSource.list[0].code;//栏位编号
+					var parity = data.dataSource.list[0].parity;//胎次
+					var matingDays = data.dataSource.list[0].matingDays;//配种日期
+					var pregnancyDate = data.dataSource.list[0].pregnancyDate;//预计妊娠日期
+					
+					var result = "";
+					$("#pigsNumberSpan").html(pigsNumber+'<span style="float:right;border: 0;"><a href="backfatHistory.html?pigsNumber='+pigsNumber+'&pigsArchivesId='+pigsArchivesId+'">历史录入</a></span> ');
+					$("#pigsNumber").val(pigsNumber);
+					result = result + '<ul class="basic_msg">'+
+										   '<li >'+pigsNumber+'</li>'+
+										   '<li>'+pigVarietyName+'</li>'+
+										   '<li>已配种'+matingDays+'天</li>'+
+									   '</ul>'+
+									   '<ul class="basic_msg">'+
+									   	   '<li>'+houseName+' '+code+'栏</li>'+
+									   	   '<li>'+parity+'胎</li>'+
+									   	   '<li>预计妊娠日期 '+pregnancyDate+'</li>'+
+									   '</ul>';
+					$('#baseInfo').append(result);
+				} else {
+					if (data.errcode == "10005") {
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		},
+		error: function(err) {
+
+		}
+	})
+}
+function setCurDate() {
+	var ndate = getCurDate();
+	var divT = document.getElementById("logInfo");
+	var divT2 = document.getElementById("logInfo1");
+	divT.innerHTML = ndate;
+	divT2.innerHTML = ndate;
+}
+
+//取得测膘本周期记录
+function GetCycleBackFatInfo() {
+	cycleChart = echarts.init(document.getElementById('cycleChart'));
+	cycleChart.setOption(cycleOption);
+	var currentDate = getDate();
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/weight/getWeightCycleList',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId + '&current_date=' + currentDate+'&farm_id='+farm_id,
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data);
+			if (data) {
+				if (data.errcode == 200) {
+					var backfatDataArry = data.dataSource.list[0].cycleBackfatInfo;
+					var cycleDataArry = data.dataSource.list[0].cycleBackfatData;
+					var scoreStandardDataArry = data.dataSource.list[0].scoreStandardData;
+					var minBackfat = 0;
+					var maxBackfat = 0;
+					var first = true;
+					for(var i=0;i<backfatDataArry.length;i++){
+						if(backfatDataArry[i] != null){
+							if(first){
+								minBackfat = backfatDataArry[i];
+								maxBackfat = backfatDataArry[i];
+								first = false;
+							}else{
+								if(backfatDataArry[i]<minBackfat){
+									minBackfat = backfatDataArry[i];
+								}
+								if(backfatDataArry[i]>maxBackfat){
+									maxBackfat = backfatDataArry[i];
+								}
+							}
+						}
+					}
+					var adjustValue = parseInt((maxBackfat-minBackfat)/5)+1;
+					minBackfat = parseInt(minBackfat)-adjustValue*2;
+					maxBackfat = parseInt(maxBackfat)+adjustValue*2;
+					if(minBackfat<0){
+						minBackfat = 0;
+					}
+					if(maxBackfat<0){
+						maxBackfat=0;
+					}
+					// 填入数据
+					cycleChart.setOption({
+						yAxis: {
+                            min: minBackfat,
+                            max: maxBackfat,
+                            splitNumber: 5
+                        },
+                        
+						series: [{
+							// 根据名字对应到相应的系列
+							name: '分数',
+							data: cycleDataArry,
+							showSymbol: false
+						},
+						{
+           					 name:'标准分数',
+           					 type:'line',
+           					 showSymbol: false,
+          				     data:scoreStandardDataArry
+        				}
+						]
+					});
+				} else {
+					if (data.errcode == "10005") {
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		},
+		error: function(err) {
+
+		}
+	})
+}
+function getPatitySelect(){
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/matingbusiness/getParitySelect',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId,
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data);
+			if (data) {
+				if (data.errcode == 200) {
+					var result = '';
+					for (var key in data.dataSource.list){
+			        	var parity = data.dataSource.list[key].parity;
+			        	result = result+'<option value='+parity+'">'+parity+'胎</option>';
+				    }
+					$("#parity").html(result);
+					GetHistoryBackFatInfo();
+				} else {
+					if (data.errcode == "10005") {
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		}
+	})
+}
+//取得测膘历史评分
+function GetHistoryBackFatInfo() {
+	cycleChart = echarts.init(document.getElementById('historyChart'));
+	cycleChart.setOption(cycleOption);
+	var currentDate = getDate();
+	var parity =$("#paritySelect option:selected").val();
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/weight/getWeightCycleList',
+		contentType: 'application/json',
+		data: 'authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId + '&current_date=' + currentDate+'&farm_id='+farm_id+'&parity='+parity,
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data);
+			if (data) {
+				if (data.errcode == 200) {
+					var backfatDataArry = data.dataSource.list[0].cycleBackfatInfo;
+					var cycleDataArry = data.dataSource.list[0].cycleBackfatData;
+					var scoreStandardDataArry = data.dataSource.list[0].scoreStandardData;
+					var minBackfat = 0;
+					var maxBackfat = 0;
+					var first = true;
+					for(var i=0;i<backfatDataArry.length;i++){
+						if(backfatDataArry[i] != null){
+							if(first){
+								minBackfat = backfatDataArry[i];
+								maxBackfat = backfatDataArry[i];
+								first = false;
+							}else{
+								if(backfatDataArry[i]<minBackfat){
+									minBackfat = backfatDataArry[i];
+								}
+								if(backfatDataArry[i]>maxBackfat){
+									maxBackfat = backfatDataArry[i];
+								}
+							}
+						}
+					}
+					var adjustValue = parseInt((maxBackfat-minBackfat)/5)+1;
+					minBackfat = parseInt(minBackfat)-adjustValue*2;
+					maxBackfat = parseInt(maxBackfat)+adjustValue*2;
+					if(minBackfat<0){
+						minBackfat = 0;
+					}
+					if(maxBackfat<0){
+						maxBackfat=0;
+					}
+					// 填入数据
+					cycleChart.setOption({
+						yAxis: {
+                            min: minBackfat,
+                            max: maxBackfat,
+                            splitNumber: 5
+                        },
+						series: [{
+							// 根据名字对应到相应的系列
+							name: '分数',
+							data: cycleDataArry,
+							showSymbol: false
+						},
+						{
+           					 name:'标准分数',
+           					 type:'line',
+           					 showSymbol: false,
+          				     data:scoreStandardDataArry
+        				}
+							
+						]
+					});
+				} else {
+					if (data.errcode == "10005") {
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		}
+	})
+}
+function GetWeightHistoryRecords(){
+	$.ajax({
+		type: "GET",
+		url: commonIP + 'api/pig/weight/getWeightHistoryRecords?authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId,
+		contentType: 'application/json',
+		dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+		success: function(data) {
+			console.log(data)
+			if (data) {
+				if (data.errcode == 200) {
+					var result = '';
+					 for (var key in data.dataSource.list){
+			        	var matingDate = data.dataSource.list[key].matingDate;
+			        	var startDate = data.dataSource.list[key].startDate;
+			        	var endDate = data.dataSource.list[key].endDate;
+			        	var totalAddWeight = data.dataSource.list[key].totalAddWeight;
+			        	var weekAddWeight = data.dataSource.list[key].weekAddWeight;
+			        	if(key == 0){
+				        	result = result+'<div class="msg"><ul><li>配种开始日期：'+matingDate+'</li>';
+				        	if(startDate!=null && startDate!=''){
+				        		result = result+'<li>配种一月：'+startDate+' 至 '+endDate+'</li>'+
+				        				'<li>周均增重：'+weekAddWeight+'</li>'+
+				        				'<li>总增重：'+totalAddWeight+'</li>';
+				        	}
+				        	result = result+'</ul></div>';
+			        	}else if(key == 1){
+			        		if(startDate!=null && startDate!=''){
+				        		result = result+'<div class="msg"><ul>'+
+				        			'<li>配种二月：'+startDate+' 至 '+endDate+'</li>'+
+				        			'<li>周均增重：'+weekAddWeight+'</li>'+
+				        			'<li>总增重：'+totalAddWeight+'</li></ul></div>';
+			        		}
+			        	}else if(key == 2){
+			        		if(startDate!=null && startDate!=''){
+				        		result = result+'<div class="msg"><ul>'+
+				        			'<li>配种三月：'+startDate+' 至 '+endDate+'</li>'+
+				        			'<li>周均增重：'+weekAddWeight+'</li>'+
+				        			'<li>总增重：'+totalAddWeight+'</li></ul></div>';
+			        		}
+			        	}
+			        }
+					if(result.length > 0){
+				    	$('#historyRecords').append(result);
+			        }
+				} else {
+					if (data.errcode == "10005") {
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			}
+		},
+		error: function(err) {
+
+		}
+	})
+
+}
+function productionDetail() { 
+	pigsArchivesId = getUrlParam("pigsArchivesId");
+	// 跳转页面并传输参数
+	window.location.href = 'productionDetail.html?pigsArchivesId='+pigsArchivesId;	
+}
+/**
+ * 获取当前时间
+ */
+function getDate() {
+	var myDate = new Date();
+	//获取当前年
+	var year = myDate.getFullYear();
+	//获取当前月
+	var month = myDate.getMonth() + 1;
+	//获取当前日
+	var date = myDate.getDate();
+	var now = year + '-' + p(month) + "-" + p(date);
+	return now;
+}
+
+function p(s) {
+	return s < 10 ? '0' + s : s;
+}

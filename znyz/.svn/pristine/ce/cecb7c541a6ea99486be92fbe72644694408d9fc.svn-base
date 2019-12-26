@@ -1,0 +1,234 @@
+
+<html>
+<head>
+    <title>Title</title>
+    <script src="../../statics/libs/jquery-1.7.2.js"></script>
+    <link rel="stylesheet" href="../../statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../common/css/cyType.css">
+    <link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+    <script src="../../statics/plugins/layui/layui.js"></script>
+    <script src="../../common/js/whole/cyLayer.js"></script>
+    <script src="../../common/js/whole/utils.js"></script>
+    <script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="layui-field-box">
+    <form class="layui-form" action="">
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">所属猪场</label>
+            <div class="layui-input-inline">
+    	 		<select id="farmId" name="farmId" lay-verify="required|farmId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择猪场</option>
+		    	</select>
+		    </div>
+            <label class="layui-form-label">猪只编码</label>
+            <div class="layui-input-inline">
+                <input type="text" name="pigsNumber" lay-verify="required|pigsNumber" placeholder="请输入编号" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">品种</label>
+            <div class="layui-input-inline">
+	            <select id="pigVarietyId" name = "pigVarietyId" lay-verify="pigVarietyId" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品种</option>
+		    	</select>
+            </div>
+            <label class="layui-form-label">品系</label>
+            <div class="layui-input-inline">
+	            <select id="strain" name ="strain" lay-verify="strain" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择品系</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">猪只类别</label>
+            <div class="layui-input-inline">
+	            <select id="pigsType" name ="pigsType" lay-verify="pigsType" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择类别</option>
+		    	</select>
+            </div>
+           <label class="layui-form-label">种母猪类别</label>
+            <div class="layui-input-inline">
+	            <select id="breedingSowType" name = "breedingSowType" lay-verify="breedingSowType" style="height: 38px;border-color: #F0F0F0;">
+		        	<option value="">请选择类别</option>
+		    	</select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+            <label class="layui-form-label">出生日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id ="bornDate" name="bornDate" lay-verify="bornDate" placeholder="请输入出生日期" class="layui-input">
+            </div>
+            <label class="layui-form-label">入场日期</label>
+            <div class="layui-input-inline">
+                <input type="text" id="enterDate" name="enterDate" lay-verify="enterDate" placeholder="请输入入场日期" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="padding-right: 20px">
+        	<label class="layui-form-label">耳缺号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="earNum" lay-verify="earNum" placeholder="请输入耳缺号" class="layui-input">
+            </div>
+            <label class="layui-form-label">胎次</label>
+            <div class="layui-input-inline">
+                <input type="text" name="parity" lay-verify="parity" placeholder="请输入胎次" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" class="layui-textarea" name="remark" lay-verify="remark"></textarea>
+            </div>
+        </div>
+        <div class="page-footer">
+            <div class="btn-list">
+                <div class="btnlist">
+                    <button class="layui-btn" lay-submit="" lay-filter="submit"><i class="fa fa-floppy-o">&nbsp;</i>保存</button>
+                    <button class="layui-btn" onclick="$t.closeWindow();"><i class="fa fa-undo">&nbsp;</i>返回</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use(['form','laydate'], function(){
+        var form = layui.form;
+        var $ = layui.$;
+        var laydate = layui.laydate;
+        //创建时间 日期控件
+    	laydate.render({
+		  	elem: '#bornDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//创建时间 日期控件
+   		 laydate.render({
+		  	elem: '#enterDate' //指定元素
+		  	,theme: 'molv'
+		  	,calendar: true //重要节日
+		});
+		//获取猪场下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/farm/getFarmSelect',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var farmOption;
+	                for (var i = 0; i < data.length; i++) {
+            			farmOption = farmOption+'<option value="'+data[i].farmId+'">'+data[i].farmName+'</option>';
+	                }
+	                $("#farmId").append(farmOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    }); 
+	    //获取品种下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/systemOption/getOptionByParentType?type=pigVarietyId',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var sysOption;
+	                for (var i = 0; i < data.length; i++) {
+            			sysOption = sysOption+'<option value="'+data[i].id+'">'+data[i].name+'</option>';
+	                }
+	                $("#pigVarietyId").append(sysOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    }); 
+	    //获取品系下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/systemOption/getOptionByParentType?type=strain',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var sysOption;
+	                for (var i = 0; i < data.length; i++) {
+            			sysOption = sysOption+'<option value="'+data[i].id+'">'+data[i].name+'</option>';
+	                }
+	                $("#strain").append(sysOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    }); 
+	    //获取猪只类别下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/systemOption/getOptionByParentType?type=pigType',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var sysOption;
+	                for (var i = 0; i < data.length; i++) {
+            			sysOption = sysOption+'<option value="'+data[i].id+'">'+data[i].name+'</option>';
+	                }
+	                $("#pigsType").append(sysOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    }); 
+	    //获取种母猪类别下拉
+	   	$.ajax({
+	        url: commonIP + 'testdata/systemOption/getOptionByParentType?type=breedingSowType',
+	        success: function (data) {
+	        	if(data!=null && data.length>0){
+	                var sysOption;
+	                for (var i = 0; i < data.length; i++) {
+            			sysOption = sysOption+'<option value="'+data[i].id+'">'+data[i].name+'</option>';
+	                }
+	                $("#breedingSowType").append(sysOption);
+	                form.render('select');//一定要加form.render();
+	        	}
+	        }
+	    }); 
+	    form.verify({
+	    	pigsNumber: function(value){  
+				if(value.length > 20){  
+				    return '猪只编号不能超过20个字符！';  
+				}  
+	        }, pigsType: function(value){  
+	            if(value.length > 5){  
+	           		return '规模不能超过5个字符！';  
+	            }  
+	        }, earNum: function(value){  
+	            if(value.length > 20){  
+	                return '耳缺号不能超过20个字符！';  
+	            }  
+	        }, bornDate: function(value){  
+	            if(value==null || value ==''){  
+	           		return '出生日期不能为空！';  
+	            }  
+	        }, enterDate: function(value){  
+	            if(value==null || value ==''){  
+	           		return '入场日期不能为空！';  
+	            }  
+	        }, parity: [/^\d{0,11}$/, '胎次必须为小于11字符的数字！']  
+	         , remark: function(value){  
+	            if(value.length > 200){  
+	                return '备注不能超过200个字符！';  
+	            }   
+	        }    
+	    });
+        //监听提交
+        form.on('submit(submit)', function(res){
+        	console.log(res.field);
+       		$.ajax({  
+	            url: commonIP + 'testdata/piginfo/create',
+                data: res.field,
+                success: function(data) {
+					var dataObj = JSON.parse(data);
+					if (dataObj.errcode == "200") {
+	                	console.log('ajaxSuccess! 请求成功');
+		                $t.closeWindow();//关闭当前弹窗
+	            		window.parent.location.reload();//刷新父页面
+					}
+                },
+                error: function () {//请求失败处理函数
+                	console.log('ajaxError! 请求失败');
+	                $t.closeWindow();//关闭当前弹窗
+//          		Msg.success("添加成功");
+            		window.parent.location.reload();//刷新父页面
+	            }
+            });  
+        });
+    });
+</script>
+</body>
+</html>

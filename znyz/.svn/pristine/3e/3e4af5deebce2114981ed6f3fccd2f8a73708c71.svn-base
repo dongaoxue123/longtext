@@ -1,0 +1,330 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/echarts.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/dist/dropload.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/masklayer.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+	<link rel="stylesheet" type="text/css" href="script/dist/dropload.css"/>
+	<link rel="stylesheet" type="text/css" href="style/common.css"/>
+	<script src="script/Backfat.js"></script>
+	<style type="text/css">
+		* {
+		margin:0;
+		padding: 0;
+		font-family: 微软雅黑;
+		}
+		html {height: 100%;}
+		a {
+			text-decoration: none; 
+			color: #F4AA4C;
+		}
+		body {
+			height: 100%;
+		}
+
+		/* 开关 */
+		input[type="checkbox"] {
+			opacity: 0;
+		}
+		input[type="checkbox"].switch + div {
+			background: #fff;
+			width: 50px;
+			height: 24px;
+			border-radius:999px;
+			border: 1px solid #DADADB;
+		}
+		input[type="checkbox"].switch:checked + div {
+			background: #00bc97;
+		}
+		/* 开关的圆点 */
+		input[type="checkbox"].switch + div > div {
+			width: 24px;
+			height: 24px;
+			margin-top: -1px;
+			border: 1px solid #DADADB;
+			border-radius: inherit;
+			background: #fff;			
+		}
+		input[type="checkbox"].switch:checked + div > div {
+			transform: translate3d(26px,0,0);
+			-webkit-transform: translate3d(26px,0,0);
+		}
+		
+		.button_check {
+			margin: 15px 0;
+			/*background: #fff;*/
+			border-top: 1px solid #DADADB;
+			border-bottom: 1px solid #DADADB;
+			display: flex;
+		}
+		.button_check > span:first-of-type {
+			flex: 5;
+			line-height: 40px;
+			margin-left: 10px;
+			font-size: 4vmin;
+		}
+		.button_check label > div {
+			margin-top:-16px;
+			margin-right: 10px;
+		}
+		/* switch关闭时选项卡不可用 */
+		div.switchbg {			
+			position: absolute;
+			left: 0;
+			top: 50%;
+			background: #000000;
+			opacity: 0.5;
+			width: 100%;
+			height: 50%;
+			z-index: 3;
+			display: none;
+		}
+		.button_check:first-of-type,.button_check:nth-child(2) {
+			position: relative;
+			z-index: 1;
+		}
+		/* 页面内容所在div */
+		#bod {
+			position: absolute;
+			left: 0;
+			top: 0;
+			display: flex;
+			width: 100%;
+			height:100%;
+			flex-direction:column;
+		}
+		#hidebg {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			background-color: #000;
+			width: 100%;
+			filter: alpha(opacity=60);
+			opacity: 0.6;
+			display: none;
+			z-Index: 2;
+		}
+		
+		#hidebox {
+			position: fixed;
+			top: 50%;
+			width: 100%;
+			background-color: #fff;
+			display: none;
+			cursor: pointer;
+			z-Index: 3;
+			transform: translate(0,-50%);
+		}
+		#hidebox > img {
+			width: 100%;
+		}
+	</style>
+<script >
+var ids = "";
+var user; //登录用户
+$(document).ready(function(){
+	user = localStorage.getItem('user');
+	var userId = JSON.parse(user).id;
+	var farmId = JSON.parse(user).farmId;
+	var pigId = getUrlParam('pigsArchivesId'); //猪主键
+	var now = new Date();
+	//格式化日，如果小于9，前面补0
+	var day = ("0" + now.getDate()).slice(-2);
+	//格式化月，如果小于9，前面补0
+	var month = ("0" + (now.getMonth() + 1)).slice(-2);
+	//拼装完整日期格式
+	var today = now.getFullYear()+"-"+(month)+"-"+(day) ;
+	$("#measureTime").val(today);
+	//查询体况信息
+	$.ajax({
+			type: "GET",
+			url: commonIP + "api/pig/pigBackfatScore/getList",
+			contentType: 'application/json',
+			data: 'authToken=' + authToken + '&pigId=' + pigId+"&pageNum=1&pageSize=1&farmId="+farmId,
+			dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+			success: function(data) {
+				console.log(data);
+				if (data && data.errcode == 200) {
+					var score = data.dataSource.list[0].score;
+					var backfatNum = data.dataSource.list[0].backfatNum;
+					$("#currBackfatNum").html("<li><h2 style='color:#EE7700;'>  BCS "+ score + " </h2> <h2 style='color:#EE7700;'>"+ backfatNum + " mm</h2></li> ");
+					//$("#currScore").html("<li><h2 style='color:#EE7700;'>  BCS "+ score + " </h2></li>");
+				} else {
+					if (data.errcode == 10005) {
+						alert(data.errmsg);
+						window.top.location.href = 'wxlogin.html';
+					}
+				}
+			},
+			error: function(xhr, type) {}
+		});
+	
+	//展示筛选窗口
+	$("#showQuery").click(function(){
+		$('html,body').addClass('ovfHiden'); 
+		$("#query").css('display','block'); 
+		//局部遮罩层
+		
+        $("#allDom").jqLoading({ type: 1 });
+	})
+	
+		//取消查询按钮
+	$(".cancel").click(function(){
+		$("#query").css('display','none'); 
+		//关闭遮罩层
+		$("#allDom").jqLoading("destroy");
+	});
+	//确定查询按钮
+	$("#confirm").click(function(){
+	var backfatNum = $.trim($("#backfatNum").val()); //背膘值
+    var measureTime =$.trim($("#measureTime").val());//测量日期 
+    var pigsNumber = $.trim($("#pigsNumber").val());
+    if (measureTime == null || measureTime == '') {
+    	alert("测量时间不能为空!");
+    	return;
+    }
+    if (backfatNum == null || backfatNum == '') {
+    	alert("背膘值不能为空!");
+    	return;
+    }
+ 
+	//添加
+		$.ajax({
+			type: "POST",
+			url: commonIP + "api/pig/pigBackfatScore/create?authToken=" + authToken,
+			data: JSON.stringify({
+				"createUser": userId,
+				"updateUser": userId,
+				"backfatNum": backfatNum,
+				"measureTime": measureTime,
+				"pigId": pigId,
+				"pigsNumber":pigsNumber,
+				"farmId":farmId
+			}),
+			contentType: 'application/json',
+			success: function(data) {
+				var data = JSON.parse(data);
+				if (data.errcode == 200) {
+				var obj = 	data.dataSource.list[0];
+				$("#currBackfatNum").html("<li><h2 style='color:#EE7700;'>  BCS "+ obj.score + " </h2><h2 style='color:#EE7700;'>"+ backfatNum + " mm</h2></li> ");
+					//关闭遮罩层
+					$("#allDom").jqLoading("destroy");
+					$("#query").css('display','none'); 
+				} else {
+					alert(data.errmsg);
+					if (data.errcode == "10005") {
+						window.top.location.href = 'wxlogin.html';
+						//window.location.href = 'login.html';
+					}
+				}
+			}
+		});
+ 	
+	});
+});
+</script>
+</head>
+<body  style="height:100%;" id="allDom">
+	<div class="weight_list bg_lightblue flex" id="baseInfo">
+		<div class="msg_corner bg_blue">
+			<a href="#">基本信息</a>
+		</div>
+		<div id="proInfo" style="position: absolute;right: 32px;top: 10px;">
+			<a onclick="productionDetail()" style="font-size:15px;color: #3366FF;">生产详情</a>
+		</div>
+		<!--<ul class="basic_msg">
+			<li>YJ10001</li>
+			<li>长白猪</li>
+			<li>已配种35天</li>
+		</ul>
+		<ul class="basic_msg">
+			<li>妊娠一舍 10001栏</li>
+			<li>2胎</li>
+			<li>预计妊娠日期 2018年5月30日</li>
+		</ul>-->
+		
+	</div>
+	
+	<div class="weight_list bg_lightgray">
+		<div class="msg_corner bg_green">
+			<a href="#">体况信息</a>
+		</div>
+		<div class="flex pb20">
+			<ul class="weight_msg">
+				<li>体况评分</li>
+				<li>当前背膘</li>
+			</ul>
+			<ul class="weight_msg" id ="currBackfatNum" >
+			</ul>
+			<div class="btn_tq">
+				<a id="showQuery">手动录入</a>
+			</div>
+			<div class="btn_history">
+				<a onclick="location='GradingStandard.html?pid='+getUrlParam('pigsArchivesId')">评分标准</a>
+			</div>
+			
+		</div>
+		<div class="chart" id ="weekInfo">
+			<div class="chart_tit">
+				<div>
+					<a class="tab active" onclick="switchKind(0)">本周期</a>
+					<a class="tab" onclick="switchKind(1)">历史评分</a>
+					<div style="display: none;" id="paritySelect" style="float:right;">
+						<select id="parity" style="min-width: 60px;height: 24px;border-radius: 4px;border: 1px solid #25B4F5;float:right;" onchange="GetHistoryBackFatInfo()">
+						</select>
+					</div>
+				</div>
+				<!--<div style="display: none;" id="paritySelect" style="float:right; display:inline">
+					<select id="parity" style="min-width: 70px;height: 28px;border-radius: 4px;border: 1px solid #25B4F5;" onchange="GetHistoryBackFatInfo()">
+						<option value="1">1胎</option>
+						<option value="2">2胎</option>
+					</select>
+				</div>-->
+			</div>
+			<div class="chart_con" style="display: none;" id="cycleChart">
+			</div>
+			<div class="chart_con" style="display: none;" id="historyChart">
+			</div>
+		</div>
+	</div>
+	<div class="choose_box" style="display: none;" id="query">
+		<ul>
+			<li>
+				<h4>测量日期：</h4>
+				<input type="date"  name="measureTime" id="measureTime" style="width: 150px;"/>
+			</li>
+			<li>
+				<h4>猪只耳号：</h4>
+				<div id="pigsNumberSpan"><span style="float:right;border: 0;"><a >历史录入</a></span> </div>
+				<input type="hidden" id="pigsNumber"/> 
+			</li>
+			<li>
+				<h4>背膘值：</h4>
+				<input type="text" name="backfatNum" id="backfatNum" value="" /><i>mm</i>
+			</li>
+		</ul>
+		<div class="main box_btn">
+			<a  class="cancel">取消</a>
+			<a id="confirm">确定</a>
+		</div>
+		
+	</div>
+	<div id="loading"></div>
+</body>
+<script>
+	
+</script>
+</html>

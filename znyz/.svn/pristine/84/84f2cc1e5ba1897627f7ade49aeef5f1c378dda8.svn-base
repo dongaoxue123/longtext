@@ -1,0 +1,104 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>智能养猪-行业地图</title>
+
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,minimal-ui">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="format-detection" content="telephone=no">
+		<meta name="description" content="智能养猪">
+		<meta name="keywords" content="智能养猪">
+		<meta name="author" content="小龙潜行科技">
+		<link rel="stylesheet" type="text/css" href="style/animate.css" />
+		<link rel="stylesheet" type="text/css" href="style/style.css" />
+		<script src="js/skyest.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.backstretch.min.js"></script>
+		<script src="js/main.js"></script>
+	</head>
+<body>
+
+<!---------------------------- 导航 ----------------------------------> 
+<div class="header">
+
+		</div>
+		<script src="components/header.js" type="text/javascript" charset="utf-8"></script>
+
+		<div class="banner banner-index" onclick="LinkTo()" style="position: relative; z-index: 0; background: none;height: 368px;"></div>
+		<script src="js/Banner" type="text/javascript"></script>
+		<script type="text/javascript">
+			var images = ["images/banner_02.jpg"];
+			if(banners.length > 0) {
+				$(".banner-index").attr("style", "cursor:pointer;");
+				images = [];
+				for(i = 0; i < banners.length; i++) {
+					images.push(banners[i]["img"]);
+				}
+			}
+
+			$(function() {
+				$('.banner-index').backstretch(images, {
+					fade: 750,
+					duration: 3000
+				});
+			});
+
+			function LinkTo() {
+				if(banners.length > 0) {
+					for(i = 0; i < banners.length; i++) {
+						if($(".backstretch img").attr("src") == banners[i]["img"] && banners[i]["url"] != "") {
+							window.location.href = banners[i]["url"];
+						}
+					}
+				}
+			}
+		</script>
+		<div class="container clear">
+			<!--user左侧菜单-->
+			<div class="side">
+				<dl class="sidemenu">
+					<dt><i class="icon"></i>行业地图</dt>
+					<dd>
+						<a class="active" href="">行业地图</a>
+					</dd>
+				</dl>
+			</div>
+			<!--右侧main-->
+			<!--个人首页-->
+			<div class="main user_home">
+				<div class="uc-head uc-head-border">行业地图</div>
+				<div class="uc-home clear">
+					
+					<div class="width1200 pb50 pt50"> 
+					     <div class="about">
+					          <h2>行业地图</h2>
+					          <p>智能养猪平台拥有大量养猪行业有价值的数据信息，将这些信息合理地展示在地图上，对养猪行业从业者及职能部门人员了解国内养猪行业发展情况提供极大帮助。</p>      
+					          <h3>猪只养殖分布地图</h3>
+					          <div class="hr mt20"></div>
+					          <p>以地图的形式展示各地图母猪、商品猪数量。</p>
+					          <img src="images/map01.jpg">  
+					          <p>地图支持多级缩放，即可以掌握整体区域分布数量，也可进入至某一行政区域，进而更细致地了解该地区猪只养殖情况。</p>
+					          <img src="images/map02.jpg">
+					          <h3>猪只统计图表</h3>
+					          <div class="hr mt20"></div>
+					          <p>根据获取数据在地图上形成关键指标数据图表。</p>
+					          <img src="images/map03.jpg">
+					     </div>
+					</div>
+					
+				</div>
+
+			</div>
+
+		</div>
+		<div class="footer">
+					
+		</div>
+		<script src="components/footer.js" type="text/javascript" charset="utf-8"></script>
+</body>
+</html>

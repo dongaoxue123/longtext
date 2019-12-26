@@ -1,0 +1,245 @@
+<!doctype html>
+<html  style="height: 100%;color:#333333;background: #fff;">
+<head>
+	<meta charset="UTF-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" /><!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+	<meta content="yes" name="apple-mobile-web-app-capable" /><!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" /><!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+	<meta name="format-detection" content="telephone=no" /><!--告诉设备忽略将页面中的数字识别为电话号码-->
+	<meta content="false" name="twcClient" id="twcClient" /><!--判断页面是否在本地Native（本地APP）环境中-->	
+	<title>测膘系统</title>
+	
+	<script src="script/flexible.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/flexible_css.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="script/common.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="stylesheet" type="text/css" href="iconfont/iconfont.css"/>
+	<link rel="stylesheet" type="text/css" href="style/style.css"/>
+</head>
+<body  style="height:100%;">
+	
+		<header>
+			<span class="iconfont icon-arrow-left" onclick="goFieldList()"></span>
+			<h1>档案信息</h1>
+		</header>
+		
+		<main>
+			<div class="top">
+				<h3 id="PigsNumber">&nbsp</h3>
+				<h4 id="PigInfos" >&nbsp</h4>
+			</div>		
+			
+			<div class="menu">
+				<ul>
+					<li onclick="menuClick('weight')" >体重</li>
+					<li onclick="menuClick('backfat')"  >背膘</li>
+					<li onclick="menuClick('feeding')" > 饲喂</li>
+					<li onclick="menuClick('pigRecord')" class="active" >档案 </li>
+					<div class="clear"></div>
+				</ul>
+			</div>
+			
+			<div class="datemenu msgmenu">
+				<ul>
+					<li class="active" id='li-week' onclick="switchKind(1)">基本信息</li>
+					<li id='li-month' onclick="switchKind(2)">生产信息</li>
+				</ul>
+				<div class="clear"></div>
+			</div>
+			
+			<div class="divCon" id="pigRecordDiv">
+				<div class="info"  id = "baseInfo">
+					<!--<ul>
+						<li><span>耳缺号：</span><span>{$ear_num}</span></li>
+						<li><span>品种：</span><span>{$pigVarietyName}</span><span>品系：</span><span>{$strainName}</span></li>
+						<li><span>胎次：</span><span>{$parity}</span></li>
+						<li><span>入场信息：</span><span>{$enter_date}</span></li>
+						<li><span>出生日期：</span><span>{$born_date}</span></li>
+						<li><span>当前状态：</span><span>{$production_status_name}</span><span>持续时间：</span><span>120天</span></li>
+						<li><span>预计：</span><span>分娩时间 20171220</span></li>
+					</ul>-->
+				</div>
+			</div>
+			
+			<div class="divCon" id='months' style="display: none;">
+				
+				<div class="info" id="topInfo">
+					<!--<ul>
+						<li><span>ZZRH-2017-9-20&nbsp;&nbsp;品种：xx&nbsp;&nbsp;胎次：3次</span></li>
+					</ul>-->
+				</div>
+				<div class="msg" id = "productInfo">
+					<!--<ul>
+						<li>当前状态：已配种</li>
+						<li>20170720 配种</li>
+						<li>20170705 发情</li>
+					</ul>-->
+				</div>
+				<div id = "productList">
+				</div>
+			</div>
+		</main>
+		<script type="text/javascript">
+			setInit();		
+			var pigsArchivesId = '';
+			var authToken = '';
+	        $(document).ready(function () {
+	        	
+	        	pigsArchivesId = getUrlParam("pigsArchivesId");
+	        	// 取得authToken
+				authToken = localStorage.getItem('authToken');
+				$("#houseListFooter").addClass("active");
+				if (authToken.length = 0){		
+					alert("请重新登录");
+					window.top.location.href = 'wxlogin.html';
+					return false;
+				} 
+				switchKind(1);
+	        });
+			
+			function switchKind(kind){
+				switch(kind){
+					case 1:
+						$("#baseInfo").empty();
+						document.getElementById('pigRecordDiv').style.display='block'
+						document.getElementById('li-week').className='active'
+						document.getElementById('months').style.display='none'
+						document.getElementById('li-month').className=''
+						getPigInfo();
+						getPigBaseInfo();
+						break;
+					case 2:
+						$("#productList").empty();
+						document.getElementById('months').style.display='block'
+						document.getElementById('li-month').className='active'
+						document.getElementById('pigRecordDiv').style.display='none'
+						document.getElementById('li-week').className=''
+						getPigInfo();
+						getPigProductInfo();
+						break;
+				}
+			}
+			
+			// 取得猪只基本信息
+			function getPigBaseInfo() {
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/info/getListPage',
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigs_archives_id='+pigsArchivesId+'&pageNum=1&pageSize=1',
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {		
+								var result='';
+								var enter_date ='';//入场时间
+								var born_date = '';//出生时间
+								var status_start_date =new Date();//状态开始时间
+					        	var currDate = Date.parse(new Date());
+								var durationDays = '';//持续天数
+						        for (var key in data.dataSource.list){	
+						        	if(data.dataSource.list[key].enter_date!=null){
+						        		enter_date = (data.dataSource.list[key].enter_date).substr(0,11);
+						        	}
+						        	if(data.dataSource.list[key].born_date!=null){
+						        		born_date = (data.dataSource.list[key].born_date).substr(0,11);
+						        	}
+						        	if(data.dataSource.list[key].status_start_time!=null){
+						        		status_start_date = (data.dataSource.list[key].status_start_time).substr(0,11);
+						        	}
+									var re = new RegExp("-", "g");
+									var startDate = Date.parse(status_start_date.replace(re,'/'));
+									durationDays = Math.abs(parseInt((currDate - startDate)/1000/3600/24));
+						        	result = result +'<ul><li><span>耳缺号：</span><span>'+data.dataSource.list[key].ear_num+'</span></li>'+
+						        			'<li><span>品种：</span><span>'+data.dataSource.list[key].pigVarietyName+'</span>'+
+						        			'<span>品系：</span><span>'+data.dataSource.list[key].strainName+'</span></li>'+
+						        			'<li><span>胎次：</span><span>'+data.dataSource.list[key].parity+'</span></li>'+
+						        			'<li><span>入场信息：</span><span>'+enter_date+'</span></li><li>'+
+						        			'<span>出生日期：</span><span>'+born_date+'</span></li>'+
+						        			'<li><span>当前状态：</span><span>'+data.dataSource.list[key].production_status_name+'</span>'+
+						        			'<span>持续时间：</span><span>'+durationDays+'天</span></li></ul>';
+						        	
+						        }
+						        if(result.length > 0){
+						            $('#baseInfo').append(result);
+						        }
+							}
+						}
+					}
+				});
+			}	
+			// 取得猪生产信息
+			function getPigProductInfo() {
+				var result ='';
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/production/getListPage',
+					contentType: 'application/json',
+					data: 'authToken='+authToken+'&pigs_archives_id='+pigsArchivesId+'&pageNum=0&pageSize=0',
+					dataType:'json',// GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+						console.log(data)
+						if (data) {
+							if (data.errcode == 200) {		
+								var re = new RegExp("-", "g");//全部替换
+						        for (var key in data.dataSource.list){
+						        	//后台查询续根据时间倒序排序，第一条数据为最新数据
+						        	if(key == 0){
+						        		$("#topInfo").empty();
+						        		$("#topInfo").append('<ul><li><span>'+data.dataSource.list[key].ear_num+
+						        							'&nbsp;&nbsp;品种：'+data.dataSource.list[key].pigVarietyName+
+						        							'&nbsp;&nbsp;胎次：'+data.dataSource.list[key].parity+'次</span></li></ul>');
+						        		$("#productInfo").empty();
+						        		var statusStartTime="";
+						        		if(data.dataSource.list[key].statusStartTime!=null){
+						        			statusStartTime = (data.dataSource.list[key].statusStartTime).substr(0,11).replace(re,'') +' 配种';
+						        		}
+						        		$("#productInfo").append('<ul><li>当前状态：'+data.dataSource.list[key].production_status_name+'</li><li>'+statusStartTime+'</li></ul>');
+						        	}
+						        	var delivery_date = 'x年x月x日';
+						        	var mating_date = 'x年x月x日';
+						        	if(data.dataSource.list[key].delivery_date!=null){
+						        		delivery_date = (data.dataSource.list[key].delivery_date).substr(0,11).replace(re,'');
+						        	}
+						        	if(data.dataSource.list[key].mating_date!=null){
+						        		mating_date = (data.dataSource.list[key].mating_date).substr(0,11).replace(re,'');
+						        	}
+						        	result = result + '<div class="msg"><ul><li>第'+data.dataSource.list[key].parity+'胎：</li>'+
+						        			'<li>'+delivery_date+' 分娩</li>'+ 
+						        			'<li>健仔：'+data.dataSource.list[key].healthy_number+'头 弱仔：'+data.dataSource.list[key].weak_number+'头</li>'+
+						        			'<li>'+mating_date+' 配种</li></ul></div>';
+					        	}
+					            $('#productList').append(result);
+					        }
+						} 
+					}
+				});
+			}
+			//取得猪只信息
+			function getPigInfo() {
+				$.ajax({
+					type: "GET",
+					url: commonIP + 'api/pig/info/getListPage',
+					contentType: 'application/json',
+					data: 'authToken=' + authToken + '&pigs_archives_id=' + pigsArchivesId + '&pageNum=1&pageSize=1',
+					dataType: 'json', // GET 请求方式需要添加dataType 设定返回数据的格式为json;
+					success: function(data) {
+//							console.log(data)
+						if (data) {
+							if (data.errcode == 200) {
+								$("#PigsNumber").html(data.dataSource.list[0].pigs_number);
+								$("#PigInfos").html(data.dataSource.list[0].production_status_name + "/" + data.dataSource.list[0].pigVarietyName + "/" + data.dataSource.list[0].parity + "胎");
+							}else{
+								alert(data.errmsg);
+								if(data.errcode=="10005"){
+									window.top.location.href = 'wxlogin.html';
+								}
+							}
+						}
+					}
+				})
+			}
+		</script>
+</body>
+</html>

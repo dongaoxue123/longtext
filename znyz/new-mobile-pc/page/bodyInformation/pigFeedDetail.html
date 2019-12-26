@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>种猪饲喂营养详细</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" href="../../statics/plugins/layui/css/layui.css" media="all">
+
+	</head>
+	
+	<style type="text/css">
+		.info-row {
+			line-height: 40px;
+		}
+		.info-span {
+			line-height: 40px;
+		}
+		
+		.info-label {
+			text-align: left;
+			padding-left: 0;
+			width:90px;
+		}
+		
+		.mt30 {
+			margin-top: 30px;
+		}
+	</style>
+
+	<body>
+		<div class='layui-container'>
+			<div class='layui-row info-row'>
+				<span class="layui-col-xs4 info-span" data-i18n="[prepend]common.pigNumber">：<span id='pigNumber'></span></span>
+				<span class="layui-col-xs4 info-span" data-i18n="[prepend]common.variety">：<span id='variety'></span></span>
+				<span class="layui-col-xs4 info-span" data-i18n="[prepend]common.strain">：<span id='strain'></span></span>
+			</div>
+			<div class='layui-row info-row'>
+				<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label" data-i18n="[prepend]common.weight">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="weight" placeholder="KG" onkeyup="value = limitVal(this.value)" class="layui-input"/>
+		            </div>
+            	</div>
+            	<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label" data-i18n="[prepend]feedDetail.houseTemperature">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="temperature" class="layui-input" value='20' onkeyup="value = limitVal(this.value)"  placeholder="℃"/>
+		            </div>
+            	</div>
+            	<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label" data-i18n="[prepend]feedDetail.area">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="area" class="layui-input" value='0.5' onkeyup="value = limitVal(this.value)"  placeholder="m²"/>
+		            </div>
+		            <button class="layui-btn" id='reload' data-i18n="feedDetail.recalculate" onkeyup="value = limitVal(this.value)"   style='float:right'></button>
+            	</div>
+			</div>
+			<div class='layui-row info-row'>
+				<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label"  data-i18n="[prepend]feedDetail.dryQuality">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="dryQuality" class="layui-input" value='0.88'  onkeyup="value = limitVal(this.value)"  placeholder="%"/>
+		            </div>
+            	</div>
+            	<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label" data-i18n="[prepend]feedDetail.feedIntake">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="feedIntake" class="layui-input" value='2250' onkeyup="value = limitVal(this.value)"  placeholder="g/d"/>
+		            </div>
+            	</div>
+            	<div class="layui-col-xs4" >
+					<label class="layui-form-label info-label" data-i18n="[prepend]feedDetail.proteinDeposition">:</label>
+		            <div class="layui-input-inline" style="width: 160px;">
+		               <input type="text" id="proteinDeposition" class="layui-input" onkeyup="value = limitVal(this.value)" placeholder="g/d" value='132'/>
+		            </div>
+            	</div>
+			</div>
+			<table class="layui-hide" id="hogBatch" lay-filter="hogBatch"></table>
+			<button class="layui-btn" id='expExcel' data-i18n="export"  style='float:right'></button>
+			<button class="layui-btn" id='expExcelToPhone' data-i18n="share"  style='float:right;margin-right: 10px;'></button>
+		</div>
+		
+	<script src="../../statics/plugins/layui/layui.js"></script>
+	<!-- echarts-->
+	<script src="../basedata/echarts/echarts.js"></script>
+<!-- 国际化        -->
+	<script src="../../statics/plugins/i18n/i18next.min.js"></script>
+	<script src="../../statics/plugins/i18n/i18nextXHRBackend.min.js"></script>
+	<script src='../../statics/plugins/i18n/loc-i18next.min.js'></script>
+	<script src='../../statics/plugins/layui/excel.min.js'></script>
+	<script src="../../js/common.js" type="text/javascript" charset="utf-8"></script>
+		<!--code-->
+		<script>
+			
+			var excelDetailsData;
+			var excelHeadData;
+			var farmId;
+			var id;
+			var weight;
+			var authToken = localStorage.getItem("authToken");
+			var user = localStorage.getItem("user");
+			var parity;
+			var times = 0
+			var userId = JSON.parse(user).id
+			i18n('../../locales', onLangReady) //国际化
+			
+			function limitVal(val){
+				changeDisabled(1)
+				if(!val){return val}
+				val = val.replace(/[^\d.]/g,"");  //清除“数字”和“.”以外的字符
+				val = val.replace (/(\d*)(.{0,1})(\d{0,2})(.*)/,'$1$2$3')
+				val = val.replace (/^00.*/,'0')
+				return val
+			}
+			function changeDisabled(val){
+				if(val === 1){
+					$('#expExcel').attr("disabled","disabled");
+					$('#expExcelToPhone').attr("disabled","disabled");
+					$('#expExcel').addClass("layui-disabled")
+					$('#expExcelToPhone').addClass("layui-disabled")
+				}else{
+					$('#expExcel').removeAttr("disabled");
+					$('#expExcelToPhone').removeAttr("disabled");
+					$('#expExcel').removeClass("layui-disabled")
+					$('#expExcelToPhone').removeClass("layui-disabled")
+				}
+			}
+			
+			function onLangReady(){
+			farmId = JSON.parse(user).farmId; 
+			id = GetQueryString("id") 
+			weight = GetQueryString("weight")  
+			document.getElementById('weight').value = weight
+			parity = GetQueryString("parity");
+			if(!checkToken()) {
+				alert(i18next.t("timeout"));
+				window.top.location.href = '../../login.html';
+			}
+			
+			layui.use(['form', 'table', 'laydate'], function() {
+				var table = layui.table;
+				var form = layui.form;
+				var laydate = layui.laydate;
+				var $ = layui.$;
+				//方法级渲染
+				table.render({
+					elem: '#hogBatch',
+					url: commonIP + 'api/pig/pignutritionalformula/selectPigNutritionalFormulaBean?authToken=' + authToken + '&farmId=' + farmId + '&pigsArchivesId=' + id + 
+						'&userid=' + userId + '&parity=' + parity ,
+					where:{weight: document.getElementById('weight').value},
+					cellMinWidth: 80,
+					parseData: function(res) { //res 即为原始返回的数据
+						return {
+							"code": res.code, //解析接口状态
+							"msg": res.msg, //解析提示文本
+							"count": res.count, //解析数据长度
+							"data":parseCol(res) //解析数据列表 res.errcode === '200' ? res.dataSource.list : [] //解析数据列表
+						};
+					},
+					cols: [
+						[ {
+								field: 'a0',
+								width: '22%'
+							}
+							, {
+								field: 'b0',
+								width: '11.5%'
+							}
+							, {
+								field: 'a1',
+								width: '22%'
+							}
+							, {
+								field: 'b1',
+								width: '11.5%'
+							}
+							, {
+								field: 'a2',
+								width: '22%'
+							}
+							, {
+								field: 'b2',
+								width: '11%'
+							}
+						]
+					],
+					even: true //开启隔行背景
+						,
+					page: false //开启分页
+						,
+					limit: 100 //默认十条数据一页
+						,
+					limits: [10, 20, 30, 50] //数据分页条
+						,
+					id: 'testReload'
+					,done: function(res, curr, count){
+						$('th').hide();//表头隐藏的样式
+						if(res.code==='1' && times < 5){
+							active['reload'].call(this);
+							times++;
+						}
+					},
+				});
+				
+				var active = {
+					reload: function(){
+						table.reload('testReload',{
+							where:{
+								weight: $("#weight").val(),
+				            	temperature: $("#temperature").val(),
+				            	area: $("#area").val(),
+				            	feedvalue: $("#feedIntake").val(),
+				            	dryMatter: $("#dryQuality").val(),
+				            	proteinMax: $("#proteinDeposition").val()
+							}
+						})
+					}
+				}
+				
+				$('#reload').on('click', function(){
+					active['reload'].call(this);
+					changeDisabled(0)
+				})
+				$('#expExcelToPhone').on('click', function(){
+				   	$.ajax({
+				        url: commonIP + 'api/pig/hognutritionalformulaexcel/sendHogNutritionalFormulaBean?authToken='+authToken+'&houseType=00021'
+				        			+ '&userid=' + userId + '&farmId=' + farmId + '&parity=' + parity + '&pigsArchivesId=' + id
+				        			+ '&weight=' + $("#weight").val() + '&temperature=' + $("#temperature").val() + '&area=' + $("#area").val()
+				        			+ '&feedvalue=' + $("#feedIntake").val() + '&dryMatter=' + $("#dryQuality").val() + '&proteinMax=' + $("#proteinDeposition").val(),
+				        success: function (res) {
+				        	var dataObj = JSON.parse(res);
+				        	console.log(dataObj)
+				        	if(dataObj.code==='0'){
+				        		var index = layer.open({
+							    type: 2,
+							    content: "expExcelQRCode.html?url=" + encodeURI(encodeURI(dataObj.resourceUrl)) ,
+							    area: ['500px', '500px'],
+							    maxmin: true
+							}); 
+				        	}
+				        }
+				    });
+				})
+				$('#expExcel').on('click', function(){
+					let data;
+					data = excelDetailsData;
+					data = LAY_EXCEL.filterExportData(data, [
+					'a0','b0','a1','b1','a2','b2']);
+					data.unshift({a0: i18next.t('feedDetail.nutrients'), b0: i18next.t('feedDetail.content'), a1: i18next.t('feedDetail.nutrients'), b1: i18next.t('feedDetail.content'), a2:i18next.t('feedDetail.nutrients'), b2:i18next.t('feedDetail.content') })
+					data.unshift({a0: '', b0: "", a1: '',b1: '', a2: '', b2: ''})
+					data.unshift({a0: '', b0: "", a1: '',b1: '', a2: '', b2: ''})
+					data.unshift({a0: $("#dryQuality").val(), b0: $("#feedIntake").val(), a1: $("#proteinDeposition").val(),b1: '', a2: '', b2: ''})
+					data.unshift({a0: i18next.t('feedDetail.dryQuality')+"(%)", b0: i18next.t('feedDetail.feedIntake')+"(g/d)", a1:i18next.t('feedDetail.proteinDeposition')+"(g/d)",b1: '', a2: '', b2: '' })
+					data.unshift({a0: $("#weight").val(), b0: $("#temperature").val(), a1: $("#area").val(),b1: '', a2: '', b2: ''})
+					data.unshift({a0: i18next.t('common.weight')+"(KG)", b0: i18next.t('feedDetail.houseTemperature')+"(℃)", a1:  i18next.t('feedDetail.area')+"(m²)",b1: '', a2: '', b2: '' })
+					data.unshift({a0: '', b0: "", a1: '',b1: '', a2: '', b2: ''})
+					data.unshift({a0: '', b0: "", a1: '',b1: '', a2: '', b2: ''})
+					data.unshift({a0: excelHeadData.houseName, b0: excelHeadData.fieldCode, a1: excelHeadData.pigsNumber,b1: '', a2: '', b2: ''})
+					data.unshift({a0: i18next.t('common.houseName'), b0: i18next.t('common.fieldCode'), a1: i18next.t('common.pigNumber'),b1: '', a2: '', b2: '' })
+					
+					LAY_EXCEL.setExportCellStyle(data, 'A1:F11', {
+					    s: {
+					    	font:{bold:true},
+					        alignment: {
+					            horizontal: 'center',
+					            vertical: 'center'
+					        }
+					    }
+					}, function(cell, newCell, row, config, currentRow, currentCol, fieldKey) {
+					    return ((currentRow) % 2 === 0) ? newCell : cell;
+					} );
+					
+					LAY_EXCEL.setExportCellStyle(data, 'A1:F11', {
+					    s: {
+					        alignment: {
+					            horizontal: 'center',
+					            vertical: 'center'
+					        }
+					    }
+					}, function(cell, newCell, row, config, currentRow, currentCol, fieldKey) {
+					    return currentRow < 11 ? newCell : cell;
+					} );
+					
+					var colConf = LAY_EXCEL.makeColConfig({ 'A': 120,
+						    'F': 120
+					}, 120);
+					
+					LAY_EXCEL.exportExcel(data, excelHeadData.houseName + excelHeadData.pigsNumber + i18next.t("pigBodyInformation.nutritionalFormula")+'.xlsx', 'xlsx',{
+						extend:{
+							'!cols': colConf
+						}
+					})
+				})
+				//表格列转换
+				function parseCol(res){
+					if(res.errcode!='200'){
+						return []
+					}
+					res = res.dataSource.list[0]
+					setPigInfo(res)
+					let data = res.pigNutritionalElementsBeanList
+					let aDatas = new Array()
+					let j; //第几行
+					let k;
+					let f; //列名
+					for(let i = 0; i < data.length; i++){
+						j = parseInt(i / 3)
+						k = i % 3
+						if(k===0){
+							aDatas[j] = new Object()
+						}
+						f = "a" + k
+						aDatas[j][f] = data[i].name
+						f = "b" + k
+						aDatas[j][f] = data[i].proportion
+					}
+					excelDetailsData = aDatas
+					return aDatas;
+				}
+				
+				//取得猪只信息
+				function setPigInfo(data) {
+					excelHeadData = data
+					var pigNumber = data.pigsNumber; 
+					var strain = data.strainName || ''; 
+					var variety = data.pigVarietyName; 
+					var temperature = data.temperature; 
+					var area = data.area ; 
+					document.getElementById('pigNumber').innerText = pigNumber
+					document.getElementById('strain').innerText = strain
+					document.getElementById('variety').innerText = variety
+				}
+			});
+		}
+		
+
+		</script>
+	</body>
+
+</html>
